@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:utility="using:EquipmentFailureAnalysis.Utility"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="EquipmentFailureAnalysis.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Icon="/Assets/avalonia-logo.ico"
+		Title="DEA - Equipment Failure Analysis"
+		WindowState="Maximized">
+
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+		to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="200"/>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="200"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<Panel Grid.Column="0" Margin="5">
+			<ItemsControl ItemsSource="{Binding EquipmentCollection}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Button Content="{Binding Title}" Margin="5" Width="200" Height="100"/>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</Panel>
+		<Panel Grid.Column="1" Margin="5">
+			<ItemsControl ItemsSource="{Binding DailyDowntimeIndexCollection}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel Width="1400"/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Button Content="{Binding Index}" Width="50" Height="50" Margin="5" Background="{Binding Index, Converter={StaticResource ColorConverter}}">
+
+						</Button>
+				</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</Panel>
+		<Panel Grid.Column="2">
+
+		</Panel>
+	</Grid>
+
+	<Window.Resources>
+		<utility:ValueToColorConverter x:Key="ColorConverter"/>
+	</Window.Resources>
+</Window>
