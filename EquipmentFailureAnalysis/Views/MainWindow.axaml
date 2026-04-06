@@ -3,12 +3,15 @@
 		xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:utility="using:EquipmentFailureAnalysis.Utility"
+      xmlns:effects="clr-namespace:Avalonia.Media.Effects;assembly=Avalonia.Visuals"
+		xmlns:utility="using:EquipmentFailureAnalysis.Utility"
+		xmlns:views="using:EquipmentFailureAnalysis.Views"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-		x:Class="EquipmentFailureAnalysis.Views.MainWindow"
+     x:Class="EquipmentFailureAnalysis.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
-		Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/avalonia-logo.ico"
 		Title="DEA - Equipment Failure Analysis"
+		Background="{StaticResource PrimaryBackground}"
 		WindowState="Maximized">
 
 	<Design.DataContext>
@@ -17,48 +20,341 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
+    <Window.Resources>
+     <utility:ValueToColorConverter x:Key="ColorConverter"/>
+        <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
+		<utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
+		<utility:StatusToBrushConverter x:Key="StatusToBrush" />
+		<utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
+		<utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
+
+		<!-- Legend brushes for heatmap (brighter stops) -->
+		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
+		<SolidColorBrush x:Key="HeatmapYellow" Color="#FFEE58" />
+		<SolidColorBrush x:Key="HeatmapOrange" Color="#FFB74D" />
+		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
+
+		<!-- Palette -->
+		<SolidColorBrush x:Key="PrimaryBackground" Color="#F3F6F9" />
+		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFFFF" />
+		<SolidColorBrush x:Key="AccentBrush" Color="#1976D2" />
+		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+		<SolidColorBrush x:Key="TextPrimary" Color="#222222" />
+
+		<!-- Styles -->
+        <Style x:Key="SidebarButtonStyle" Selector="Button">
+			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="#E0E0E0" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Padding" Value="8" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+
+        <Style x:Key="DayButtonStyle" Selector="Button.Day">
+			<Setter Property="Width" Value="30" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderBrush" Value="#CFCFCF" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+
+    </Window.Resources>
+
+	<Window.Styles>
+		<!-- Implicit style to completely hide ScrollBar visuals while keeping scrolling behavior -->
+		<Style Selector="ScrollBar">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="Transparent" Width="0" Height="0" />
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</Window.Styles>
+
 	<Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="200"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="200"/>
+        <Grid.ColumnDefinitions>
+			<!-- Use star sizing so layout adapts when window is resized -->
+			<ColumnDefinition Width="2*" />
+			<ColumnDefinition Width="6*" />
+			<ColumnDefinition Width="2*" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<Panel Grid.Column="0" Margin="5">
-			<ItemsControl ItemsSource="{Binding EquipmentCollection}">
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Button Content="{Binding Title}" Margin="5" Width="200" Height="100"/>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-		</Panel>
-		<Panel Grid.Column="1" Margin="5">
-			<ItemsControl ItemsSource="{Binding DailyDowntimeIndexCollection}">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel Width="1400"/>
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Button Content="{Binding Index}" Width="50" Height="50" Margin="5" Background="{Binding Index, Converter={StaticResource ColorConverter}}">
+     <!-- Top header (accented, no rounded corners) -->
+        <!-- Compact header: reduced padding and font sizes to make header visually narrower -->
+		<Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource AccentBrush}" Padding="6" CornerRadius="0" Margin="8">
+			<Grid VerticalAlignment="Center">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
 
-						</Button>
-				</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-		</Panel>
-		<Panel Grid.Column="2">
+				<StackPanel Orientation="Vertical" Grid.Column="0" Margin="6,0,0,0">
+					<TextBlock Text="Анализ неисправностей оборудования" FontSize="16" FontWeight="SemiBold" Foreground="White" />
+					<TextBlock Text="Мониторинг рабочих смен и простоев" FontSize="11" Foreground="#E8F3FF" />
+				</StackPanel>
 
-		</Panel>
+				<StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="6" Margin="0,0,6,0">
+					<TextBox Width="160" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+					<Button Content="Обновить" MinWidth="72" />
+					<Button Content="Экспорт" MinWidth="72" />
+				</StackPanel>
+			</Grid>
+		</Border>
+
+      <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
+			<!-- shadow shim -->
+			<Border Background="#33000000" CornerRadius="8" Margin="0,6,0,0" />
+            <Border Background="{StaticResource CardBackground}" CornerRadius="6" Padding="12">
+			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+
+			<StackPanel>
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+					<TextBlock Text="Оборудование" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+				</StackPanel>
+
+				<ItemsControl ItemsSource="{Binding EquipmentCollection}">
+                <ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel HorizontalAlignment="Stretch" />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="6" Background="{Binding IsSelected, Converter={StaticResource SelectedToBackground}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Stretch">
+								<Grid Margin="8" HorizontalAlignment="Stretch">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="36" />
+									</Grid.ColumnDefinitions>
+                                    <StackPanel>
+										<!-- Allow title to wrap inside the card and truncate if too long -->
+										<TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+										<TextBlock Text="{Binding InventoryNumber}" FontSize="12" Foreground="#888" />
+										<TextBlock Text="{Binding IssueCount, StringFormat='Всего неисправностей: {0}'}" FontSize="12" Foreground="#888" />
+									</StackPanel>
+									<Ellipse Grid.Column="1" Width="22" Height="22" Stroke="{Binding HasIssues, Converter={StaticResource StatusToBrush}}" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,4,0" />
+								</Grid>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+         </ItemsControl>
+            </StackPanel>
+			</ScrollViewer>
+			</Border>
+		</Grid>
+        <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch">
+			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                <!-- Top header showing day numbers moved into heatmap block for alignment -->
+
+                <Grid Margin="0 0 0 8">
+					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
+                    <Border Background="{StaticResource CardBackground}" CornerRadius="6" Padding="12">
+					<StackPanel HorizontalAlignment="Stretch">
+                        <TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Margin="2" Foreground="{StaticResource TextPrimary}" />
+                        <Grid>
+							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+								<StackPanel>
+                                    <!-- Day headers aligned with day cells (use width matching day cell width + margin) -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,6" MinWidth="600">
+                                        <TextBlock Width="72" />
+										<ItemsControl ItemsSource="{Binding DayHeaders}">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Border Width="28" Height="28" Margin="2" Background="Transparent">
+														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+
+                                    <!-- Month rows -->
+									<ItemsControl ItemsSource="{Binding MonthRows}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel Orientation="Vertical" />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="2">
+													<TextBlock Text="{Binding MonthName}" Width="72" VerticalAlignment="Center" Margin="2" />
+													<ItemsControl ItemsSource="{Binding Days}">
+														<ItemsControl.ItemsPanel>
+															<ItemsPanelTemplate>
+																<StackPanel Orientation="Horizontal" />
+															</ItemsPanelTemplate>
+														</ItemsControl.ItemsPanel>
+														<ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
+																		Command="{Binding DataContext.ShowDayTimelineCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+																		CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
+																	<Border Width="28" Height="28" CornerRadius="4" Background="{Binding ., Converter={StaticResource DayCellConverter}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
+																	</Border>
+                                                                <ToolTip.Tip>
+																	<StackPanel>
+																		<TextBlock Text="{Binding Date, StringFormat='Дата: {0:dd.MM.yyyy}'}" />
+																		<TextBlock Text="{Binding Index, StringFormat='Неисправностей: {0}'}" />
+																	</StackPanel>
+																</ToolTip.Tip>
+																<Button.ContextMenu>
+																	<ContextMenu>
+																		<MenuItem Header="Показать в дашборде" Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding DataContext.SelectedEquipment, RelativeSource={RelativeSource AncestorType=Window}}" />
+																	</ContextMenu>
+																</Button.ContextMenu>
+																</Button>
+															</DataTemplate>
+														</ItemsControl.ItemTemplate>
+													</ItemsControl>
+												</StackPanel>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+								</StackPanel>
+
+							</ScrollViewer>
+						</Grid>
+
+						<!-- Heatmap legend -->
+						<StackPanel Orientation="Horizontal" Margin="8,6,0,0" HorizontalAlignment="Left">
+							<TextBlock Text="Легенда:" VerticalAlignment="Center" Foreground="#666" Margin="0,0,8,0" />
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+								<Border Width="24" Height="14" Background="{StaticResource HeatmapGreen}" CornerRadius="3" BorderBrush="#DDD" BorderThickness="1" />
+								<TextBlock Text=" 0" VerticalAlignment="Center" Foreground="#444" Margin="6,0,10,0" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+								<Border Width="24" Height="14" Background="{StaticResource HeatmapYellow}" CornerRadius="3" BorderBrush="#DDD" BorderThickness="1" />
+								<TextBlock Text=" 3-6" VerticalAlignment="Center" Foreground="#444" Margin="6,0,10,0" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+								<Border Width="24" Height="14" Background="{StaticResource HeatmapOrange}" CornerRadius="3" BorderBrush="#DDD" BorderThickness="1" />
+								<TextBlock Text=" 7-9" VerticalAlignment="Center" Foreground="#444" Margin="6,0,10,0" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+								<Border Width="24" Height="14" Background="{StaticResource HeatmapRed}" CornerRadius="3" BorderBrush="#DDD" BorderThickness="1" />
+								<TextBlock Text=" 10+" VerticalAlignment="Center" Foreground="#444" Margin="6,0,0,0" />
+							</StackPanel>
+						</StackPanel>
+                    </StackPanel>
+					</Border>
+				</Grid>
+
+				<!-- Timeline panel showing 24-hour state blocks under heatmap -->
+                <Grid>
+					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
+                    <Border Background="{StaticResource CardBackground}" CornerRadius="6" Padding="12">
+					<StackPanel>
+						<TextBlock Text="График простоев" Margin="2" FontWeight="SemiBold" />
+						<views:TimelineControl Items="{Binding DayTimelinePoints}" Annotations="{Binding Annotations}" Height="480" ShowHourLabels="True" VerticalAlignment="Top" />
+					</StackPanel>
+					</Border>
+				</Grid>
+		</StackPanel>
+		</ScrollViewer>
+   <Grid Grid.Column="2" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
+		<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
+            <Border Background="{StaticResource CardBackground}" CornerRadius="6" Padding="12">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+		<StackPanel Spacing="8">
+			<TextBlock Text="Дашборд анализа" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+
+            <Grid ColumnDefinitions="*,Auto">
+            <Border Grid.Column="0" Background="#EAF2FF" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+					<StackPanel>
+						<TextBlock Text="Оборудование" FontSize="12" Foreground="#1976D2" />
+						<TextBlock Text="{Binding SelectedEquipment.Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+						<TextBlock Text="{Binding SelectedEquipment.InventoryNumber}" FontSize="12" Foreground="#666" />
+					</StackPanel>
+				</Border>
+                <Border Grid.Column="1" Background="#F6EAFB" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
+					<StackPanel>
+						<TextBlock Text="Дата" FontSize="12" Foreground="#7A4BAE" />
+						<TextBlock Text="{Binding AnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
+					</StackPanel>
+				</Border>
+			</Grid>
+
+            <Border Background="#FFEFEF" CornerRadius="8" Padding="12">
+				<StackPanel>
+					<TextBlock Text="Неисправностей" FontSize="13" Foreground="#B00020" />
+					<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,6,0,0">
+						<TextBlock Text="{Binding FaultsForDay}" FontSize="22" FontWeight="Bold" Foreground="#B00020" />
+						<TextBlock Text="  Критично!" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#B00020" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+
+            <Border Background="#FFFFFF" CornerRadius="8" Padding="12">
+				<StackPanel>
+					<TextBlock Text="Время работы / простои" FontSize="13" Foreground="#666" />
+					<StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+         <StackPanel Width="80">
+				<TextBlock Text="Работа" Foreground="#2E7D32" />
+				<TextBlock Text="{Binding WorkPercent, StringFormat='{}{0:0.0}%'}" Foreground="#2E7D32" FontWeight="Bold" />
+			</StackPanel>
+			<StackPanel Width="80">
+				<TextBlock Text="Простой" Foreground="#B00020" />
+				<TextBlock Text="{Binding DownPercent}" Foreground="#B00020" FontWeight="Bold" />
+			</StackPanel>
+					</StackPanel>
+          <ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="8" Margin="0,8,0,0" />
+				</StackPanel>
+			</Border>
+
+            <Border Background="#FFF8E1" CornerRadius="8" Padding="12">
+				<StackPanel>
+					<TextBlock Text="Среднее время ремонта" FontSize="13" Foreground="#BF7000" />
+					<TextBlock Text="{Binding AvgRepairTime}" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
+				</StackPanel>
+			</Border>
+
+			<!-- Monthly stats (static sample) -->
+			<TextBlock Text="Статистика за месяц" FontSize="13" FontWeight="SemiBold" Foreground="#666" Margin="0,6,0,0" />
+            <Border Background="#FFFFFF" CornerRadius="8" Padding="12">
+				<StackPanel>
+					<TextBlock Text="Всего неисправностей" Foreground="#666" />
+					<TextBlock Text="153" FontSize="18" FontWeight="Bold" />
+				</StackPanel>
+			</Border>
+
+			<StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Width="120">
+					<StackPanel>
+						<TextBlock Text="Лучший день" FontSize="12" Foreground="#2E7D32" />
+						<TextBlock Text="06.07" FontWeight="Bold" />
+						<TextBlock Text="0 сбоев" Foreground="#2E7D32" />
+					</StackPanel>
+				</Border>
+                <Border Background="#FFEBEE" CornerRadius="8" Padding="12" Width="120">
+					<StackPanel>
+						<TextBlock Text="Худший день" FontSize="12" Foreground="#B00020" />
+						<TextBlock Text="28.07" FontWeight="Bold" />
+						<TextBlock Text="9 сбоев" Foreground="#B00020" />
+					</StackPanel>
+				</Border>
+			</StackPanel>
+
+       </StackPanel>
+		</ScrollViewer>
+		</Border>
 	</Grid>
-
-	<Window.Resources>
-		<utility:ValueToColorConverter x:Key="ColorConverter"/>
-	</Window.Resources>
+	</Grid>
 </Window>

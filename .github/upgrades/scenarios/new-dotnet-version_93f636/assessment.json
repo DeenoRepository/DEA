@@ -1,0 +1,284 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "net11.0",
+    "targetDisplayName": ".NETCoreApp,Version=v11.0"
+  },
+  "analysisStartTime": "2026-04-06T21:04:19.8304537Z",
+  "analysisEndTime": "2026-04-06T21:04:23.531654Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 1,
+      "issues": 2,
+      "incidents": 7,
+      "effort": 7
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 1,
+        "Optional": 0,
+        "Potential": 6,
+        "Information": 0
+      },
+      "category": {
+        "Project": 1,
+        "Api": 6
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 7,
+      "properties": {
+        "appName": "EquipmentFailureAnalysis",
+        "projectKind": "WinForms",
+        "frameworks": [
+          "net10.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 20,
+        "numberOfCodeFiles": 20,
+        "linesTotal": 1586,
+        "linesOfCode": 1586,
+        "totalApiScanned": 2751,
+        "minLinesOfCodeToChange": 6,
+        "maxLinesOfCodeToChange": 6
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "8d8065b9-3a5d-4598-8efc-406181da048d",
+          "ruleId": "Project.0002",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net10.0\nRecommended target framework: net11.0-windows",
+              "protected": "Current target framework: net10.0\nRecommended target framework: net11.0-windows"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+            "snippet": "Current target framework: net10.0\nRecommended target framework: net11.0-windows",
+            "protectedSnippet": "Current target framework: net10.0\nRecommended target framework: net11.0-windows",
+            "properties": {
+              "CurrentTargetFramework": "net10.0",
+              "RecommendedTargetFramework": "net11.0-windows"
+            }
+          }
+        },
+        {
+          "incidentId": "512d604f-2672-4306-a087-5c64092e0fd1",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "string lbl = TimeSpan.FromHours(sh).Hours.ToString(\u0022D2\u0022) \u002B \u0022:\u0022 \u002B TimeSpan.FromHours(sh).Minutes.ToString(\u0022D2\u0022);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\Views\\TimelineControl.cs",
+            "snippet": "string lbl = TimeSpan.FromHours(sh).Hours.ToString(\u0022D2\u0022) \u002B \u0022:\u0022 \u002B TimeSpan.FromHours(sh).Minutes.ToString(\u0022D2\u0022);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 262,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "9b9b7d36-a13c-4064-93d8-529d5a9ea797",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "string lbl = TimeSpan.FromHours(sh).Hours.ToString(\u0022D2\u0022) \u002B \u0022:\u0022 \u002B TimeSpan.FromHours(sh).Minutes.ToString(\u0022D2\u0022);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\Views\\TimelineControl.cs",
+            "snippet": "string lbl = TimeSpan.FromHours(sh).Hours.ToString(\u0022D2\u0022) \u002B \u0022:\u0022 \u002B TimeSpan.FromHours(sh).Minutes.ToString(\u0022D2\u0022);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 262,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "b0d91eeb-611c-4c80-b1d7-8cf525089ea3",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Int64)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\ViewModels\\MainWindowViewModel.cs",
+            "snippet": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 414,
+            "column": 24
+          }
+        },
+        {
+          "incidentId": "b93bce7f-39d6-45a0-976a-34986859b6cf",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Int64)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\ViewModels\\MainWindowViewModel.cs",
+            "snippet": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 263,
+            "column": 24
+          }
+        },
+        {
+          "incidentId": "bdf9dc0a-eecf-4c21-a710-68178be69094",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Int64)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\ViewModels\\MainWindowViewModel.cs",
+            "snippet": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 414,
+            "column": 24
+          }
+        },
+        {
+          "incidentId": "eaece97b-374c-4368-a8ad-59e8d4fb4194",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "EquipmentFailureAnalysis\\EquipmentFailureAnalysis.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Int64)"
+            },
+            "kind": "File",
+            "path": "EquipmentFailureAnalysis\\ViewModels\\MainWindowViewModel.cs",
+            "snippet": "var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 263,
+            "column": 24
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0002": {
+      "id": "Api.0002",
+      "isFeature": false,
+      "description": "API is source incompatible for selected .NET version: requires code changes to compile successfully when targeting a new version, such as removing obsolete APIs or changing method signatures.",
+      "label": "Source incompatible for selected .NET version",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Breaking changes in .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}
