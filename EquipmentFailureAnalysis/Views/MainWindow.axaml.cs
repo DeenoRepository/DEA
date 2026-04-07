@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using EquipmentFailureAnalysis.Utility;
@@ -11,6 +12,7 @@ namespace EquipmentFailureAnalysis.Views
         public MainWindow()
         {
             InitializeComponent();
+            this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
         }
 
         private async void ImportButton_Click(object? sender, RoutedEventArgs e)
@@ -45,6 +47,31 @@ namespace EquipmentFailureAnalysis.Views
                 };
                 await wnd.ShowDialog(this);
             }
+        }
+
+        private void OnWindowResized()
+        {
+            // compute ideal DayCellSize so 31 columns fit into central heatmap viewport
+            try
+            {
+                if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
+                    // find the heatmap scroller control
+                    var scroller = this.FindControl<ScrollViewer>("HeatmapScroller");
+                    if (scroller != null)
+                    {
+                        // leave a larger margin so day cells don't overflow the visible area
+                        double available = scroller.Bounds.Width - 140; // increased padding for labels/margins
+                        if (available <= 0) return;
+                        // 31 day columns
+                        double cellWithMargin = available / 31.0;
+                        // subtract extra to avoid overflow when including cell margins
+                        double size = Math.Max(10.0, Math.Min(48.0, cellWithMargin - 8.0));
+                        vm.DayCellSize = size;
+                    }
+                }
+            }
+            catch { }
         }
     }
 }

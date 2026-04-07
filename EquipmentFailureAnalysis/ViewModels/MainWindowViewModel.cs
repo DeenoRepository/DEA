@@ -26,6 +26,29 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _selectedEquipment;
             set => this.RaiseAndSetIfChanged(ref _selectedEquipment, value);
         }
+
+        // Heatmap cell size (pixels). Bindable so UI can scale heatmap automatically.
+        private double _dayCellSize = 28.0;
+        public double DayCellSize
+        {
+            get => _dayCellSize;
+            set => this.RaiseAndSetIfChanged(ref _dayCellSize, value);
+        }
+
+        // Monthly stats for selected equipment
+        private int _repairsLastMonth;
+        public int RepairsLastMonth
+        {
+            get => _repairsLastMonth;
+            set => this.RaiseAndSetIfChanged(ref _repairsLastMonth, value);
+        }
+
+        private int _setupsLastMonth;
+        public int SetupsLastMonth
+        {
+            get => _setupsLastMonth;
+            set => this.RaiseAndSetIfChanged(ref _setupsLastMonth, value);
+        }
         public ObservableCollection<int> DayTimeline { get; set; } = new ObservableCollection<int>();
         private ObservableCollection<Models.TimelinePoint> _dayTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
         public ObservableCollection<Models.TimelinePoint> DayTimelinePoints
@@ -159,6 +182,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             // apply initial type filter and sort
             ApplyTypeFilterAndSort();
 
+            // DayCellSize will be adjusted by view to fit available area
+
             // sort commands
             SortIssuesAscCommand = ReactiveCommand.Create(() =>
             {
@@ -205,6 +230,11 @@ namespace EquipmentFailureAnalysis.ViewModels
                 var dateStart = AnalysisDate.Date;
                 var dateEnd = dateStart.AddDays(1);
                 var filteredIssues = GetFilteredIssues(equipment).ToList();
+
+            // compute monthly repair/setup counts (last 30 days) based on raw issue types
+            var since = DateTime.Now.Date.AddDays(-30);
+            RepairsLastMonth = equipment.Issues.Count(i => i.Type == IssueType.Ремонт && i.Start.Date >= since);
+            SetupsLastMonth = equipment.Issues.Count(i => i.Type == IssueType.Настройка && i.Start.Date >= since);
                 foreach (var issue in filteredIssues)
                 {
                     var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
