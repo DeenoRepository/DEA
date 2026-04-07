@@ -10,12 +10,30 @@ namespace EquipmentFailureAnalysis.Views
 {
     public class TimelineControl : Control
     {
+        private static readonly Typeface UiTypeface = new Typeface("Segoe UI");
+
         public static readonly StyledProperty<IList?> ItemsProperty = AvaloniaProperty.Register<TimelineControl, IList?>(nameof(Items));
 
         public IList? Items
         {
             get => GetValue(ItemsProperty);
             set => SetValue(ItemsProperty, value);
+        }
+
+        public static readonly StyledProperty<IList?> RepairsItemsProperty = AvaloniaProperty.Register<TimelineControl, IList?>(nameof(RepairsItems));
+
+        public IList? RepairsItems
+        {
+            get => GetValue(RepairsItemsProperty);
+            set => SetValue(RepairsItemsProperty, value);
+        }
+
+        public static readonly StyledProperty<IList?> SetupsItemsProperty = AvaloniaProperty.Register<TimelineControl, IList?>(nameof(SetupsItems));
+
+        public IList? SetupsItems
+        {
+            get => GetValue(SetupsItemsProperty);
+            set => SetValue(SetupsItemsProperty, value);
         }
 
         public static readonly StyledProperty<IList?> AnnotationsProperty = AvaloniaProperty.Register<TimelineControl, IList?>(nameof(Annotations));
@@ -33,6 +51,22 @@ namespace EquipmentFailureAnalysis.Views
                 Unsubscribe(itemsChanged);
                 itemsChanged = items as INotifyCollectionChanged;
                 Subscribe(itemsChanged);
+                InvalidateVisual();
+            });
+
+            this.GetObservable(RepairsItemsProperty).Subscribe(items =>
+            {
+                Unsubscribe(repairsItemsChanged);
+                repairsItemsChanged = items as INotifyCollectionChanged;
+                Subscribe(repairsItemsChanged);
+                InvalidateVisual();
+            });
+
+            this.GetObservable(SetupsItemsProperty).Subscribe(items =>
+            {
+                Unsubscribe(setupsItemsChanged);
+                setupsItemsChanged = items as INotifyCollectionChanged;
+                Subscribe(setupsItemsChanged);
                 InvalidateVisual();
             });
 
@@ -56,6 +90,8 @@ namespace EquipmentFailureAnalysis.Views
         }
 
         private INotifyCollectionChanged? itemsChanged;
+        private INotifyCollectionChanged? repairsItemsChanged;
+        private INotifyCollectionChanged? setupsItemsChanged;
         private INotifyCollectionChanged? annotationsChanged;
 
         private void Subscribe(INotifyCollectionChanged? inc)
@@ -96,8 +132,9 @@ namespace EquipmentFailureAnalysis.Views
         {
             base.Render(context);
             var items = Items as IList ?? new System.Collections.ArrayList();
+            var repairsItems = RepairsItems as IList ?? new System.Collections.ArrayList();
+            var setupsItems = SetupsItems as IList ?? new System.Collections.ArrayList();
 
-            int count = items.Count;
             // don't return when there is no data: still draw scale/ticks
 
             var bounds = this.Bounds;
@@ -117,8 +154,9 @@ namespace EquipmentFailureAnalysis.Views
 
             // --- estimate annotation space above the plot and shift plot down ---
             var anns = Annotations as IList ?? new System.Collections.ArrayList();
-            var annTypeface = new Typeface("Segoe UI");
-            double annFont = 11;
+            var annTypeface = UiTypeface;
+            var annTitleTypeface = new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold);
+            double annFont = 12;
             double gap = 6;
 
             var annObjs = new System.Collections.Generic.List<Models.Annotation>();
@@ -163,8 +201,8 @@ namespace EquipmentFailureAnalysis.Views
                 string l2 = a.Responsible ?? string.Empty;
                 string l3 = a.Duration ?? string.Empty;
                 int maxLen = Math.Max(l1.Length, Math.Max(l2.Length, l3.Length));
-                annWidths[i] = Math.Max(40, maxLen * (annFont * 0.5));
-                annHeights[i] = annFont * 3 + 8;
+                annWidths[i] = Math.Max(140, maxLen * (annFont * 0.52));
+                annHeights[i] = annFont * 3 + 16;
                 annCenters[i] = left + a.Hour * (plotW / 24.0);
             }
 
@@ -198,48 +236,44 @@ namespace EquipmentFailureAnalysis.Views
             context.DrawLine(gridPen, new Point(left, y1), new Point(left + plotW, y1));
             context.DrawLine(gridPen, new Point(left, y0), new Point(left + plotW, y0));
 
-            // build point list; support two modes:
-            // - IList<int> of length 24 -> hourly values at integer hours
-            // - IList<TimelinePoint> -> fractional hour points
-            System.Collections.Generic.List<Point> ptsList = new System.Collections.Generic.List<Point>();
+            System.Collections.Generic.List<Point> BuildPoints(IList source)
+            {
+                var outPts = new System.Collections.Generic.List<Point>();
+                if (source == null || source.Count == 0)
+                    return outPts;
 
-            // detect item type
-            if (items is System.Collections.IList list && list.Count > 0 && list[0] is int)
-            {
-                double step = plotW / 23.0;
-                for (int i = 0; i < 24; i++)
+                if (source[0] is int)
                 {
-                    double x = left + i * step;
-                    int val = 0;
-                    if (i < items.Count && items[i] is int iv)
-                        val = iv;
-                    double y = val == 1 ? y1 : y0;
-                    ptsList.Add(new Point(x, y));
+                    double step = plotW / 23.0;
+                    for (int i = 0; i < 24; i++)
+                    {
+                        double x = left + i * step;
+                        int val = 0;
+                        if (i < source.Count && source[i] is int iv)
+                            val = iv;
+                        double y = val == 1 ? y1 : y0;
+                        outPts.Add(new Point(x, y));
+                    }
+                    return outPts;
                 }
-            }
-            else
-            {
-                // assume TimelinePoint objects
-                var tpList = new System.Collections.Generic.List<Models.TimelinePoint>();
-                foreach (var it in items)
+
+                double tpXScale = plotW / 24.0;
+                foreach (var it in source)
                 {
                     if (it is Models.TimelinePoint tp)
-                        tpList.Add(tp);
+                    {
+                        double x = left + tp.Hour * tpXScale;
+                        double y = tp.Value == 1 ? y1 : y0;
+                        outPts.Add(new Point(x, y));
+                    }
                 }
-                if (tpList.Count == 0)
-                    return;
 
-                // map hours (0..24) to x coordinates
-                double tpXScale = plotW / 24.0;
-                foreach (var tp in tpList)
-                {
-                    double x = left + tp.Hour * tpXScale;
-                    double y = tp.Value == 1 ? y1 : y0;
-                    ptsList.Add(new Point(x, y));
-                }
+                return outPts;
             }
 
-            var pts = ptsList.ToArray();
+            var pts = BuildPoints(items).ToArray();
+            var repairsPts = BuildPoints(repairsItems).ToArray();
+            var setupsPts = BuildPoints(setupsItems).ToArray();
 
             // draw hourly ticks (scale) - always visible
             double tickTop = top + plotH;
@@ -266,16 +300,16 @@ namespace EquipmentFailureAnalysis.Views
 
             // draw shift boundary markers (e.g., 08:00 start and 16:30 end)
             double[] shiftHours = new double[] { 8.0, 16.5 };
-            var shiftPen = new Pen(new SolidColorBrush(Color.FromArgb(180, 220, 57, 57)), 1.6);
-            var labelBrushShift = new SolidColorBrush(Color.FromArgb(200, 220, 57, 57));
-            var tfShift = new Typeface("Segoe UI");
+            var shiftPen = new Pen(new SolidColorBrush(Color.FromArgb(130, 46, 125, 50)), 1.6);
+            var labelBrushShift = new SolidColorBrush(Color.FromArgb(150, 46, 125, 50));
+            var tfShift = UiTypeface;
             double labelFont = 11;
             // draw shaded area for the main shift (between first two entries) if available
             if (shiftHours.Length >= 2)
             {
                 double sX = left + shiftHours[0] * (plotW / 24.0);
                 double eX = left + shiftHours[1] * (plotW / 24.0);
-                var fillBrush = new SolidColorBrush(Color.FromArgb(30, 220, 57, 57));
+                var fillBrush = new SolidColorBrush(Color.FromArgb(35, 76, 175, 80));
                 context.FillRectangle(fillBrush, new Rect(sX, top, Math.Max(0, eX - sX), plotH));
             }
 
@@ -301,32 +335,32 @@ namespace EquipmentFailureAnalysis.Views
                 var a = annObjs[i];
                 double ax = annCenters[i];
 
-                // draw marker: color depends on issue type (Ремонт = red, Настройка = yellow)
-                    var triBrush = Brushes.OrangeRed;
-                    try
-                    {
-                        if (a.Type == Models.IssueType.Ремонт)
-                            triBrush = Brushes.Red;
-                        else if (a.Type == Models.IssueType.Настройка)
-                            triBrush = Brushes.Yellow;
-                    }
-                    catch
-                    {
-                        // fallback to default
-                        triBrush = Brushes.OrangeRed;
-                    }
-                    var marker = new Rect(ax - 5, top - 12, 10, 10);
-                    // draw filled circle marker using EllipseGeometry
-                    var eg = new EllipseGeometry(new Rect(marker.X, marker.Y, marker.Width, marker.Height));
-                    context.DrawGeometry(triBrush, null, eg);
+                Color typeColor = Color.Parse("#E65100");
+                try
+                {
+                    if (a.Type == Models.IssueType.Ремонт)
+                        typeColor = Color.Parse("#C62828");
+                    else if (a.Type == Models.IssueType.Настройка)
+                        typeColor = Color.Parse("#F9A825");
+                }
+                catch { }
 
-                string line1 = a.Description ?? string.Empty;
-                string line2 = a.Responsible ?? string.Empty;
-                string line3 = a.Duration ?? string.Empty;
-                int maxLen2 = 80;
-                if (line1.Length > maxLen2) line1 = line1.Substring(0, maxLen2 - 3) + "...";
-                if (line2.Length > maxLen2) line2 = line2.Substring(0, maxLen2 - 3) + "...";
-                if (line3.Length > maxLen2) line3 = line3.Substring(0, maxLen2 - 3) + "...";
+                var markerBrush = new SolidColorBrush(typeColor);
+                var marker = new Rect(ax - 6, top - 13, 12, 12);
+                var eg = new EllipseGeometry(new Rect(marker.X, marker.Y, marker.Width, marker.Height));
+                context.DrawGeometry(markerBrush, new Pen(Brushes.White, 1), eg);
+
+                string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
+                string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
+                string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
+
+                int maxLen2 = 52;
+                if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
+                if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
+
+                string line1 = "Описание: " + rawDescription;
+                string line2 = "Ответственный: " + rawResponsible;
+                string line3 = "Длительность: " + rawDuration;
 
                 // recalc width/height based on actual text lengths to avoid overflow
                 double wRect = annWidths[i];
@@ -396,24 +430,24 @@ namespace EquipmentFailureAnalysis.Views
                 var ry = textRect.Y;
                 var rw2 = textRect.Width;
                 var rh2 = textRect.Height;
-                var fillBrush2 = new SolidColorBrush(Color.FromArgb(255, 255, 249, 220));
-                var borderPen2 = new Pen(new SolidColorBrush(Color.FromArgb(200, 170, 170, 170)), 1);
-                context.FillRectangle(fillBrush2, textRect);
-                context.DrawRectangle(borderPen2, textRect);
+                var fillBrush2 = new SolidColorBrush(Color.FromArgb(248, 255, 255, 255));
+                var borderPen2 = new Pen(new SolidColorBrush(Color.FromArgb(220, typeColor.R, typeColor.G, typeColor.B)), 1.2);
+                var roundedTextRect = new RoundedRect(textRect, 6);
+                context.DrawRectangle(fillBrush2, borderPen2, roundedTextRect);
 
-                var ft1 = new FormattedText(line1, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont, Brushes.DarkRed);
-                var ft2 = new FormattedText(line2, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont, Brushes.DarkSlateGray);
-                var ft3 = new FormattedText(line3, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont, Brushes.DarkSlateGray);
-                context.DrawText(ft1, new Point(textRect.X + 4, textRect.Y + 2));
-                context.DrawText(ft2, new Point(textRect.X + 4, textRect.Y + 2 + annFont + 2));
-                context.DrawText(ft3, new Point(textRect.X + 4, textRect.Y + 2 + 2 * (annFont + 2)));
+                var ft1 = new FormattedText(line1, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTitleTypeface, annFont, Brushes.Black);
+                var ft2 = new FormattedText(line2, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
+                var ft3 = new FormattedText(line3, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
+                context.DrawText(ft1, new Point(textRect.X + 6, textRect.Y + 4));
+                context.DrawText(ft2, new Point(textRect.X + 6, textRect.Y + 4 + annFont + 3));
+                context.DrawText(ft3, new Point(textRect.X + 6, textRect.Y + 4 + 2 * (annFont + 3)));
             }
 
             // tooltips removed per request (annotations show multiline text directly)
 
             // draw y-axis labels (left)
             var labelBrushY = Brushes.Black;
-            var tfY = new Typeface("Segoe UI");
+            var tfY = UiTypeface;
             double labelFontSize = 12;
             var ftTop = new FormattedText("Сбой", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
             var ftBottom = new FormattedText("OK", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
@@ -425,7 +459,7 @@ namespace EquipmentFailureAnalysis.Views
             {
                 var labelBrush = Brushes.Black;
                 double fontSize = 10;
-                var tf = new Typeface("Segoe UI");
+                var tf = UiTypeface;
 
                 for (int i = 0; i < 24; i++)
                 {
@@ -446,75 +480,126 @@ namespace EquipmentFailureAnalysis.Views
                 context.DrawText(ftEnd, new Point(drawXEnd, drawYEnd));
             }
 
-            // compute downtime summary (minutes) from the step segments
-            double downtimeMinutes = 0.0;
-            double xToHours = 24.0 / plotW; // hours per pixel factor inverted
-            for (int i = 0; i < pts.Length; i++)
+            System.Collections.Generic.List<(double x1, double x2, double y)> BuildHorizontalSegments(Point[] series)
             {
-                double xStart = pts[i].X;
-                double xEnd = (i < pts.Length - 1) ? pts[i + 1].X : (left + plotW);
-                double y = pts[i].Y;
-                // duration in hours for this segment
-                double durHours = (xEnd - xStart) / (plotW / 24.0);
-                if (Math.Abs(y - y1) < 0.1)
-                    downtimeMinutes += durHours * 60.0;
+                var segments = new System.Collections.Generic.List<(double x1, double x2, double y)>();
+                if (series.Length == 0)
+                    return segments;
 
-                // draw horizontal segment (primary color)
-                var linePen = new Pen(new SolidColorBrush(Color.Parse("#1976D2")), 2) { LineJoin = PenLineJoin.Round };
-                context.DrawLine(linePen, new Point(xStart, y), new Point(xEnd, y));
-
-                // draw gradient fill under segment
-                var grad = new LinearGradientBrush();
-                grad.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
-                grad.EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative);
-                grad.GradientStops = new GradientStops
+                for (int i = 0; i < series.Length; i++)
                 {
-                    new GradientStop(Color.FromArgb(160, 25, 118, 210), 0.0),
-                    new GradientStop(Color.FromArgb(40, 25, 118, 210), 0.6),
-                    new GradientStop(Color.FromArgb(0, 25, 118, 210), 1.0)
-                };
-                var rect = new Rect(xStart, Math.Min(y, y0), Math.Max(1, xEnd - xStart), Math.Abs(y0 - y));
-                context.FillRectangle(grad, rect);
+                    double x1 = series[i].X;
+                    double x2 = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
+                    double y = series[i].Y;
+                    if (x2 > x1 + 0.01)
+                        segments.Add((x1, x2, y));
+                }
 
-                // draw vertical transition at the end of the segment if next value differs
-                if (i < pts.Length - 1)
+                return segments;
+            }
+
+            void DrawSeries(Point[] series, IBrush strokeBrush, IBrush activeAreaBrush)
+            {
+                if (series.Length == 0)
+                    return;
+
+                for (int i = 0; i < series.Length; i++)
                 {
-                    double nextY = pts[i + 1].Y;
-                    if (Math.Abs(nextY - y) > 0.1)
+                    double xStart = series[i].X;
+                    double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
+                    double y = series[i].Y;
+
+                    if (Math.Abs(y - y1) < 0.1 && xEnd > xStart)
                     {
-                        context.DrawLine(linePen, new Point(xEnd, y), new Point(xEnd, nextY));
+                        var areaRect = new Rect(xStart, y1, xEnd - xStart, y0 - y1);
+                        context.FillRectangle(activeAreaBrush, areaRect);
+                    }
+                }
+
+                var linePen = new Pen(strokeBrush, 1.4) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
+                for (int i = 0; i < series.Length; i++)
+                {
+                    double xStart = series[i].X;
+                    double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
+                    double y = series[i].Y;
+                    context.DrawLine(linePen, new Point(xStart, y), new Point(xEnd, y));
+
+                    if (i < series.Length - 1)
+                    {
+                        double nextY = series[i + 1].Y;
+                        if (Math.Abs(nextY - y) > 0.1)
+                            context.DrawLine(linePen, new Point(xEnd, y), new Point(xEnd, nextY));
                     }
                 }
             }
 
-            // draw repair/setup ratio summary label (top-right inside plot)
-            // compute repair/setup percentages weighted by downtime minutes (fallback to counts if durations absent)
-            double totalMinutesForTypes = repairMinutesSum + setupMinutesSum;
-            double repairPct = 0.0;
-            double setupPct = 0.0;
-            if (totalMinutesForTypes > 0.5)
+            var repairsStroke = new SolidColorBrush(Color.Parse("#D32F2F"));
+
+            var repairsAreaGradient = new LinearGradientBrush
             {
-                repairPct = (repairMinutesSum / totalMinutesForTypes) * 100.0;
-                setupPct = (setupMinutesSum / totalMinutesForTypes) * 100.0;
-            }
-            else
-            {
-                double totalCount = repairCount + setupCount;
-                if (totalCount > 0)
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops = new GradientStops
                 {
-                    repairPct = (repairCount / totalCount) * 100.0;
-                    setupPct = (setupCount / totalCount) * 100.0;
+                    new GradientStop(Color.FromArgb(110, 211, 47, 47), 0.0),
+                    new GradientStop(Color.FromArgb(15, 211, 47, 47), 1.0)
+                }
+            };
+
+            var setupsStroke = new SolidColorBrush(Color.Parse("#FBC02D"));
+
+            var setupsAreaGradient = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops = new GradientStops
+                {
+                    new GradientStop(Color.FromArgb(110, 251, 192, 45), 0.0),
+                    new GradientStop(Color.FromArgb(12, 251, 192, 45), 1.0)
+                }
+            };
+
+            DrawSeries(repairsPts, repairsStroke, repairsAreaGradient);
+            DrawSeries(setupsPts, setupsStroke, setupsAreaGradient);
+
+            var repairsHorizontal = BuildHorizontalSegments(repairsPts);
+            var setupsHorizontal = BuildHorizontalSegments(setupsPts);
+
+            var mixStroke = new SolidColorBrush(Color.Parse("#FF8F00"));
+            var mixAreaGradient = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops = new GradientStops
+                {
+                    new GradientStop(Color.FromArgb(130, 255, 143, 0), 0.0),
+                    new GradientStop(Color.FromArgb(18, 255, 143, 0), 1.0)
+                }
+            };
+            var mixPen = new Pen(mixStroke, 2.0) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
+
+            foreach (var r in repairsHorizontal)
+            {
+                foreach (var s in setupsHorizontal)
+                {
+                    if (Math.Abs(r.y - s.y) > 0.1)
+                        continue;
+
+                    double overlapStart = Math.Max(r.x1, s.x1);
+                    double overlapEnd = Math.Min(r.x2, s.x2);
+                    if (overlapEnd > overlapStart + 0.2)
+                    {
+                        if (Math.Abs(r.y - y1) < 0.1)
+                        {
+                            var overlapArea = new Rect(overlapStart, y1, overlapEnd - overlapStart, y0 - y1);
+                            context.FillRectangle(mixAreaGradient, overlapArea);
+                        }
+                        context.DrawLine(mixPen, new Point(overlapStart, r.y), new Point(overlapEnd, r.y));
+                    }
                 }
             }
 
-            var ratioText = $"Рем: {repairPct:0.0}%  Настр: {setupPct:0.0}%";
-            double summaryFont = 12;
-            double approxWidthSummary = Math.Max(40, ratioText.Length * summaryFont * 0.55);
-            var ftSummary = new FormattedText(ratioText, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), summaryFont, Brushes.Black);
-            // draw pill background
-            var pillRect = new Rect(left + plotW - approxWidthSummary - 12, top - annSpace + 4, approxWidthSummary + 12, 20);
-            // draw plain repair/setup summary text (no background)
-            context.DrawText(ftSummary, new Point(left + plotW - approxWidthSummary - 6, top - annSpace + 6));
+            // summary label removed by request
         }
     }
 }

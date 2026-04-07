@@ -71,6 +71,20 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dayTimelinePoints, value);
         }
 
+        private ObservableCollection<Models.TimelinePoint> _repairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> RepairsTimelinePoints
+        {
+            get => _repairsTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _repairsTimelinePoints, value);
+        }
+
+        private ObservableCollection<Models.TimelinePoint> _setupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> SetupsTimelinePoints
+        {
+            get => _setupsTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _setupsTimelinePoints, value);
+        }
+
         private ObservableCollection<Models.Annotation> _annotations = new ObservableCollection<Models.Annotation>();
         public ObservableCollection<Models.Annotation> Annotations
         {
@@ -170,7 +184,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             var q = (SearchQuery ?? string.Empty).Trim();
             var filtered = string.IsNullOrEmpty(q)
                 ? _allEquipment
-                : _allEquipment.Where(e => ((e.Title ?? string.Empty) + " " + (e.InventoryNumber ?? string.Empty)).IndexOf(q, StringComparison.CurrentCultureIgnoreCase) >= 0).ToList();
+                : _allEquipment.Where(e =>
+                    (e.Title?.Contains(q, StringComparison.CurrentCultureIgnoreCase) ?? false) ||
+                    (e.InventoryNumber?.Contains(q, StringComparison.CurrentCultureIgnoreCase) ?? false));
 
             foreach (var e in filtered)
                 EquipmentCollection.Add(e);
@@ -202,13 +218,11 @@ namespace EquipmentFailureAnalysis.ViewModels
             SortIssuesAscCommand = ReactiveCommand.Create(() =>
             {
                 _allEquipment = _masterEquipment.OrderBy(e => e.Issues?.Count ?? 0).ToList();
-                EquipmentCollection.Clear();
                 ApplyFilter();
             });
             SortIssuesDescCommand = ReactiveCommand.Create(() =>
             {
                 _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
-                EquipmentCollection.Clear();
                 ApplyFilter();
             });
 
@@ -602,6 +616,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             var dateStart = date.Date;
             var dateEnd = dateStart.AddDays(1);
             var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
             var annList = new System.Collections.Generic.List<Models.Annotation>();
 
             foreach (var issue in selIssuesForDate)
@@ -613,9 +629,15 @@ namespace EquipmentFailureAnalysis.ViewModels
                 faultsToday++;
                 totalDownMinutes += (overlapEnd - overlapStart).TotalMinutes;
 
-                int sMin = (int)Math.Max(0, Math.Floor((overlapStart - dateStart).TotalMinutes));
-                int eMin = (int)Math.Min(24 * 60, Math.Ceiling((overlapEnd - dateStart).TotalMinutes));
+                int sMin = Math.Clamp((int)Math.Round((overlapStart - dateStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                int eMin = Math.Clamp((int)Math.Round((overlapEnd - dateStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                if (eMin <= sMin)
+                    eMin = Math.Min(24 * 60, sMin + 1);
                 intervals.Add((sMin, eMin));
+                if (issue.Type == IssueType.Ремонт)
+                    repairsIntervals.Add((sMin, eMin));
+                else if (issue.Type == IssueType.Настройка)
+                    setupsIntervals.Add((sMin, eMin));
                 var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
                 var desc = issue.Description ?? string.Empty;
                 var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
@@ -632,44 +654,13 @@ namespace EquipmentFailureAnalysis.ViewModels
                 avgRepair = Math.Round(avg) + " мин";
             }
 
-            // merged intervals
-            intervals.Sort((a, b) => a.sMin.CompareTo(b.sMin));
-            var merged = new System.Collections.Generic.List<(int sMin, int eMin)>();
-            if (intervals.Count > 0)
-            {
-                var cur = intervals[0];
-                for (int i = 1; i < intervals.Count; i++)
-                {
-                    var it = intervals[i];
-                    if (it.sMin <= cur.eMin + 1)
-                    {
-                        cur.eMin = Math.Max(cur.eMin, it.eMin);
-                    }
-                    else
-                    {
-                        merged.Add(cur);
-                        cur = it;
-                    }
-                }
-                merged.Add(cur);
-            }
+            var merged = MergeIntervals(intervals);
+            var repairsMerged = MergeIntervals(repairsIntervals);
+            var setupsMerged = MergeIntervals(setupsIntervals);
 
-            var timelinePoints = new System.Collections.Generic.List<Models.TimelinePoint>();
-            if (merged.Count == 0)
-            {
-                timelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
-                timelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
-            }
-            else
-            {
-                timelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
-                foreach (var m in merged)
-                {
-                    timelinePoints.Add(new Models.TimelinePoint { Hour = m.sMin / 60.0, Value = 1 });
-                    timelinePoints.Add(new Models.TimelinePoint { Hour = m.eMin / 60.0, Value = 0 });
-                }
-                timelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
-            }
+            var timelinePoints = BuildTimelinePoints(merged);
+            var repairsTimelinePoints = BuildTimelinePoints(repairsMerged);
+            var setupsTimelinePoints = BuildTimelinePoints(setupsMerged);
 
             // Now update UI-bound collections on UI thread
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -695,6 +686,8 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                 // replace collections so bindings update and TimelineControl gets notified
                 DayTimelinePoints = new ObservableCollection<Models.TimelinePoint>(timelinePoints);
+                RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(repairsTimelinePoints);
+                SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(setupsTimelinePoints);
                 Annotations = new ObservableCollection<Models.Annotation>(annList);
                 // update counts for the selected day (issues overlapping that date)
                 try
@@ -706,6 +699,60 @@ namespace EquipmentFailureAnalysis.ViewModels
                 }
                 catch { }
             });
+        }
+
+        private static System.Collections.Generic.List<(int sMin, int eMin)> MergeIntervals(System.Collections.Generic.List<(int sMin, int eMin)> intervals)
+        {
+            var merged = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            if (intervals.Count == 0)
+                return merged;
+
+            intervals.Sort((a, b) => a.sMin.CompareTo(b.sMin));
+            var cur = intervals[0];
+            for (int i = 1; i < intervals.Count; i++)
+            {
+                var it = intervals[i];
+                if (it.sMin <= cur.eMin + 1)
+                {
+                    cur.eMin = Math.Max(cur.eMin, it.eMin);
+                }
+                else
+                {
+                    merged.Add(cur);
+                    cur = it;
+                }
+            }
+            merged.Add(cur);
+            return merged;
+        }
+
+        private static System.Collections.Generic.List<Models.TimelinePoint> BuildTimelinePoints(System.Collections.Generic.List<(int sMin, int eMin)> merged)
+        {
+            var points = new System.Collections.Generic.List<Models.TimelinePoint>();
+
+            if (merged.Count == 0)
+            {
+                points.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
+                points.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
+                return points;
+            }
+
+            int startValue = merged[0].sMin <= 0 ? 1 : 0;
+            points.Add(new Models.TimelinePoint { Hour = 0.0, Value = startValue });
+
+            foreach (var m in merged)
+            {
+                if (m.sMin > 0)
+                    points.Add(new Models.TimelinePoint { Hour = m.sMin / 60.0, Value = 1 });
+
+                if (m.eMin < 24 * 60)
+                    points.Add(new Models.TimelinePoint { Hour = m.eMin / 60.0, Value = 0 });
+            }
+
+            int endValue = merged[merged.Count - 1].eMin >= 24 * 60 ? 1 : 0;
+            points.Add(new Models.TimelinePoint { Hour = 24.0, Value = endValue });
+
+            return points;
         }
     }
 }

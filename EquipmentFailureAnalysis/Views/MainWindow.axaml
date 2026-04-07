@@ -79,16 +79,16 @@
 		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
 
 		<!-- Palette -->
-		<SolidColorBrush x:Key="PrimaryBackground" Color="#F3F6F9" />
+       <SolidColorBrush x:Key="PrimaryBackground" Color="#EEF2F6" />
         <!-- Header gradient -->
-		<LinearGradientBrush x:Key="HeaderBackground" StartPoint="0,0" EndPoint="1,1">
-			<GradientStop Color="#1976D2" Offset="0" />
-			<GradientStop Color="#1565C0" Offset="1" />
+      <LinearGradientBrush x:Key="HeaderBackground" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#26486F" Offset="0" />
+			<GradientStop Color="#1E3A5F" Offset="1" />
 		</LinearGradientBrush>
-		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="CardBackground" Color="#FCFDFE" />
 		<SolidColorBrush x:Key="AccentBrush" Color="#1976D2" />
 		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="TextPrimary" Color="#222222" />
+     <SolidColorBrush x:Key="TextPrimary" Color="#1F2937" />
 
 		<!-- Styles -->
         <Style x:Key="SidebarButtonStyle" Selector="Button">
@@ -139,7 +139,7 @@
 
      <!-- Top header (accented, no rounded corners) -->
         <!-- Compact header: reduced padding and font sizes to make header visually narrower -->
-    <Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="8" Margin="8">
+    <Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="10" Margin="10,10,10,8">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -171,8 +171,8 @@
 
       <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
 			<!-- shadow shim -->
-			<Border Background="#33000000" CornerRadius="8" Margin="0,6,0,0" />
-            <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
+         <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+				<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
 			<StackPanel>
@@ -229,8 +229,8 @@
                 <!-- Top header showing day numbers moved into heatmap block for alignment -->
 
                 <Grid Margin="0 0 0 8">
-					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
-                    <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
+                 <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+						<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
 					<StackPanel HorizontalAlignment="Stretch">
                         <TextBlock Classes="sectionTitle" Text="Карта тепла" Margin="0,0,0,8" />
 						<Grid>
@@ -331,101 +331,120 @@
 
 				<!-- Timeline panel showing 24-hour state blocks under heatmap -->
                 <Grid>
-					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
-                <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
+                 <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
 					<StackPanel>
                         <TextBlock Classes="sectionTitle" Text="График простоев" Margin="0,0,0,8" />
-						<views:TimelineControl Items="{Binding DayTimelinePoints}" Annotations="{Binding Annotations}" Height="480" ShowHourLabels="True" VerticalAlignment="Top" />
+                        <Grid>
+							<views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="480" ShowHourLabels="True" VerticalAlignment="Top" />
+							<Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Background="#CCFFFFFF" BorderBrush="#D6DEE8" BorderThickness="1" CornerRadius="8" Padding="8,6">
+								<StackPanel Spacing="4">
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<Border Width="14" Height="3" Background="#D32F2F" VerticalAlignment="Center" />
+										<TextBlock Text="Ремонт" FontSize="12" Foreground="#1F2937" VerticalAlignment="Center" />
+									</StackPanel>
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<Border Width="14" Height="3" Background="#FBC02D" VerticalAlignment="Center" />
+										<TextBlock Text="Настройка" FontSize="12" Foreground="#1F2937" VerticalAlignment="Center" />
+									</StackPanel>
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<Border Width="14" Height="3" Background="#FF8F00" VerticalAlignment="Center" />
+										<TextBlock Text="Пересечение" FontSize="12" Foreground="#1F2937" VerticalAlignment="Center" />
+									</StackPanel>
+								</StackPanel>
+							</Border>
+						</Grid>
 					</StackPanel>
 				</Border>
 				</Grid>
 		</StackPanel>
 		</ScrollViewer>
    <Grid Grid.Column="2" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
-		<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
-            <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="8">
+     <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+               <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
+					<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
 
-            <TextBlock Text="Статистика" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+						<TextBlock Grid.Row="0" Text="Статистика" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
 
-            <Grid ColumnDefinitions="*,Auto">
-            <Border Grid.Column="0" Background="#EAF2FF" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
-					<StackPanel>
-						<TextBlock Text="Оборудование" FontSize="12" Foreground="#1976D2" />
-						<TextBlock Text="{Binding SelectedEquipment.Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-						<TextBlock Text="{Binding SelectedEquipment.InventoryNumber}" FontSize="12" Foreground="#666" />
-					</StackPanel>
+						<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+							<Border Grid.Column="0" Background="#EAF2FF" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+								<StackPanel>
+									<TextBlock Text="Оборудование" FontSize="12" Foreground="#1976D2" />
+									<TextBlock Text="{Binding SelectedEquipment.Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+									<TextBlock Text="{Binding SelectedEquipment.InventoryNumber}" FontSize="12" Foreground="#666" />
+								</StackPanel>
+							</Border>
+							<Border Grid.Column="1" Background="#F6EAFB" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
+								<StackPanel>
+									<TextBlock Text="Дата" FontSize="12" Foreground="#7A4BAE" />
+									<TextBlock Text="{Binding AnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
+								</StackPanel>
+							</Border>
+						</Grid>
+
+						<Border Grid.Row="2" Background="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToBrushConverter}}" CornerRadius="8" Padding="12">
+							<StackPanel>
+								<TextBlock Classes="cardTitle" Text="Статус ремонтов" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
+								<TextBlock Classes="cardValue" Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" Foreground="#000000" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
+								<TextBlock Classes="cardSubtext" Text="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToStatusConverter}}" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,8,0,0" HorizontalAlignment="Left" />
+							</StackPanel>
+						</Border>
+
+						<Border Grid.Row="3" Background="#FFFFFF" CornerRadius="8" Padding="12">
+							<StackPanel>
+								<TextBlock Text="Время работы / простои" FontSize="13" Foreground="#666" />
+								<StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+									<StackPanel Width="80">
+										<TextBlock Text="Работа" Foreground="#2E7D32" />
+										<TextBlock Text="{Binding WorkPercent, StringFormat='{}{0:0.0}%'}" Foreground="#2E7D32" FontWeight="Bold" />
+									</StackPanel>
+									<StackPanel Width="80">
+										<TextBlock Text="Простой" Foreground="#B00020" />
+										<TextBlock Text="{Binding DownPercent}" Foreground="#B00020" FontWeight="Bold" />
+									</StackPanel>
+								</StackPanel>
+								<ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="8" Margin="0,8,0,0" />
+							</StackPanel>
+						</Border>
+
+						<Border Grid.Row="4" Background="#FFF8E1" CornerRadius="8" Padding="12">
+							<StackPanel>
+								<TextBlock Text="Среднее время ремонта" FontSize="13" Foreground="#BF7000" />
+								<TextBlock Text="{Binding AvgRepairTime}" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
+							</StackPanel>
+						</Border>
+
+						<Border Grid.Row="5" Background="#FFFFFF" CornerRadius="8" Padding="8" BorderBrush="#E6EAF0" BorderThickness="1" VerticalAlignment="Stretch">
+							<Grid RowDefinitions="Auto,Auto,*">
+								<TextBlock Grid.Row="0" Text="Неисправности за выбранный день" FontSize="13" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,6" />
+								<Grid Grid.Row="1" ColumnDefinitions="2.6*,1.2*,1*" Margin="4,2,4,6">
+									<TextBlock Grid.Column="0" Text="Неисправность" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+									<TextBlock Grid.Column="1" Text="Ответственный" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+									<TextBlock Grid.Column="2" Text="Время" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								</Grid>
+								<Border Grid.Row="1" Height="1" VerticalAlignment="Bottom" Background="#E6EAF0" Margin="0,0,0,2" />
+								<ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+									<ItemsControl ItemsSource="{Binding Annotations}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Grid ColumnDefinitions="2.6*,1.2*,1*" Margin="4,3">
+													<TextBlock Grid.Column="0" Text="{Binding Description}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" FontSize="12" Foreground="#1F2937" />
+													<TextBlock Grid.Column="1" Text="{Binding Responsible}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" FontSize="12" Foreground="#4B5563" Margin="8,0,6,0" />
+													<TextBlock Grid.Column="2" Text="{Binding Duration}" HorizontalAlignment="Right" FontWeight="SemiBold" FontSize="12" Foreground="#111827" />
+												</Grid>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</ScrollViewer>
+							</Grid>
+						</Border>
+					</Grid>
 				</Border>
-                <Border Grid.Column="1" Background="#F6EAFB" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
-					<StackPanel>
-						<TextBlock Text="Дата" FontSize="12" Foreground="#7A4BAE" />
-						<TextBlock Text="{Binding AnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
-					</StackPanel>
-				</Border>
-			</Grid>
-
-            <Border Background="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToBrushConverter}}" CornerRadius="8" Padding="12">
-				<StackPanel>
-                    <TextBlock Classes="cardTitle" Text="Статус ремонтов" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
-                    <TextBlock Classes="cardValue" Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" Foreground="#000000" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
-					<TextBlock Classes="cardSubtext" Text="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToStatusConverter}}" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,8,0,0" HorizontalAlignment="Left" />
-				</StackPanel>
-			</Border>
-
-            <Border Background="#FFFFFF" CornerRadius="8" Padding="12">
-				<StackPanel>
-					<TextBlock Text="Время работы / простои" FontSize="13" Foreground="#666" />
-					<StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-         <StackPanel Width="80">
-				<TextBlock Text="Работа" Foreground="#2E7D32" />
-				<TextBlock Text="{Binding WorkPercent, StringFormat='{}{0:0.0}%'}" Foreground="#2E7D32" FontWeight="Bold" />
-			</StackPanel>
-			<StackPanel Width="80">
-				<TextBlock Text="Простой" Foreground="#B00020" />
-				<TextBlock Text="{Binding DownPercent}" Foreground="#B00020" FontWeight="Bold" />
-			</StackPanel>
-					</StackPanel>
-          <ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="8" Margin="0,8,0,0" />
-				</StackPanel>
-			</Border>
-
-            <Border Background="#FFF8E1" CornerRadius="8" Padding="12">
-				<StackPanel>
-					<TextBlock Text="Среднее время ремонта" FontSize="13" Foreground="#BF7000" />
-					<TextBlock Text="{Binding AvgRepairTime}" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
-				</StackPanel>
-			</Border>
-
-			<!-- Monthly stats (static sample) -->
-			<TextBlock Text="Статистика за месяц" FontSize="13" FontWeight="SemiBold" Foreground="#666" Margin="0,6,0,0" />
-            <Border Background="#FFFFFF" CornerRadius="8" Padding="12">
-				<StackPanel>
-                  <TextBlock Text="{Binding RepairsLastMonth, StringFormat='Выполнено ремонтов: {0}'}" FontSize="12" FontWeight="Regular" />
-					<TextBlock Text="{Binding SetupsLastMonth, StringFormat='Выполнено настроек: {0}'}" FontSize="12" FontWeight="Regular" />
-				</StackPanel>
-			</Border>
-
-			<StackPanel Orientation="Horizontal" Spacing="8">
-                <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Width="120">
-					<StackPanel>
-						<TextBlock Text="Лучший день" FontSize="12" Foreground="#2E7D32" />
-						<TextBlock Text="06.07" FontWeight="Bold" />
-						<TextBlock Text="0 сбоев" Foreground="#2E7D32" />
-					</StackPanel>
-				</Border>
-                <Border Background="#FFEBEE" CornerRadius="8" Padding="12" Width="120">
-					<StackPanel>
-						<TextBlock Text="Худший день" FontSize="12" Foreground="#B00020" />
-						<TextBlock Text="28.07" FontWeight="Bold" />
-						<TextBlock Text="9 сбоев" Foreground="#B00020" />
-					</StackPanel>
-				</Border>
-			</StackPanel>
-
-       </StackPanel>
-		</ScrollViewer>
-		</Border>
 	</Grid>
 	</Grid>
 </Window>
