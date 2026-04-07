@@ -429,6 +429,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                     DayTimelinePoints.Clear();
                     Annotations.Clear();
+                    var dayAnnotations = new System.Collections.Generic.List<Models.Annotation>();
 
                     var selIssues = GetFilteredIssues(SelectedEquipment);
                     if (selIssues == null || selIssues.Count() == 0)
@@ -457,7 +458,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
                         var desc = issue.Description ?? string.Empty;
                         var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
-                        Annotations.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
+                        dayAnnotations.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
 
                         // also mark hourly buckets (for compatibility)
                         int startHour = (int)Math.Floor(sMin / 60.0);
@@ -466,6 +467,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                         endHour = Math.Clamp(endHour, 0, 24);
                         for (int h = startHour; h < endHour; h++)
                             DayTimeline[h] = 1;
+                    }
+
+                    foreach (var annotation in dayAnnotations
+                        .OrderByDescending(a => TimeSpan.TryParse(a.Duration, out var parsed) ? parsed : TimeSpan.Zero))
+                    {
+                        Annotations.Add(annotation);
                     }
 
                     if (intervals.Count == 0)
@@ -753,7 +760,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                 DayTimelinePoints = new ObservableCollection<Models.TimelinePoint>(timelinePoints);
                 RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(repairsTimelinePoints);
                 SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(setupsTimelinePoints);
-                Annotations = new ObservableCollection<Models.Annotation>(annList);
+                Annotations = new ObservableCollection<Models.Annotation>(
+                    annList.OrderByDescending(a => TimeSpan.TryParse(a.Duration, out var parsed) ? parsed : TimeSpan.Zero));
                 // update counts for the selected day (issues overlapping that date)
                 try
                 {
