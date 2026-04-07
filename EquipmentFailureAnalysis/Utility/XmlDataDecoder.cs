@@ -45,6 +45,46 @@ namespace EquipmentFailureAnalysis.Utility
             xmlDocument.Load(filePath);
         }
 
+        // Load and merge multiple XML files: items from subsequent files are appended
+        // into the first document's channel (or document element) so DecodeEquipment
+        // will see a combined list of <item> nodes.
+        public XmlDataDecoder(System.Collections.Generic.IEnumerable<string> filePaths)
+        {
+            xmlDocument = new XmlDocument();
+            var paths = (filePaths ?? System.Linq.Enumerable.Empty<string>()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+            if (paths.Count == 0)
+                return;
+
+            // Load the first document as the base
+            xmlDocument.Load(paths[0]);
+
+            // Try to find a <channel> node to append items to; fall back to document element
+            XmlNode? appendTarget = xmlDocument.SelectSingleNode("//channel") ?? xmlDocument.DocumentElement;
+
+            // For each additional file, import its <item> nodes into the base document
+            for (int i = 1; i < paths.Count; i++)
+            {
+                try
+                {
+                    var temp = new XmlDocument();
+                    temp.Load(paths[i]);
+                    var items = temp.GetElementsByTagName("item");
+                    foreach (XmlNode item in items)
+                    {
+                        var imported = xmlDocument.ImportNode(item, true);
+                        if (appendTarget != null)
+                            appendTarget.AppendChild(imported);
+                        else if (xmlDocument.DocumentElement != null)
+                            xmlDocument.DocumentElement.AppendChild(imported);
+                    }
+                }
+                catch
+                {
+                    // ignore errors for individual files and continue merging others
+                }
+            }
+        }
+
         public ObservableCollection<EquipmentInfo> DecodeEquipment()
         {
             XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("item");

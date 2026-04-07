@@ -20,22 +20,21 @@ namespace EquipmentFailureAnalysis.Views
         {
             var dlg = new OpenFileDialog();
             dlg.Filters.Add(new FileDialogFilter { Name = "XML files", Extensions = { "xml" } });
-            dlg.AllowMultiple = false;
+            dlg.AllowMultiple = true;
             var res = await dlg.ShowAsync(this);
             if (res == null || res.Length == 0)
                 return;
-            var path = res.First();
-
             try
             {
-                var decoder = new XmlDataDecoder(path);
+                // allow importing and merging multiple XML files
+                var decoder = new XmlDataDecoder(res);
                 var items = decoder.DecodeEquipment();
                 // pass to view model
                 if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
                     vm.ImportEquipment(items);
                     // persist last imported file path
-                    try { SaveLastImportedPath(path); } catch { }
+                    try { SaveLastImportedPath(res.First()); } catch { }
                 }
             }
             catch (Exception ex)
