@@ -23,6 +23,9 @@
     <Window.Resources>
      <utility:ValueToColorConverter x:Key="ColorConverter"/>
         <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
+        <utility:RepairsToBrushConverter x:Key="RepairsToBrushConverter" />
+        <utility:RepairsToStatusConverter x:Key="RepairsToStatusConverter" />
+        <utility:RepairsToForegroundConverter x:Key="RepairsToForegroundConverter" />
 		<utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
 		<utility:StatusToBrushConverter x:Key="StatusToBrush" />
 		<utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
@@ -117,13 +120,17 @@
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
 			<StackPanel>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                <Grid VerticalAlignment="Center" Margin="6">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
 					<TextBlock Text="Оборудование" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,0,0,0">
+					<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,0,0,0">
 						<Button Command="{Binding SortIssuesAscCommand}" MinWidth="32" Width="32" Height="28" Margin="6,0,0,0">▲</Button>
 						<Button Command="{Binding SortIssuesDescCommand}" MinWidth="32" Width="32" Height="28" Margin="4,0,0,0">▼</Button>
 					</StackPanel>
-				</StackPanel>
+				</Grid>
 
 				<ItemsControl ItemsSource="{Binding EquipmentCollection}">
                 <ItemsControl.ItemsPanel>
@@ -172,7 +179,7 @@
 						<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}" />
 						<Grid>
 							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
-                            <ScrollViewer x:Name="HeatmapScroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <ScrollViewer x:Name="HeatmapScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
 								<StackPanel Margin="2">
                                     <!-- Day headers aligned with day cells (use width matching day cell width + margin) -->
                                     <StackPanel Orientation="Horizontal" Margin="0,6,0,6">
@@ -284,7 +291,7 @@
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="8">
 
-			<TextBlock Text="Статистика" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+            <TextBlock Text="Статистика" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
 
             <Grid ColumnDefinitions="*,Auto">
             <Border Grid.Column="0" Background="#EAF2FF" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
@@ -302,13 +309,11 @@
 				</Border>
 			</Grid>
 
-            <Border Background="#FFEFEF" CornerRadius="8" Padding="12">
+            <Border Background="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToBrushConverter}}" CornerRadius="8" Padding="12">
 				<StackPanel>
-					<TextBlock Text="Неисправностей" FontSize="13" Foreground="#B00020" />
-					<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,6,0,0">
-						<TextBlock Text="{Binding FaultsForDay}" FontSize="22" FontWeight="Bold" Foreground="#B00020" />
-						<TextBlock Text="  Критично!" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#B00020" />
-					</StackPanel>
+                    <TextBlock Text="Статус ремонтов" FontSize="13" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
+                    <TextBlock Text="{Binding SelectedDayRepairs}" FontSize="20" FontWeight="Bold" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,6,0,0" />
+					<TextBlock Text="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToStatusConverter}}" FontSize="13" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,8,0,0" HorizontalAlignment="Left" />
 				</StackPanel>
 			</Border>
 
@@ -340,9 +345,8 @@
 			<TextBlock Text="Статистика за месяц" FontSize="13" FontWeight="SemiBold" Foreground="#666" Margin="0,6,0,0" />
             <Border Background="#FFFFFF" CornerRadius="8" Padding="12">
 				<StackPanel>
-
-                <TextBlock Text="{Binding RepairsLastMonth, StringFormat='Выполнено ремонтов: {0}'}" FontSize="12" FontWeight="Regular" />
-				<TextBlock Text="{Binding SetupsLastMonth, StringFormat='Выполнено настроек: {0}'}" FontSize="12" FontWeight="Regular" />
+                  <TextBlock Text="{Binding RepairsLastMonth, StringFormat='Выполнено ремонтов: {0}'}" FontSize="12" FontWeight="Regular" />
+					<TextBlock Text="{Binding SetupsLastMonth, StringFormat='Выполнено настроек: {0}'}" FontSize="12" FontWeight="Regular" />
 				</StackPanel>
 			</Border>
 

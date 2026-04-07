@@ -61,12 +61,12 @@ namespace EquipmentFailureAnalysis.Views
                     if (scroller != null)
                     {
                         // leave a larger margin so day cells don't overflow the visible area
-                        double available = scroller.Bounds.Width - 140; // increased padding for labels/margins
+                        double available = scroller.Bounds.Width - 120; // padding for labels/margins
                         if (available <= 0) return;
                         // 31 day columns
                         double cellWithMargin = available / 31.0;
                         // subtract extra to avoid overflow when including cell margins
-                        double size = Math.Max(10.0, Math.Min(48.0, cellWithMargin - 8.0));
+                        double size = Math.Max(12.0, Math.Min(64.0, cellWithMargin - 6.0));
                         vm.DayCellSize = size;
                     }
                 }

@@ -182,7 +182,7 @@ namespace EquipmentFailureAnalysis.Views
 
             int annRows = annCount == 0 ? 0 : (annSingleRow ? 1 : 2);
             double maxAnnH = annCount > 0 ? System.Linq.Enumerable.Max(annHeights) : 0;
-            double annSpace = annRows * (maxAnnH + gap) + 18; // extra for connector/marker
+            double annSpace = annRows * (maxAnnH + gap) + 28; // extra for connector/marker (raised)
 
             // shift plot down
             top += annSpace;
@@ -343,7 +343,7 @@ namespace EquipmentFailureAnalysis.Views
                 double maxX = left + plotW - wRect;
                 xRect = Math.Max(minX, Math.Min(xRect, maxX));
 
-                double yRect = annSingleRow ? (top - 10 - hRect - 2) : (top - 10 - hRect - 2 - (i % 2) * (hRect + gap));
+                double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
 
                 // simple collision avoidance: nudge horizontally if intersects previous
                 var candidate = new Rect(xRect, yRect, wRect, hRect);

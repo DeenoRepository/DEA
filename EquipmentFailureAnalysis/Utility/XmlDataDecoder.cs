@@ -134,23 +134,82 @@ namespace EquipmentFailureAnalysis.Utility
                     Responsible = string.IsNullOrEmpty(responsible) ? "Не назначен" : responsible
                 };
 
-                // Анализ Description (и заголовка) для детекции предполагаемого типа работ
+                // NLP-like heuristic: token scoring with keyword lists and simple normalization
                 try
                 {
-                    var analyzeText = ((description ?? string.Empty) + " " + (title ?? string.Empty)).ToLowerInvariant();
+                    var raw = ((description ?? string.Empty) + " " + (title ?? string.Empty) + " " + (typeText ?? string.Empty)).ToLowerInvariant();
+                    // normalize common punctuation and collapse spaces
+                    raw = Regex.Replace(raw, "[\\p{P}\t\\n\\r]+", " ").Trim();
+
+                    var repairKeywords = new string[] { "ремонт", "поломк", "слом", "замен", "неисправн", "поврежд", "не работает", "не запуска", "не включ", "авар", "протеч", "течь" };
+                    var setupKeywords = new string[] { "настрой", "налад", "калибр", "конфиг", "параметр", "пусконал", "установк", "тонк", "регул" };
+
+                    int repairScore = 0;
+                    int setupScore = 0;
+
+                    // tokenize into words for context window analysis
+                    var tokens = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                    // simple negation handling words
+                    var negations = new string[] { "не", "нет", "без", "исключая" };
+
+                    // scan tokens and score by proximity: if keyword appears near a negation, reduce its weight
+                    int window = 3; // tokens left/right considered
+                    for (int i = 0; i < tokens.Length; i++)
+                    {
+                        var t = tokens[i];
+                        foreach (var k in repairKeywords)
+                        {
+                            if (t.Contains(k))
+                            {
+                                // check negation in the previous window
+                                bool neg = false;
+                                for (int j = Math.Max(0, i - window); j < i; j++)
+                                    if (negations.Any(n => tokens[j] == n)) { neg = true; break; }
+                                repairScore += neg ? 0 : 1;
+                            }
+                        }
+                        foreach (var k in setupKeywords)
+                        {
+                            if (t.Contains(k))
+                            {
+                                bool neg = false;
+                                for (int j = Math.Max(0, i - window); j < i; j++)
+                                    if (negations.Any(n => tokens[j] == n)) { neg = true; break; }
+                                setupScore += neg ? 0 : 1;
+                            }
+                        }
+                    }
+
+                    // boost by explicit type field
+                    if (!string.IsNullOrEmpty(typeText))
+                    {
+                        if (typeText.IndexOf("настрой", StringComparison.OrdinalIgnoreCase) >= 0) setupScore += 4;
+                        if (typeText.IndexOf("ремонт", StringComparison.OrdinalIgnoreCase) >= 0) repairScore += 4;
+                    }
+
+                    // final decision with simple thresholds
                     EquipmentFailureAnalysis.Models.IssueType? detected = null;
-
-                    // Keywords suggesting настройка/наладка
-                    if (Regex.IsMatch(analyzeText, "\\b(настрой|настроек|налад|калибр|конфиг|параметр)" , RegexOptions.IgnoreCase))
-                        detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
-
-                    // Keywords suggesting ремонт
-                    if (detected == null && Regex.IsMatch(analyzeText, "\\b(ремонт|поломк|слом|замен|неисправн|поврежд)" , RegexOptions.IgnoreCase))
+                    if (repairScore + setupScore == 0)
+                        detected = null;
+                    else if (repairScore >= setupScore + 2)
                         detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
+                    else if (setupScore >= repairScore + 2)
+                        detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
+                    else
+                    {
+                        // close scores -> fallback to explicit field
+                        if (!string.IsNullOrEmpty(typeText))
+                        {
+                            if (typeText.IndexOf("настрой", StringComparison.OrdinalIgnoreCase) >= 0)
+                                detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
+                            else if (typeText.IndexOf("ремонт", StringComparison.OrdinalIgnoreCase) >= 0)
+                                detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
+                        }
+                    }
 
                     issue.DetectedType = detected;
-                    if (detected.HasValue)
-                        issue.TypeSuspicious = detected.Value != issue.Type;
+                    issue.TypeSuspicious = detected.HasValue && detected.Value != issue.Type;
                 }
                 catch
                 {

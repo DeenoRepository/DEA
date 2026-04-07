@@ -49,6 +49,20 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _setupsLastMonth;
             set => this.RaiseAndSetIfChanged(ref _setupsLastMonth, value);
         }
+
+        private int _selectedDayRepairs;
+        public int SelectedDayRepairs
+        {
+            get => _selectedDayRepairs;
+            set => this.RaiseAndSetIfChanged(ref _selectedDayRepairs, value);
+        }
+
+        private int _selectedDaySetups;
+        public int SelectedDaySetups
+        {
+            get => _selectedDaySetups;
+            set => this.RaiseAndSetIfChanged(ref _selectedDaySetups, value);
+        }
         public ObservableCollection<int> DayTimeline { get; set; } = new ObservableCollection<int>();
         private ObservableCollection<Models.TimelinePoint> _dayTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
         public ObservableCollection<Models.TimelinePoint> DayTimelinePoints
@@ -235,6 +249,16 @@ namespace EquipmentFailureAnalysis.ViewModels
             var since = DateTime.Now.Date.AddDays(-30);
             RepairsLastMonth = equipment.Issues.Count(i => i.Type == IssueType.Ремонт && i.Start.Date >= since);
             SetupsLastMonth = equipment.Issues.Count(i => i.Type == IssueType.Настройка && i.Start.Date >= since);
+
+            // compute selected-day counts for today by default
+            try
+            {
+                var selStart = DateTime.Now.Date;
+                var selEnd = selStart.AddDays(1);
+                SelectedDayRepairs = equipment.Issues.Count(i => i.Type == IssueType.Ремонт && i.End > selStart && i.Start < selEnd);
+                SelectedDaySetups = equipment.Issues.Count(i => i.Type == IssueType.Настройка && i.End > selStart && i.Start < selEnd);
+            }
+            catch { }
                 foreach (var issue in filteredIssues)
                 {
                     var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
@@ -672,6 +696,15 @@ namespace EquipmentFailureAnalysis.ViewModels
                 // replace collections so bindings update and TimelineControl gets notified
                 DayTimelinePoints = new ObservableCollection<Models.TimelinePoint>(timelinePoints);
                 Annotations = new ObservableCollection<Models.Annotation>(annList);
+                // update counts for the selected day (issues overlapping that date)
+                try
+                {
+                    var selStart = date.Date;
+                    var selEnd = selStart.AddDays(1);
+                    SelectedDayRepairs = equipment.Issues.Count(i => i.Type == IssueType.Ремонт && i.End > selStart && i.Start < selEnd);
+                    SelectedDaySetups = equipment.Issues.Count(i => i.Type == IssueType.Настройка && i.End > selStart && i.Start < selEnd);
+                }
+                catch { }
             });
         }
     }
