@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Utility;
 using System.Linq;
 using System;
@@ -10,10 +12,107 @@ namespace EquipmentFailureAnalysis.Views
 {
     public partial class MainWindow : Window
     {
+        private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
+
         public MainWindow()
         {
             InitializeComponent();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
+        }
+
+        private void EquipmentSearchBox_GotFocus(object? sender, GotFocusEventArgs e)
+        {
+            OpenEquipmentContextMenu(sender as Control);
+        }
+
+        private void EquipmentSearchBox_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            OpenEquipmentContextMenu(sender as Control);
+        }
+
+        private void FilterButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not Control target)
+                return;
+
+            if (target.GetVisualRoot() is null)
+                return;
+
+            if (this.DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            MenuItem CreateFilterItem(string title)
+            {
+                var item = new MenuItem
+                {
+                    Header = title,
+                    ToggleType = MenuItemToggleType.Radio,
+                    IsChecked = string.Equals(vm.SelectedIssueTypeFilter, title, StringComparison.Ordinal)
+                };
+                item.Click += (_, __) => vm.SelectedIssueTypeFilter = title;
+                return item;
+            }
+
+            var menu = new ContextMenu
+            {
+                ItemsSource = new object[]
+                {
+                    CreateFilterItem("Все позиции"),
+                    CreateFilterItem("Ремонты"),
+                    CreateFilterItem("Настройки")
+                }
+            };
+
+            menu.PlacementTarget = target;
+            menu.Open(target);
+        }
+
+        private void OpenEquipmentContextMenu(Control? target)
+        {
+            if (target == null)
+                return;
+
+            if (target.GetVisualRoot() is null)
+                return;
+
+            if (this.DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            if (target.ContextMenu?.IsOpen == true)
+                return;
+
+            var now = DateTime.UtcNow;
+            if ((now - _lastEquipmentMenuOpenUtc).TotalMilliseconds < 200)
+                return;
+
+            var equipment = vm.EquipmentCollection.ToList();
+            if (equipment.Count == 0)
+                return;
+
+            var menuItems = equipment.Select(eq =>
+            {
+                var header = string.IsNullOrWhiteSpace(eq.InventoryNumber)
+                    ? (eq.Title ?? string.Empty)
+                    : $"{eq.Title} ({eq.InventoryNumber})";
+
+                var item = new MenuItem { Header = header };
+                item.Click += (_, __) =>
+                {
+                    vm.SelectedEquipmentFromSearch = eq;
+                    vm.SearchQuery = eq.Title ?? string.Empty;
+                };
+                return item;
+            }).ToList();
+
+            var menu = new ContextMenu
+            {
+                ItemsSource = menuItems
+            };
+
+            _lastEquipmentMenuOpenUtc = now;
+            menu.PlacementTarget = target;
+            target.ContextMenu = menu;
+            menu.Open(target);
         }
 
         private async void ImportButton_Click(object? sender, RoutedEventArgs e)

@@ -174,7 +174,71 @@ namespace EquipmentFailureAnalysis.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _searchQuery, value);
+
+                var q = (value ?? string.Empty).Trim();
+                if (_allEquipment.Any(e =>
+                    string.Equals(e.Title ?? string.Empty, q, StringComparison.CurrentCultureIgnoreCase) ||
+                    string.Equals(e.ToString(), q, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    return;
+                }
+
                 ApplyFilter();
+            }
+        }
+
+        private bool _isEquipmentSearchOpen;
+        public bool IsEquipmentSearchOpen
+        {
+            get => _isEquipmentSearchOpen;
+            set => this.RaiseAndSetIfChanged(ref _isEquipmentSearchOpen, value);
+        }
+
+        public ObservableCollection<string> IssueTypeFilters { get; } = new ObservableCollection<string>
+        {
+            "Все позиции",
+            "Ремонты",
+            "Настройки"
+        };
+
+        private string _selectedIssueTypeFilter = "Все позиции";
+        public string SelectedIssueTypeFilter
+        {
+            get => _selectedIssueTypeFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedIssueTypeFilter, value);
+
+                if (value == "Ремонты")
+                {
+                    ShowRepairs = true;
+                    ShowSetups = false;
+                }
+                else if (value == "Настройки")
+                {
+                    ShowRepairs = false;
+                    ShowSetups = true;
+                }
+                else
+                {
+                    ShowRepairs = true;
+                    ShowSetups = true;
+                }
+            }
+        }
+
+        private EquipmentInfo? _selectedEquipmentFromSearch;
+        public EquipmentInfo? SelectedEquipmentFromSearch
+        {
+            get => _selectedEquipmentFromSearch;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedEquipmentFromSearch, value);
+                if (value != null)
+                {
+                    LoadEquipmentCommand.Execute(value).Subscribe();
+                    IsEquipmentSearchOpen = false;
+                }
             }
         }
 
@@ -249,6 +313,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 SelectedEquipment = equipment;
                 if (SelectedEquipment != null)
                     SelectedEquipment.IsSelected = true;
+                IsEquipmentSearchOpen = false;
 
                 // compute right panel summary for selected equipment
                 AnalysisDate = DateTime.Now;

@@ -35,5 +35,12 @@ namespace EquipmentFailureAnalysis.Models
                 this.RaisePropertyChanged(nameof(HasIssues));
             };
         }
+
+        public override string ToString()
+        {
+            return string.IsNullOrWhiteSpace(InventoryNumber)
+                ? Title
+                : $"{Title} ({InventoryNumber})";
+        }
     }
 }

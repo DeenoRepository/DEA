@@ -137,95 +137,100 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-     <!-- Top header (accented, no rounded corners) -->
-        <!-- Compact header: reduced padding and font sizes to make header visually narrower -->
-    <Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="10" Margin="10,10,10,8">
+ <!-- Top header -->
+	<Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="10" Margin="10,10,10,8">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-
-			<!-- Logo + Title -->
-			<StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center" Spacing="12">
+			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
 				<Image Source="/Assets/avalonia-logo.ico" Width="44" Height="44" />
 				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
-					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="#E8F3FF"/>
+					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="#E8F3FF" />
 					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="#E8F3FF">Мониторинг рабочих смен и простоев</TextBlock>
 				</StackPanel>
 			</StackPanel>
-
-			<!-- Spacer (center) intentionally left empty to keep title left-aligned -->
-
-			<!-- Actions: search and buttons -->
-			<StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center" Spacing="8">
-				<Border Background="#FFFFFFFF" CornerRadius="6" Padding="6" VerticalAlignment="Center">
-					<TextBox Width="260" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" BorderThickness="0" />
-				</Border>
-				<Button Content="Обновить" MinWidth="84" Background="#FFFFFF" Foreground="Black"/>
+			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
 				<Button Content="Импорт" MinWidth="84" Background="#FFFFFF" Foreground="Black" Click="ImportButton_Click" />
 			</StackPanel>
 		</Grid>
 	</Border>
 
-      <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
+    <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
 			<!-- shadow shim -->
          <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
 				<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
-			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-
-			<StackPanel>
-                <Grid VerticalAlignment="Center" Margin="6">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
-					</Grid.ColumnDefinitions>
-					<TextBlock Text="Оборудование" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-					<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,0,0,0">
-						<Button Command="{Binding SortIssuesAscCommand}" MinWidth="32" Width="32" Height="28" Margin="6,0,0,0">▲</Button>
-						<Button Command="{Binding SortIssuesDescCommand}" MinWidth="32" Width="32" Height="28" Margin="4,0,0,0">▼</Button>
-					</StackPanel>
-				</Grid>
-
-				<ItemsControl ItemsSource="{Binding EquipmentCollection}">
-                <ItemsControl.ItemsPanel>
-						<ItemsPanelTemplate>
-							<StackPanel HorizontalAlignment="Stretch" />
-						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="6" Background="{Binding IsSelected, Converter={StaticResource SelectedToBackground}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Stretch">
-								<Grid Margin="8" HorizontalAlignment="Stretch">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="36" />
-									</Grid.ColumnDefinitions>
-                                    <StackPanel>
-										<!-- Allow title to wrap inside the card and truncate if too long -->
-										<TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-										<TextBlock Text="{Binding InventoryNumber}" FontSize="12" Foreground="#888" />
-										<TextBlock Text="{Binding IssueCount, StringFormat='Всего неисправностей: {0}'}" FontSize="12" Foreground="#888" />
-									</StackPanel>
-									<Ellipse Grid.Column="1" Width="22" Height="22" Stroke="{Binding HasIssues, Converter={StaticResource StatusToBrush}}" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,4,0" />
-								</Grid>
-							</Button>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-         </ItemsControl>
-            </StackPanel>
-			</ScrollViewer>
+          <StackPanel Spacing="10">
+				<TextBlock Text="Навигация" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="6,2" />
+				<Button Content="Дашборд" HorizontalAlignment="Stretch" />
+				<Button Content="Карта тепла" HorizontalAlignment="Stretch" />
+				<Button Content="График простоев" HorizontalAlignment="Stretch" />
+				<Button Content="Статистика" HorizontalAlignment="Stretch" />
+			</StackPanel>
 			</Border>
 		</Grid>
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
         <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <!-- Type filters: checkboxes to toggle repairs / setups shown in heatmap and timeline -->
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8" Spacing="8">
-					<CheckBox Content="Показать ремонты" IsChecked="{Binding ShowRepairs, Mode=TwoWay}" VerticalAlignment="Center" />
-					<CheckBox Content="Показать настройки" IsChecked="{Binding ShowSetups, Mode=TwoWay}" VerticalAlignment="Center" />
-				</StackPanel>
+              <Grid Margin="0,0,0,8">
+					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
+						<StackPanel>
+                          <TextBlock Text="Поиск и фильтрация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Выберите оборудование через строку поиска и задайте режим отображения данных" FontSize="12" Foreground="#6B7280" Margin="0,2,0,8" />
+							<Grid VerticalAlignment="Center" Margin="0,0,0,8">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+                               <Border Grid.Column="0" Background="#FFFFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="4" VerticalAlignment="Center" Margin="0,0,8,0">
+									<ComboBox Name="EquipmentSearchBox"
+										ItemsSource="{Binding EquipmentCollection}"
+										SelectedItem="{Binding SelectedEquipmentFromSearch, Mode=TwoWay}"
+										Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										IsEditable="True"
+										HorizontalAlignment="Stretch"
+										BorderThickness="0"
+										Background="Transparent"
+                                        PlaceholderText="Поиск оборудования..."
+										MaxDropDownHeight="320">
+										<ComboBox.ItemTemplate>
+											<DataTemplate>
+                                               <Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="8" Margin="2">
+													<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+														<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxLines="1" Foreground="#111827" />
+														<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+															<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" Foreground="#6B7280" FontSize="11" />
+															<TextBlock Text="{Binding IssueCount, StringFormat='Неисправностей: {0}'}" Foreground="#6B7280" FontSize="11" />
+														</StackPanel>
+														<Ellipse Grid.RowSpan="2" Grid.Column="1" Width="10" Height="10" Fill="{Binding HasIssues, Converter={StaticResource StatusToBrush}}" VerticalAlignment="Center" Margin="8,0,0,0" />
+													</Grid>
+												</Border>
+											</DataTemplate>
+										</ComboBox.ItemTemplate>
+									</ComboBox>
+								</Border>
+                              <Button Grid.Column="1" MinWidth="110" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="FilterButton_Click">
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<TextBlock Text="Фильтр:" FontSize="12" Foreground="#6B7280" />
+										<TextBlock Text="{Binding SelectedIssueTypeFilter}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Button>
+							</Grid>
+                           <Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="8,6">
+								<Grid ColumnDefinitions="*,Auto">
+									<StackPanel>
+										<TextBlock Text="Найдено оборудования" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding EquipmentCollection.Count, StringFormat='{}{0} поз.'}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+									<TextBlock Grid.Column="1" Text="Нажмите на поиск для выбора" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" Margin="12,0,0,0" />
+								</Grid>
+							</Border>
+						</StackPanel>
+					</Border>
+				</Grid>
                 <!-- Top header showing day numbers moved into heatmap block for alignment -->
 
                 <Grid Margin="0 0 0 8">
