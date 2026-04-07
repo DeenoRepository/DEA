@@ -31,6 +31,47 @@
 		<utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
 		<utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
 
+        <!-- Typography / card styles using class selectors -->
+		<FontFamily x:Key="AppFont">Segoe UI</FontFamily>
+        <Style x:Key="HeaderTitleStyle" Selector="TextBlock.headerTitle">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="FontSize" Value="30" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="Margin" Value="0,0,0,0" />
+		</Style>
+        <Style x:Key="SectionTitleStyle" Selector="TextBlock.sectionTitle">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+        <Style x:Key="CardTitleStyle" Selector="TextBlock.cardTitle">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="FontSize" Value="13" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+        <Style x:Key="CardValueStyle" Selector="TextBlock.cardValue">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="FontSize" Value="20" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+        <Style x:Key="CardSubtextStyle" Selector="TextBlock.cardSubtext">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="#666" />
+		</Style>
+
+		<!-- Button tweaks -->
+        <Style x:Key="IconButtonStyle" Selector="Button.smallIcon">
+			<Setter Property="Width" Value="32" />
+			<Setter Property="Height" Value="28" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+
 		<!-- Legend brushes for heatmap (brighter stops) -->
 		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
 		<SolidColorBrush x:Key="HeatmapYellow" Color="#FFEE58" />
@@ -39,6 +80,11 @@
 
 		<!-- Palette -->
 		<SolidColorBrush x:Key="PrimaryBackground" Color="#F3F6F9" />
+        <!-- Header gradient -->
+		<LinearGradientBrush x:Key="HeaderBackground" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#1976D2" Offset="0" />
+			<GradientStop Color="#1565C0" Offset="1" />
+		</LinearGradientBrush>
 		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFFFF" />
 		<SolidColorBrush x:Key="AccentBrush" Color="#1976D2" />
 		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
@@ -93,25 +139,35 @@
 
      <!-- Top header (accented, no rounded corners) -->
         <!-- Compact header: reduced padding and font sizes to make header visually narrower -->
-		<Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource AccentBrush}" Padding="6" CornerRadius="0" Margin="8">
-			<Grid VerticalAlignment="Center">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
+    <Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="8" Margin="8">
+		<Grid VerticalAlignment="Center">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
 
-				<StackPanel Orientation="Vertical" Grid.Column="0" Margin="6,0,0,0">
-					<TextBlock Text="Анализ неисправностей оборудования" FontSize="16" FontWeight="SemiBold" Foreground="White" />
-					<TextBlock Text="Мониторинг рабочих смен и простоев" FontSize="11" Foreground="#E8F3FF" />
+			<!-- Logo + Title -->
+			<StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center" Spacing="12">
+				<Image Source="/Assets/avalonia-logo.ico" Width="44" Height="44" />
+				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="#E8F3FF"/>
+					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="#E8F3FF">Мониторинг рабочих смен и простоев</TextBlock>
 				</StackPanel>
+			</StackPanel>
 
-                <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="6" Margin="0,0,6,0">
-					<TextBox Width="200" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-					<Button Content="Обновить" MinWidth="72" />
-					<Button Content="Импорт" MinWidth="72" Click="ImportButton_Click" />
-				</StackPanel>
-			</Grid>
-		</Border>
+			<!-- Spacer (center) intentionally left empty to keep title left-aligned -->
+
+			<!-- Actions: search and buttons -->
+			<StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center" Spacing="8">
+				<Border Background="#FFFFFFFF" CornerRadius="6" Padding="6" VerticalAlignment="Center">
+					<TextBox Width="260" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" BorderThickness="0" />
+				</Border>
+				<Button Content="Обновить" MinWidth="84" Background="#FFFFFF" Foreground="Black"/>
+				<Button Content="Импорт" MinWidth="84" Background="#FFFFFF" Foreground="Black" Click="ImportButton_Click" />
+			</StackPanel>
+		</Grid>
+	</Border>
 
       <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
 			<!-- shadow shim -->
@@ -176,7 +232,7 @@
 					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
                     <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
 					<StackPanel HorizontalAlignment="Stretch">
-						<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock Classes="sectionTitle" Text="Карта тепла" Margin="0,0,0,8" />
 						<Grid>
 							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
                             <ScrollViewer x:Name="HeatmapScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -278,7 +334,7 @@
 					<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
                 <Border Background="{StaticResource CardBackground}" CornerRadius="8" Padding="14">
 					<StackPanel>
-						<TextBlock Text="График простоев" Margin="0,0,0,8" FontWeight="SemiBold" />
+                        <TextBlock Classes="sectionTitle" Text="График простоев" Margin="0,0,0,8" />
 						<views:TimelineControl Items="{Binding DayTimelinePoints}" Annotations="{Binding Annotations}" Height="480" ShowHourLabels="True" VerticalAlignment="Top" />
 					</StackPanel>
 				</Border>
@@ -311,9 +367,9 @@
 
             <Border Background="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToBrushConverter}}" CornerRadius="8" Padding="12">
 				<StackPanel>
-                    <TextBlock Text="Статус ремонтов" FontSize="13" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
-                    <TextBlock Text="{Binding SelectedDayRepairs}" FontSize="20" FontWeight="Bold" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,6,0,0" />
-					<TextBlock Text="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToStatusConverter}}" FontSize="13" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,8,0,0" HorizontalAlignment="Left" />
+                    <TextBlock Classes="cardTitle" Text="Статус ремонтов" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
+                    <TextBlock Classes="cardValue" Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" Foreground="#000000" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
+					<TextBlock Classes="cardSubtext" Text="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToStatusConverter}}" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" Margin="0,8,0,0" HorizontalAlignment="Left" />
 				</StackPanel>
 			</Border>
 

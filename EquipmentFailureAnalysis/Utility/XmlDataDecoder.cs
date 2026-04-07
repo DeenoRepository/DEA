@@ -137,79 +137,92 @@ namespace EquipmentFailureAnalysis.Utility
                 // NLP-like heuristic: token scoring with keyword lists and simple normalization
                 try
                 {
-                    var raw = ((description ?? string.Empty) + " " + (title ?? string.Empty) + " " + (typeText ?? string.Empty)).ToLowerInvariant();
-                    // normalize common punctuation and collapse spaces
-                    raw = Regex.Replace(raw, "[\\p{P}\t\\n\\r]+", " ").Trim();
+                    // Build normalized text sources separately to weight title higher than description
+                    string normDesc = Regex.Replace((description ?? string.Empty).ToLowerInvariant(), "[\\p{P}\t\\n\\r]+", " ").Trim();
+                    string normTitle = Regex.Replace((title ?? string.Empty).ToLowerInvariant(), "[\\p{P}\t\\n\\r]+", " ").Trim();
+                    string normType = (typeText ?? string.Empty).ToLowerInvariant();
 
-                    var repairKeywords = new string[] { "ремонт", "поломк", "слом", "замен", "неисправн", "поврежд", "не работает", "не запуска", "не включ", "авар", "протеч", "течь" };
-                    var setupKeywords = new string[] { "настрой", "налад", "калибр", "конфиг", "параметр", "пусконал", "установк", "тонк", "регул" };
+                    // Expanded keyword sets with common stems
+                    var repairKeywords = new[] { "ремонт", "поломк", "слом", "замен", "неисправн", "поврежд", "не работает", "не запуска", "не включ", "авар", "протеч", "течь", "трещ", "корроз", "замык" };
+                    var setupKeywords = new[] { "настрой", "налад", "калибр", "конфиг", "параметр", "пусконал", "установк", "тонк", "регул", "калибров", "калиброван", "конфигурац" };
 
                     int repairScore = 0;
                     int setupScore = 0;
 
-                    // tokenize into words for context window analysis
-                    var tokens = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-                    // simple negation handling words
-                    var negations = new string[] { "не", "нет", "без", "исключая" };
-
-                    // scan tokens and score by proximity: if keyword appears near a negation, reduce its weight
-                    int window = 3; // tokens left/right considered
-                    for (int i = 0; i < tokens.Length; i++)
+                    // helper: count keyword occurrences in a text (simple substring match)
+                    int CountMatches(string text, string keyword)
                     {
-                        var t = tokens[i];
+                        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(keyword)) return 0;
+                        return Regex.Matches(text, Regex.Escape(keyword)).Count;
+                    }
+
+                    // Count occurrences in description and title with different weights
+                    foreach (var k in repairKeywords)
+                    {
+                        repairScore += CountMatches(normDesc, k) * 1;   // description weight
+                        repairScore += CountMatches(normTitle, k) * 2;  // title weight
+                    }
+                    foreach (var k in setupKeywords)
+                    {
+                        setupScore += CountMatches(normDesc, k) * 1;
+                        setupScore += CountMatches(normTitle, k) * 2;
+                    }
+
+                    // simple negation: if description contains patterns like "не настрой" reduce setup score
+                    var negations = new[] { "не", "нет", "без", "исключая", "отмена" };
+                    foreach (var neg in negations)
+                    {
                         foreach (var k in repairKeywords)
-                        {
-                            if (t.Contains(k))
-                            {
-                                // check negation in the previous window
-                                bool neg = false;
-                                for (int j = Math.Max(0, i - window); j < i; j++)
-                                    if (negations.Any(n => tokens[j] == n)) { neg = true; break; }
-                                repairScore += neg ? 0 : 1;
-                            }
-                        }
+                            if (normDesc.Contains(neg + " " + k)) repairScore = Math.Max(0, repairScore - 1);
                         foreach (var k in setupKeywords)
-                        {
-                            if (t.Contains(k))
-                            {
-                                bool neg = false;
-                                for (int j = Math.Max(0, i - window); j < i; j++)
-                                    if (negations.Any(n => tokens[j] == n)) { neg = true; break; }
-                                setupScore += neg ? 0 : 1;
-                            }
-                        }
+                            if (normDesc.Contains(neg + " " + k)) setupScore = Math.Max(0, setupScore - 1);
                     }
 
-                    // boost by explicit type field
-                    if (!string.IsNullOrEmpty(typeText))
+                    // Boost by explicit type field strongly
+                    if (!string.IsNullOrEmpty(normType))
                     {
-                        if (typeText.IndexOf("настрой", StringComparison.OrdinalIgnoreCase) >= 0) setupScore += 4;
-                        if (typeText.IndexOf("ремонт", StringComparison.OrdinalIgnoreCase) >= 0) repairScore += 4;
+                        if (normType.Contains("настрой")) setupScore += 5;
+                        if (normType.Contains("ремонт")) repairScore += 5;
                     }
 
-                    // final decision with simple thresholds
+                    // If description explicitly contains words like "настройка завершена" or "ремонт выполнен" weight further
+                    if (Regex.IsMatch(normDesc, "(настройка|наладка)\\s+заверш|(настроен|наладчик)", RegexOptions.IgnoreCase)) setupScore += 2;
+                    if (Regex.IsMatch(normDesc, "(ремонт|замена)\\s+(выполн|заверш|проведен)|поломка", RegexOptions.IgnoreCase)) repairScore += 2;
+
+                    // Decide detected type; require clear margin
                     EquipmentFailureAnalysis.Models.IssueType? detected = null;
+                    int diff = repairScore - setupScore;
                     if (repairScore + setupScore == 0)
+                    {
                         detected = null;
-                    else if (repairScore >= setupScore + 2)
+                    }
+                    else if (diff >= 2)
+                    {
                         detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
-                    else if (setupScore >= repairScore + 2)
+                    }
+                    else if (diff <= -2)
+                    {
                         detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
+                    }
                     else
                     {
-                        // close scores -> fallback to explicit field
-                        if (!string.IsNullOrEmpty(typeText))
+                        // close scores -> prefer explicit field if exists
+                        if (!string.IsNullOrEmpty(normType))
                         {
-                            if (typeText.IndexOf("настрой", StringComparison.OrdinalIgnoreCase) >= 0)
-                                detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
-                            else if (typeText.IndexOf("ремонт", StringComparison.OrdinalIgnoreCase) >= 0)
-                                detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
+                            if (normType.Contains("настрой")) detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
+                            else if (normType.Contains("ремонт")) detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
                         }
+                    }
+
+                    // If we detected a type confidently, update issue.Type to improve grouping
+                    var originalType = issue.Type;
+                    if (detected.HasValue)
+                    {
+                        issue.Type = detected.Value;
                     }
 
                     issue.DetectedType = detected;
-                    issue.TypeSuspicious = detected.HasValue && detected.Value != issue.Type;
+                    issue.TypeSuspicious = detected.HasValue && detected.Value != originalType;
                 }
                 catch
                 {
