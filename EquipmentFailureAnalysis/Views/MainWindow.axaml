@@ -138,7 +138,7 @@
 		</Grid.RowDefinitions>
 
  <!-- Top header -->
-	<Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="10" Margin="10,10,10,8">
+	<Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="10,10,10,8">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -159,16 +159,16 @@
 	</Border>
 
     <Grid Grid.Column="0" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
-			<!-- shadow shim -->
-         <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
-				<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
-          <StackPanel Spacing="10">
-				<TextBlock Text="Навигация" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="6,2" />
-				<Button Content="Дашборд" HorizontalAlignment="Stretch" />
-				<Button Content="Карта тепла" HorizontalAlignment="Stretch" />
-				<Button Content="График простоев" HorizontalAlignment="Stretch" />
-				<Button Content="Статистика" HorizontalAlignment="Stretch" />
-			</StackPanel>
+           <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="12">
+				<StackPanel Spacing="8">
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" Padding="8">
+						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					</Border>
+					<Button Content="Дашборд" HorizontalAlignment="Stretch" />
+					<Button Content="Карта тепла" HorizontalAlignment="Stretch" />
+					<Button Content="График простоев" HorizontalAlignment="Stretch" />
+					<Button Content="Статистика" HorizontalAlignment="Stretch" />
+				</StackPanel>
 			</Border>
 		</Grid>
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
@@ -236,8 +236,9 @@
                 <Grid Margin="0 0 0 8">
                  <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
 						<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
-					<StackPanel HorizontalAlignment="Stretch">
-                        <TextBlock Classes="sectionTitle" Text="Карта тепла" Margin="0,0,0,8" />
+                  <StackPanel HorizontalAlignment="Stretch">
+						<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+						<TextBlock Text="Ежедневная интенсивность неисправностей по месяцам" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
 						<Grid>
 							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
                             <ScrollViewer x:Name="HeatmapScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -338,8 +339,9 @@
                 <Grid>
                  <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
-					<StackPanel>
-                        <TextBlock Classes="sectionTitle" Text="График простоев" Margin="0,0,0,8" />
+                    <StackPanel>
+						<TextBlock Text="График простоев" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+						<TextBlock Text="Динамика ремонтов и настроек в течение суток" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
                         <Grid>
 							<views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="480" ShowHourLabels="True" VerticalAlignment="Top" />
 							<Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Background="#CCFFFFFF" BorderBrush="#D6DEE8" BorderThickness="1" CornerRadius="8" Padding="8,6">
@@ -367,19 +369,20 @@
    <Grid Grid.Column="2" Grid.Row="1" Margin="8" MinWidth="220" MaxWidth="360">
      <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
                <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
-					<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
+                   <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
 
-						<TextBlock Grid.Row="0" Text="Статистика" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                      <TextBlock Grid.Row="0" Text="Статистика" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+						<TextBlock Grid.Row="0" Text="Сводка выбранного оборудования и дня" FontSize="12" Foreground="#6B7280" Margin="0,22,0,0" />
 
 						<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-							<Border Grid.Column="0" Background="#EAF2FF" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+                            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
 								<StackPanel>
 									<TextBlock Text="Оборудование" FontSize="12" Foreground="#1976D2" />
 									<TextBlock Text="{Binding SelectedEquipment.Title}" FontWeight="Bold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
 									<TextBlock Text="{Binding SelectedEquipment.InventoryNumber}" FontSize="12" Foreground="#666" />
 								</StackPanel>
 							</Border>
-							<Border Grid.Column="1" Background="#F6EAFB" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
+                            <Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
 								<StackPanel>
 									<TextBlock Text="Дата" FontSize="12" Foreground="#7A4BAE" />
 									<TextBlock Text="{Binding AnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
@@ -387,7 +390,7 @@
 							</Border>
 						</Grid>
 
-						<Border Grid.Row="2" Background="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToBrushConverter}}" CornerRadius="8" Padding="12">
+                       <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12">
 							<StackPanel>
 								<TextBlock Classes="cardTitle" Text="Статус ремонтов" Foreground="{Binding SelectedDayRepairs, Converter={StaticResource RepairsToForegroundConverter}}" />
 								<TextBlock Classes="cardValue" Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" Foreground="#000000" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
@@ -395,7 +398,7 @@
 							</StackPanel>
 						</Border>
 
-						<Border Grid.Row="3" Background="#FFFFFF" CornerRadius="8" Padding="12">
+                        <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12">
 							<StackPanel>
 								<TextBlock Text="Время работы / простои" FontSize="13" Foreground="#666" />
 								<StackPanel Orientation="Horizontal" Margin="0,6,0,0">
@@ -412,7 +415,7 @@
 							</StackPanel>
 						</Border>
 
-						<Border Grid.Row="4" Background="#FFF8E1" CornerRadius="8" Padding="12">
+                        <Border Grid.Row="4" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12">
 							<StackPanel>
 								<TextBlock Text="Среднее время ремонта" FontSize="13" Foreground="#BF7000" />
 								<TextBlock Text="{Binding AvgRepairTime}" FontSize="20" FontWeight="Bold" Margin="0,6,0,0" />
@@ -421,7 +424,7 @@
 
 						<Border Grid.Row="5" Background="#FFFFFF" CornerRadius="8" Padding="8" BorderBrush="#E6EAF0" BorderThickness="1" VerticalAlignment="Stretch">
 							<Grid RowDefinitions="Auto,Auto,*">
-								<TextBlock Grid.Row="0" Text="Неисправности за выбранный день" FontSize="13" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="0" Text="Неисправности за выбранный день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
 								<Grid Grid.Row="1" ColumnDefinitions="2.6*,1.2*,1*" Margin="4,2,4,6">
 									<TextBlock Grid.Column="0" Text="Неисправность" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
 									<TextBlock Grid.Column="1" Text="Ответственный" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
