@@ -102,10 +102,10 @@
 					<TextBlock Text="Мониторинг рабочих смен и простоев" FontSize="11" Foreground="#E8F3FF" />
 				</StackPanel>
 
-				<StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="6" Margin="0,0,6,0">
-					<TextBox Width="160" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="6" Margin="0,0,6,0">
+					<TextBox Width="200" Watermark="Поиск оборудования..." Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					<Button Content="Обновить" MinWidth="72" />
-					<Button Content="Экспорт" MinWidth="72" />
+					<Button Content="Импорт" MinWidth="72" Click="ImportButton_Click" />
 				</StackPanel>
 			</Grid>
 		</Border>
@@ -117,8 +117,12 @@
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
 			<StackPanel>
-				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
 					<TextBlock Text="Оборудование" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,0,0,0">
+						<Button Command="{Binding SortIssuesAscCommand}" MinWidth="32" Width="32" Height="28" Margin="6,0,0,0">▲</Button>
+						<Button Command="{Binding SortIssuesDescCommand}" MinWidth="32" Width="32" Height="28" Margin="4,0,0,0">▼</Button>
+					</StackPanel>
 				</StackPanel>
 
 				<ItemsControl ItemsSource="{Binding EquipmentCollection}">
@@ -154,6 +158,11 @@
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
         <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                <!-- Type filters: checkboxes to toggle repairs / setups shown in heatmap and timeline -->
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8" Spacing="8">
+					<CheckBox Content="Показать ремонты" IsChecked="{Binding ShowRepairs, Mode=TwoWay}" VerticalAlignment="Center" />
+					<CheckBox Content="Показать настройки" IsChecked="{Binding ShowSetups, Mode=TwoWay}" VerticalAlignment="Center" />
+				</StackPanel>
                 <!-- Top header showing day numbers moved into heatmap block for alignment -->
 
                 <Grid Margin="0 0 0 8">
@@ -273,7 +282,8 @@
 		<Border Background="#44000000" CornerRadius="8" Margin="0,6,0,0" />
             <Border Background="{StaticResource CardBackground}" CornerRadius="6" Padding="12">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-		<StackPanel Spacing="8">
+        <StackPanel Spacing="8">
+
 			<TextBlock Text="Дашборд анализа" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
 
             <Grid ColumnDefinitions="*,Auto">

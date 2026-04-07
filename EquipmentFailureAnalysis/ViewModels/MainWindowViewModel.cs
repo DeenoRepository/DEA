@@ -11,6 +11,9 @@ namespace EquipmentFailureAnalysis.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         public ObservableCollection<EquipmentInfo> EquipmentCollection { get; set; }
+        // master list containing all equipment (unmodified)
+        private System.Collections.Generic.List<EquipmentInfo> _masterEquipment = new System.Collections.Generic.List<EquipmentInfo>();
+        // working list sorted/filtered according to search and type filters
         private System.Collections.Generic.List<EquipmentInfo> _allEquipment = new System.Collections.Generic.List<EquipmentInfo>();
         public ObservableCollection<DailyDowntimeIndex> DailyDowntimeIndexCollection { get; set; }
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
@@ -24,9 +27,51 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedEquipment, value);
         }
         public ObservableCollection<int> DayTimeline { get; set; } = new ObservableCollection<int>();
-        public ObservableCollection<Models.TimelinePoint> DayTimelinePoints { get; set; } = new ObservableCollection<Models.TimelinePoint>();
-        public ObservableCollection<Models.Annotation> Annotations { get; set; } = new ObservableCollection<Models.Annotation>();
+        private ObservableCollection<Models.TimelinePoint> _dayTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> DayTimelinePoints
+        {
+            get => _dayTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _dayTimelinePoints, value);
+        }
+
+        private ObservableCollection<Models.Annotation> _annotations = new ObservableCollection<Models.Annotation>();
+        public ObservableCollection<Models.Annotation> Annotations
+        {
+            get => _annotations;
+            set => this.RaiseAndSetIfChanged(ref _annotations, value);
+        }
         public ReactiveCommand<DateTime, Unit> ShowDayTimelineCommand { get; set; }
+
+        private bool _showRepairs = true;
+        public bool ShowRepairs
+        {
+            get => _showRepairs;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _showRepairs, value);
+                // refresh selected equipment view
+                if (SelectedEquipment != null)
+                {
+                    RefreshEquipmentView(SelectedEquipment);
+                    BuildTimelineForDate(AnalysisDate, SelectedEquipment);
+                }
+            }
+        }
+
+        private bool _showSetups = true;
+        public bool ShowSetups
+        {
+            get => _showSetups;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _showSetups, value);
+                if (SelectedEquipment != null)
+                {
+                    RefreshEquipmentView(SelectedEquipment);
+                    BuildTimelineForDate(AnalysisDate, SelectedEquipment);
+                }
+            }
+        }
 
         // UI info panel properties
         private DateTime _analysisDate = DateTime.Now;
@@ -105,12 +150,28 @@ namespace EquipmentFailureAnalysis.ViewModels
             for (int h = 0; h < 24; h++)
                 DayHours.Add(h);
             XmlDataDecoder xmlDataDecoder = new XmlDataDecoder();
-            // load all equipment and sort by issue count descending
+            // load all equipment and set master list
             var all = xmlDataDecoder.DecodeEquipment().ToList();
             all.ForEach(e => { /* ensure Issues collection is not null */ });
-            _allEquipment = all.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
+            _masterEquipment = all;
+            // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
-            ApplyFilter();
+            // apply initial type filter and sort
+            ApplyTypeFilterAndSort();
+
+            // sort commands
+            SortIssuesAscCommand = ReactiveCommand.Create(() =>
+            {
+                _allEquipment = _masterEquipment.OrderBy(e => e.Issues?.Count ?? 0).ToList();
+                EquipmentCollection.Clear();
+                ApplyFilter();
+            });
+            SortIssuesDescCommand = ReactiveCommand.Create(() =>
+            {
+                _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
+                EquipmentCollection.Clear();
+                ApplyFilter();
+            });
 
             // start with empty daily index collection; it will be populated when the user clicks an equipment button
             DailyDowntimeIndexCollection = new ObservableCollection<DailyDowntimeIndex>();
@@ -138,22 +199,20 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                 // compute right panel summary for selected equipment
                 AnalysisDate = DateTime.Now;
-                // compute faults and downtime for today
+                // compute faults and downtime for today (respecting type filters)
                 int faultsToday = 0;
                 double totalDownMinutes = 0.0;
                 var dateStart = AnalysisDate.Date;
                 var dateEnd = dateStart.AddDays(1);
-                if (equipment?.Issues != null)
+                var filteredIssues = GetFilteredIssues(equipment).ToList();
+                foreach (var issue in filteredIssues)
                 {
-                    foreach (var issue in equipment.Issues)
-                    {
-                        var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
-                        var overlapEnd = issue.End > dateEnd ? dateEnd : issue.End;
-                        if (overlapEnd <= overlapStart)
-                            continue;
-                        faultsToday++;
-                        totalDownMinutes += (overlapEnd - overlapStart).TotalMinutes;
-                    }
+                    var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
+                    var overlapEnd = issue.End > dateEnd ? dateEnd : issue.End;
+                    if (overlapEnd <= overlapStart)
+                        continue;
+                    faultsToday++;
+                    totalDownMinutes += (overlapEnd - overlapStart).TotalMinutes;
                 }
                 FaultsForDay = faultsToday;
                 double downPercent = Math.Min(100.0, (totalDownMinutes / (24.0 * 60.0)) * 100.0);
@@ -162,21 +221,21 @@ namespace EquipmentFailureAnalysis.ViewModels
                 DowntimePercent = workPercent.ToString("0.0") + "%"; // label for 'Работа'
                 DownPercent = downPercent.ToString("0.0") + "%"; // label for 'Простой'
 
-                // average repair time across all issues
+                // average repair time across filtered issues
                 string avgRepair = "0 мин";
-                if (equipment?.Issues != null && equipment.Issues.Count > 0)
+                if (filteredIssues.Count > 0)
                 {
-                    double totalMinutes = equipment.Issues.Sum(it => (it.End - it.Start).TotalMinutes);
-                    double avg = totalMinutes / equipment.Issues.Count;
+                    double totalMinutes = filteredIssues.Sum(it => (it.End - it.Start).TotalMinutes);
+                    double avg = totalMinutes / filteredIssues.Count;
                     avgRepair = Math.Round(avg) + " мин";
                 }
                 AvgRepairTime = avgRepair;
 
-                if (equipment?.Issues != null)
+                if (filteredIssues != null)
                 {
                     // increment index for each issue for every calendar day it spans
                     // this ensures faults that flow into the next day are counted on that day as well
-                    foreach (var issue in equipment.Issues)
+                    foreach (var issue in filteredIssues)
                     {
                         var startDate = issue.Start.Date;
                         var endDate = issue.End.Date;
@@ -238,13 +297,14 @@ namespace EquipmentFailureAnalysis.ViewModels
                     DayTimelinePoints.Clear();
                     Annotations.Clear();
 
-                    if (SelectedEquipment?.Issues == null)
+                    var selIssues = GetFilteredIssues(SelectedEquipment);
+                    if (selIssues == null || selIssues.Count() == 0)
                         return;
 
                     // collect overlap intervals in minutes (accuracy to 1 minute)
                     var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
 
-                    foreach (var issue in SelectedEquipment.Issues)
+                    foreach (var issue in selIssues)
                     {
                         var issueStart = issue.Start;
                         var issueEnd = issue.End;
@@ -347,117 +407,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 }
 
                 // ensure ShowDayTimelineCommand still targets selected analysis date when a cell is clicked
-                ShowDayTimelineCommand = ReactiveCommand.Create<DateTime>(date =>
-                {
-                    // Update right-panel summary to reflect selected date
-                    AnalysisDate = date.Date;
-                    // compute faults and downtime for the selected date
-                    int faultsToday = 0;
-                    double totalDownMinutes = 0.0;
-                    var dateStart = date.Date;
-                    var dateEnd = dateStart.AddDays(1);
-                    if (SelectedEquipment?.Issues != null)
-                    {
-                        foreach (var issue in SelectedEquipment.Issues)
-                        {
-                            var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
-                            var overlapEnd = issue.End > dateEnd ? dateEnd : issue.End;
-                            if (overlapEnd <= overlapStart)
-                                continue;
-                            faultsToday++;
-                            totalDownMinutes += (overlapEnd - overlapStart).TotalMinutes;
-                        }
-                    }
-                    FaultsForDay = faultsToday;
-                    double downPercent = Math.Min(100.0, (totalDownMinutes / (24.0 * 60.0)) * 100.0);
-                    double workPercent = 100.0 - downPercent;
-                    WorkPercent = workPercent;
-                    DowntimePercent = workPercent.ToString("0.0") + "%";
-                    DownPercent = downPercent.ToString("0.0") + "%";
-                    // average repair time for issues on this day
-                    string avgRepair = "0 мин";
-                    if (faultsToday > 0)
-                    {
-                        double avg = totalDownMinutes / faultsToday;
-                        avgRepair = Math.Round(avg) + " мин";
-                    }
-                    AvgRepairTime = avgRepair;
-
-                    // reuse existing logic to build timeline for date
-                    // keep hourly array for compatibility
-                    DayTimeline.Clear();
-                    for (int h = 0; h < 24; h++)
-                        DayTimeline.Add(0);
-
-                    DayTimelinePoints.Clear();
-                    Annotations.Clear();
-
-                    if (SelectedEquipment?.Issues == null)
-                        return;
-
-                    var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
-                    foreach (var issue in SelectedEquipment.Issues)
-                    {
-                        var issueStart = issue.Start;
-                        var issueEnd = issue.End;
-                        var dayStart = date.Date;
-                        var dayEnd = dayStart.AddDays(1);
-
-                        var overlapStart = issueStart < dayStart ? dayStart : issueStart;
-                        var overlapEnd = issueEnd > dayEnd ? dayEnd : issueEnd;
-                        if (overlapEnd <= overlapStart)
-                            continue;
-
-                        int sMin = (int)Math.Max(0, Math.Floor((overlapStart - dayStart).TotalMinutes));
-                        int eMin = (int)Math.Min(24 * 60, Math.Ceiling((overlapEnd - dayStart).TotalMinutes));
-                        intervals.Add((sMin, eMin));
-
-                        var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
-                        var desc = issue.Description ?? string.Empty;
-                        var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
-                        Annotations.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
-
-                        int startHour = (int)Math.Floor(sMin / 60.0);
-                        int endHour = (int)Math.Ceiling(eMin / 60.0);
-                        startHour = Math.Clamp(startHour, 0, 23);
-                        endHour = Math.Clamp(endHour, 0, 24);
-                        for (int h = startHour; h < endHour; h++)
-                            DayTimeline[h] = 1;
-                    }
-
-                    if (intervals.Count == 0)
-                    {
-                        DayTimelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
-                        DayTimelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
-                        return;
-                    }
-
-                    intervals.Sort((a, b) => a.sMin.CompareTo(b.sMin));
-                    var merged = new System.Collections.Generic.List<(int sMin, int eMin)>();
-                    var cur = intervals[0];
-                    for (int i = 1; i < intervals.Count; i++)
-                    {
-                        var it = intervals[i];
-                        if (it.sMin <= cur.eMin + 1)
-                        {
-                            cur.eMin = Math.Max(cur.eMin, it.eMin);
-                        }
-                        else
-                        {
-                            merged.Add(cur);
-                            cur = it;
-                        }
-                    }
-                    merged.Add(cur);
-
-                    DayTimelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
-                    foreach (var m in merged)
-                    {
-                        DayTimelinePoints.Add(new Models.TimelinePoint { Hour = m.sMin / 60.0, Value = 1 });
-                        DayTimelinePoints.Add(new Models.TimelinePoint { Hour = m.eMin / 60.0, Value = 0 });
-                    }
-                    DayTimelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
-                });
+                ShowDayTimelineCommand = ReactiveCommand.Create<DateTime>(date => BuildTimelineForDate(date, SelectedEquipment));
             });
 
             // Preselect first equipment (if exists) and load its data + today's timeline
@@ -470,6 +420,229 @@ namespace EquipmentFailureAnalysis.ViewModels
                         ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
                 });
             }
+        }
+
+        // Refresh daily indices and month rows for UI for a given equipment without reassigning commands
+        private void RefreshEquipmentView(EquipmentInfo equipment)
+        {
+            if (equipment == null) return;
+
+            DailyDowntimeIndexCollection.Clear();
+            for (int i = 0; i < 365; i++)
+            {
+                DailyDowntimeIndexCollection.Add(new DailyDowntimeIndex { Day = DateTime.Now.AddDays(-i), Index = 0 });
+            }
+
+            // mark selection
+            foreach (var eq in EquipmentCollection)
+                eq.IsSelected = false;
+            SelectedEquipment = equipment;
+            if (SelectedEquipment != null)
+                SelectedEquipment.IsSelected = true;
+
+            var filteredIssues = GetFilteredIssues(equipment).ToList();
+
+            // compute daily indices
+            foreach (var issue in filteredIssues)
+            {
+                var startDate = issue.Start.Date;
+                var endDate = issue.End.Date;
+                if (endDate < startDate)
+                    endDate = startDate;
+
+                for (var day = startDate; day <= endDate; day = day.AddDays(1))
+                {
+                    var daysAgo = (DateTime.Now.Date - day).Days;
+                    if (daysAgo >= 0 && daysAgo < DailyDowntimeIndexCollection.Count)
+                    {
+                        DailyDowntimeIndexCollection[daysAgo].Index++;
+                    }
+                }
+            }
+
+            // build month rows for calendar year (January..December)
+            MonthRows.Clear();
+            var year = DateTime.Now.Year;
+            for (int month = 1; month <= 12; month++)
+            {
+                var monthDate = new DateTime(year, month, 1);
+                var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
+                var monthRow = new Models.MonthRow { Month = monthDate.Month, Year = monthDate.Year, MonthName = monthDate.ToString("MMM") };
+
+                for (int d = 1; d <= 31; d++)
+                {
+                    var isValid = d <= daysInMonth;
+                    var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = isValid };
+                    if (isValid)
+                    {
+                        cell.Date = new DateTime(monthDate.Year, monthDate.Month, d);
+                        var entry = DailyDowntimeIndexCollection.FirstOrDefault(x => x.Day.Date == cell.Date.Date);
+                        if (entry != null) cell.Index = entry.Index;
+                    }
+                    monthRow.Days.Add(cell);
+                }
+                MonthRows.Add(monthRow);
+            }
+        }
+
+        // Called from view when user imports a new XML file. Sorts equipment by issue count and refreshes view.
+        public void ImportEquipment(ObservableCollection<EquipmentInfo> imported)
+        {
+            if (imported == null)
+                return;
+
+            var all = imported.ToList();
+            _masterEquipment = all;
+            // keep left column ordering by total issues
+            _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
+            EquipmentCollection.Clear();
+            ApplyFilter();
+
+            // auto-select first
+            if (EquipmentCollection.Count > 0)
+            {
+                var first = EquipmentCollection[0];
+                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                {
+                    if (ShowDayTimelineCommand != null)
+                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                });
+            }
+        }
+
+        // Return issues for equipment filtered by ShowRepairs/ShowSetups
+        private System.Collections.Generic.IEnumerable<Issue> GetFilteredIssues(EquipmentInfo? equipment)
+        {
+            if (equipment == null)
+                return System.Linq.Enumerable.Empty<Issue>();
+
+            return equipment.Issues.Where(i =>
+                (ShowRepairs && i.Type == IssueType.Ремонт) ||
+                (ShowSetups && i.Type == IssueType.Настройка));
+        }
+
+        // Apply type filters and sort master list into _allEquipment used for UI
+        private void ApplyTypeFilterAndSort()
+        {
+            // Ensure the left column remains ordered by total issue count (descending)
+            _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
+            EquipmentCollection?.Clear();
+            ApplyFilter();
+        }
+
+        // Commands to sort left column explicitly
+        public ReactiveCommand<Unit, Unit> SortIssuesAscCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> SortIssuesDescCommand { get; private set; }
+
+        // Build timeline and annotations for a given date and equipment using current type filters.
+        private void BuildTimelineForDate(DateTime date, EquipmentInfo? equipment)
+        {
+            if (equipment == null)
+                return;
+            // compute everything first, then update UI-bound collections on UI thread
+            AnalysisDate = date.Date;
+            var selIssuesForDate = GetFilteredIssues(equipment).ToList();
+
+            int faultsToday = 0;
+            double totalDownMinutes = 0.0;
+            var dateStart = date.Date;
+            var dateEnd = dateStart.AddDays(1);
+            var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var annList = new System.Collections.Generic.List<Models.Annotation>();
+
+            foreach (var issue in selIssuesForDate)
+            {
+                var overlapStart = issue.Start < dateStart ? dateStart : issue.Start;
+                var overlapEnd = issue.End > dateEnd ? dateEnd : issue.End;
+                if (overlapEnd <= overlapStart)
+                    continue;
+                faultsToday++;
+                totalDownMinutes += (overlapEnd - overlapStart).TotalMinutes;
+
+                int sMin = (int)Math.Max(0, Math.Floor((overlapStart - dateStart).TotalMinutes));
+                int eMin = (int)Math.Min(24 * 60, Math.Ceiling((overlapEnd - dateStart).TotalMinutes));
+                intervals.Add((sMin, eMin));
+                var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
+                var desc = issue.Description ?? string.Empty;
+                var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
+                annList.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
+            }
+
+            // compute stats
+            double downPercent = Math.Min(100.0, (totalDownMinutes / (24.0 * 60.0)) * 100.0);
+            double workPercent = 100.0 - downPercent;
+            string avgRepair = "0 мин";
+            if (faultsToday > 0)
+            {
+                double avg = totalDownMinutes / faultsToday;
+                avgRepair = Math.Round(avg) + " мин";
+            }
+
+            // merged intervals
+            intervals.Sort((a, b) => a.sMin.CompareTo(b.sMin));
+            var merged = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            if (intervals.Count > 0)
+            {
+                var cur = intervals[0];
+                for (int i = 1; i < intervals.Count; i++)
+                {
+                    var it = intervals[i];
+                    if (it.sMin <= cur.eMin + 1)
+                    {
+                        cur.eMin = Math.Max(cur.eMin, it.eMin);
+                    }
+                    else
+                    {
+                        merged.Add(cur);
+                        cur = it;
+                    }
+                }
+                merged.Add(cur);
+            }
+
+            var timelinePoints = new System.Collections.Generic.List<Models.TimelinePoint>();
+            if (merged.Count == 0)
+            {
+                timelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
+                timelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
+            }
+            else
+            {
+                timelinePoints.Add(new Models.TimelinePoint { Hour = 0.0, Value = 0 });
+                foreach (var m in merged)
+                {
+                    timelinePoints.Add(new Models.TimelinePoint { Hour = m.sMin / 60.0, Value = 1 });
+                    timelinePoints.Add(new Models.TimelinePoint { Hour = m.eMin / 60.0, Value = 0 });
+                }
+                timelinePoints.Add(new Models.TimelinePoint { Hour = 24.0, Value = 0 });
+            }
+
+            // Now update UI-bound collections on UI thread
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                FaultsForDay = faultsToday;
+                WorkPercent = workPercent;
+                DowntimePercent = workPercent.ToString("0.0") + "%";
+                DownPercent = downPercent.ToString("0.0") + "%";
+                AvgRepairTime = avgRepair;
+
+                DayTimeline.Clear();
+                for (int h = 0; h < 24; h++)
+                    DayTimeline.Add(0);
+                foreach (var m in merged)
+                {
+                    int startHour = (int)Math.Floor(m.sMin / 60.0);
+                    int endHour = (int)Math.Ceiling(m.eMin / 60.0);
+                    startHour = Math.Clamp(startHour, 0, 23);
+                    endHour = Math.Clamp(endHour, 0, 24);
+                    for (int h = startHour; h < endHour; h++)
+                        DayTimeline[h] = 1;
+                }
+
+                // replace collections so bindings update and TimelineControl gets notified
+                DayTimelinePoints = new ObservableCollection<Models.TimelinePoint>(timelinePoints);
+                Annotations = new ObservableCollection<Models.Annotation>(annList);
+            });
         }
     }
 }

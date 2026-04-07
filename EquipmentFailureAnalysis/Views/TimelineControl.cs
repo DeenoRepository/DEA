@@ -36,6 +36,14 @@ namespace EquipmentFailureAnalysis.Views
                 InvalidateVisual();
             });
 
+            this.GetObservable(AnnotationsProperty).Subscribe(anns =>
+            {
+                UnsubscribeAnnotations(annotationsChanged);
+                annotationsChanged = anns as INotifyCollectionChanged;
+                SubscribeAnnotations(annotationsChanged);
+                InvalidateVisual();
+            });
+
             // pointer hover tooltip removed; annotations drawn inline
         }
 
@@ -48,6 +56,7 @@ namespace EquipmentFailureAnalysis.Views
         }
 
         private INotifyCollectionChanged? itemsChanged;
+        private INotifyCollectionChanged? annotationsChanged;
 
         private void Subscribe(INotifyCollectionChanged? inc)
         {
@@ -59,6 +68,23 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (inc != null)
                 inc.CollectionChanged -= OnItemsCollectionChanged;
+        }
+
+        private void SubscribeAnnotations(INotifyCollectionChanged? inc)
+        {
+            if (inc != null)
+                inc.CollectionChanged += OnAnnotationsCollectionChanged;
+        }
+
+        private void UnsubscribeAnnotations(INotifyCollectionChanged? inc)
+        {
+            if (inc != null)
+                inc.CollectionChanged -= OnAnnotationsCollectionChanged;
+        }
+
+        private void OnAnnotationsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            InvalidateVisual();
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

@@ -20,6 +20,12 @@ namespace EquipmentFailureAnalysis.Models
 
         // Ответственный за выполнение ремонта или настройки
         public string? Responsible { get; set; }
+
+        // Тип, выявленный по тексту описания (если удалось определить)
+        public IssueType? DetectedType { get; set; }
+
+        // Флаг, указывающий на несоответствие между указанным Type и DetectedType
+        public bool TypeSuspicious { get; set; } = false;
     }
 
     public enum IssueType
