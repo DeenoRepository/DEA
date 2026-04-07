@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using EquipmentFailureAnalysis.Utility;
 using System.Linq;
 using System;
+using System.IO;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -33,6 +34,8 @@ namespace EquipmentFailureAnalysis.Views
                 if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
                     vm.ImportEquipment(items);
+                    // persist last imported file path
+                    try { SaveLastImportedPath(path); } catch { }
                 }
             }
             catch (Exception ex)
@@ -46,6 +49,35 @@ namespace EquipmentFailureAnalysis.Views
                     Content = tb
                 };
                 await wnd.ShowDialog(this);
+            }
+
+        }
+
+        private string GetLastImportedPathFile()
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EquipmentFailureAnalysis");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            return Path.Combine(dir, "last_imported_xml.txt");
+        }
+
+        private void SaveLastImportedPath(string path)
+        {
+            var file = GetLastImportedPathFile();
+            File.WriteAllText(file, path);
+        }
+
+        private string? LoadLastImportedPath()
+        {
+            var file = GetLastImportedPathFile();
+            if (!File.Exists(file)) return null;
+            try
+            {
+                var p = File.ReadAllText(file).Trim();
+                return string.IsNullOrEmpty(p) ? null : p;
+            }
+            catch
+            {
+                return null;
             }
         }
 
