@@ -475,7 +475,7 @@ namespace EquipmentFailureAnalysis.Views
                     if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
                     if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
 
-                    string line1 = "Описание: " + rawDescription;
+                    string line1 = rawDescription;
                     string line2 = "Ответственный: " + rawResponsible;
                     string line3 = "Длительность: " + rawDuration;
 

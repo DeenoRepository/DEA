@@ -155,14 +155,28 @@ namespace EquipmentFailureAnalysis.Utility
                     issueType = IssueType.Настройка;
                 }
 
-                // 5. Ответственный (Assignee или ФИО Автора 10502)
-                string? responsible = xmlNode["assignee"]?.Attributes?["username"]?.Value
-                                     ?? xmlNode["assignee"]?.InnerText;
+                // 5. Ответственный: приоритет у ФИО из assignee.InnerText,
+                // затем username, затем резервное поле customfield_10502
+                static bool IsMissingResponsible(string? value) =>
+                    string.IsNullOrWhiteSpace(value)
+                    || value == "-1"
+                    || value.Equals("unassigned", StringComparison.OrdinalIgnoreCase)
+                    || value.Equals("null", StringComparison.OrdinalIgnoreCase);
 
-                if (string.IsNullOrEmpty(responsible) || responsible == "-1")
+                var assigneeNode = xmlNode["assignee"];
+                string? assigneeFullName = assigneeNode?.InnerText?.Trim();
+                string? assigneeUsername = assigneeNode?.Attributes?["username"]?.Value?.Trim();
+
+                string? responsible = !IsMissingResponsible(assigneeFullName)
+                    ? assigneeFullName
+                    : (!IsMissingResponsible(assigneeUsername) ? assigneeUsername : null);
+
+                if (IsMissingResponsible(responsible))
                 {
                     var respNode = xmlNode.SelectSingleNode("customfields/customfield[@id='customfield_10502']/customfieldvalues/customfieldvalue");
-                    responsible = respNode?.InnerText?.Trim();
+                    var fallbackResponsible = respNode?.InnerText?.Trim();
+                    if (!IsMissingResponsible(fallbackResponsible))
+                        responsible = fallbackResponsible;
                 }
 
                 var issue = new Issue
