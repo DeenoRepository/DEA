@@ -13,11 +13,61 @@ namespace EquipmentFailureAnalysis.Views
     public partial class MainWindow : Window
     {
         private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
+        private AppPage _currentPage = AppPage.FailureAnalysis;
+
+        private enum AppPage
+        {
+            FailureAnalysis,
+            DowntimeAnalysis,
+            Settings
+        }
 
         public MainWindow()
         {
             InitializeComponent();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
+            UpdatePageVisibility();
+        }
+
+        private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _currentPage = AppPage.FailureAnalysis;
+            UpdatePageVisibility();
+        }
+
+        private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _currentPage = AppPage.DowntimeAnalysis;
+            UpdatePageVisibility();
+        }
+
+        private void SettingsButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _currentPage = AppPage.Settings;
+            UpdatePageVisibility();
+        }
+
+        private void UpdatePageVisibility()
+        {
+            var isFailureAnalysisPage = _currentPage == AppPage.FailureAnalysis;
+            var isDowntimeAnalysisPage = _currentPage == AppPage.DowntimeAnalysis;
+            var isSettingsPage = _currentPage == AppPage.Settings;
+
+            var failureCenterColumn = this.FindControl<Control>("FailureAnalysisCenterColumn");
+            if (failureCenterColumn != null)
+                failureCenterColumn.IsVisible = isFailureAnalysisPage;
+
+            var failureRightColumn = this.FindControl<Control>("FailureAnalysisRightColumn");
+            if (failureRightColumn != null)
+                failureRightColumn.IsVisible = isFailureAnalysisPage;
+
+            var downtimeAnalysisPage = this.FindControl<Control>("DowntimeAnalysisPage");
+            if (downtimeAnalysisPage != null)
+                downtimeAnalysisPage.IsVisible = isDowntimeAnalysisPage;
+
+            var settingsPage = this.FindControl<Control>("SettingsPage");
+            if (settingsPage != null)
+                settingsPage.IsVisible = isSettingsPage;
         }
 
         private void EquipmentSearchBox_GotFocus(object? sender, GotFocusEventArgs e)

@@ -17,9 +17,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         private System.Collections.Generic.List<EquipmentInfo> _allEquipment = new System.Collections.Generic.List<EquipmentInfo>();
         public ObservableCollection<DailyDowntimeIndex> DailyDowntimeIndexCollection { get; set; }
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
+        public ObservableCollection<Models.MonthRow> DowntimeMonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
+        public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows { get; set; } = new ObservableCollection<Models.DowntimeEquipmentRow>();
         public ReactiveCommand<EquipmentInfo, Unit> LoadEquipmentCommand { get; }
         public ObservableCollection<int> DayHeaders { get; set; } = new ObservableCollection<int>();
         public ObservableCollection<int> DayHours { get; set; } = new ObservableCollection<int>();
+        public ReactiveCommand<DateTime, Unit> ShowDowntimeDayCommand { get; }
         private EquipmentInfo? _selectedEquipment;
         public EquipmentInfo? SelectedEquipment
         {
@@ -130,6 +133,83 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _analysisDate;
             set => this.RaiseAndSetIfChanged(ref _analysisDate, value);
+        }
+
+        private DateTime _downtimeAnalysisDate = DateTime.Now.Date;
+        public DateTime DowntimeAnalysisDate
+        {
+            get => _downtimeAnalysisDate;
+            set => this.RaiseAndSetIfChanged(ref _downtimeAnalysisDate, value);
+        }
+
+        private int _downtimeAffectedEquipmentCount;
+        public int DowntimeAffectedEquipmentCount
+        {
+            get => _downtimeAffectedEquipmentCount;
+            set => this.RaiseAndSetIfChanged(ref _downtimeAffectedEquipmentCount, value);
+        }
+
+        private int _downtimeTotalIssues;
+        public int DowntimeTotalIssues
+        {
+            get => _downtimeTotalIssues;
+            set => this.RaiseAndSetIfChanged(ref _downtimeTotalIssues, value);
+        }
+
+        private int _downtimeRepairsCount;
+        public int DowntimeRepairsCount
+        {
+            get => _downtimeRepairsCount;
+            set => this.RaiseAndSetIfChanged(ref _downtimeRepairsCount, value);
+        }
+
+        private int _downtimeSetupsCount;
+        public int DowntimeSetupsCount
+        {
+            get => _downtimeSetupsCount;
+            set => this.RaiseAndSetIfChanged(ref _downtimeSetupsCount, value);
+        }
+
+        private double _downtimeAffectedSharePercent;
+        public double DowntimeAffectedSharePercent
+        {
+            get => _downtimeAffectedSharePercent;
+            set => this.RaiseAndSetIfChanged(ref _downtimeAffectedSharePercent, value);
+        }
+
+        private string _downtimeTotalDuration = "00:00";
+        public string DowntimeTotalDuration
+        {
+            get => _downtimeTotalDuration;
+            set => this.RaiseAndSetIfChanged(ref _downtimeTotalDuration, value);
+        }
+
+        private string _downtimeAvgIssuesPerEquipment = "0.0";
+        public string DowntimeAvgIssuesPerEquipment
+        {
+            get => _downtimeAvgIssuesPerEquipment;
+            set => this.RaiseAndSetIfChanged(ref _downtimeAvgIssuesPerEquipment, value);
+        }
+
+        private string _downtimePeakHour = "-";
+        public string DowntimePeakHour
+        {
+            get => _downtimePeakHour;
+            set => this.RaiseAndSetIfChanged(ref _downtimePeakHour, value);
+        }
+
+        private string _downtimeTopEquipment = "-";
+        public string DowntimeTopEquipment
+        {
+            get => _downtimeTopEquipment;
+            set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipment, value);
+        }
+
+        private int _downtimeTopEquipmentIssues;
+        public int DowntimeTopEquipmentIssues
+        {
+            get => _downtimeTopEquipmentIssues;
+            set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipmentIssues, value);
         }
 
         private int _faultsForDay;
@@ -292,6 +372,11 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             // start with empty daily index collection; it will be populated when the user clicks an equipment button
             DailyDowntimeIndexCollection = new ObservableCollection<DailyDowntimeIndex>();
+
+            ShowDowntimeDayCommand = ReactiveCommand.Create<DateTime>(date =>
+            {
+                BuildDowntimeDayEquipmentRows(date);
+            });
 
             // Command that fills DailyDowntimeIndexCollection for the selected equipment
             LoadEquipmentCommand = ReactiveCommand.Create<EquipmentInfo>(equipment =>
@@ -560,6 +645,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                         ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
                 });
             }
+
+            BuildDowntimeHeatmap();
+            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
         }
 
         // Refresh daily indices and month rows for UI for a given equipment without reassigning commands
@@ -648,6 +736,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                         ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
                 });
             }
+
+            BuildDowntimeHeatmap();
+            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
         }
 
         // Return issues for equipment filtered by ShowRepairs/ShowSetups
@@ -772,6 +863,141 @@ namespace EquipmentFailureAnalysis.ViewModels
                 }
                 catch { }
             });
+        }
+
+        private void BuildDowntimeHeatmap()
+        {
+            DowntimeMonthRows.Clear();
+            var year = DateTime.Now.Year;
+
+            for (int month = 1; month <= 12; month++)
+            {
+                var monthDate = new DateTime(year, month, 1);
+                var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
+                var monthRow = new Models.MonthRow
+                {
+                    Month = monthDate.Month,
+                    Year = monthDate.Year,
+                    MonthName = monthDate.ToString("MMM")
+                };
+
+                for (int d = 1; d <= 31; d++)
+                {
+                    var isValid = d <= daysInMonth;
+                    var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = isValid };
+
+                    if (isValid)
+                    {
+                        var day = new DateTime(monthDate.Year, monthDate.Month, d);
+                        var dayEnd = day.AddDays(1);
+                        cell.Date = day;
+                        cell.Index = _masterEquipment.Count(eq => eq.Issues.Any(issue => issue.End > day && issue.Start < dayEnd));
+                    }
+
+                    monthRow.Days.Add(cell);
+                }
+
+                DowntimeMonthRows.Add(monthRow);
+            }
+        }
+
+        private void BuildDowntimeDayEquipmentRows(DateTime date)
+        {
+            DowntimeAnalysisDate = date.Date;
+            DowntimeDayEquipmentRows.Clear();
+
+            var dayStart = date.Date;
+            var dayEnd = dayStart.AddDays(1);
+
+            var rows = new System.Collections.Generic.List<Models.DowntimeEquipmentRow>();
+            int totalIssues = 0;
+            int totalRepairs = 0;
+            int totalSetups = 0;
+            double totalMergedDownMinutes = 0.0;
+            var affectedByHour = new int[24];
+
+            foreach (var equipment in _masterEquipment)
+            {
+                var issuesForDay = equipment.Issues.Where(issue => issue.End > dayStart && issue.Start < dayEnd).ToList();
+                if (issuesForDay.Count == 0)
+                    continue;
+
+                totalIssues += issuesForDay.Count;
+                totalRepairs += issuesForDay.Count(i => i.Type == IssueType.Ремонт);
+                totalSetups += issuesForDay.Count(i => i.Type == IssueType.Настройка);
+
+                var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+                var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+                var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+
+                foreach (var issue in issuesForDay)
+                {
+                    var overlapStart = issue.Start < dayStart ? dayStart : issue.Start;
+                    var overlapEnd = issue.End > dayEnd ? dayEnd : issue.End;
+                    if (overlapEnd <= overlapStart)
+                        continue;
+
+                    int sMin = Math.Clamp((int)Math.Round((overlapStart - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                    int eMin = Math.Clamp((int)Math.Round((overlapEnd - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                    if (eMin <= sMin)
+                        eMin = Math.Min(24 * 60, sMin + 1);
+
+                    intervals.Add((sMin, eMin));
+                    if (issue.Type == IssueType.Ремонт)
+                        repairsIntervals.Add((sMin, eMin));
+                    else if (issue.Type == IssueType.Настройка)
+                        setupsIntervals.Add((sMin, eMin));
+                }
+
+                var merged = MergeIntervals(intervals);
+                var repairsMerged = MergeIntervals(repairsIntervals);
+                var setupsMerged = MergeIntervals(setupsIntervals);
+
+                totalMergedDownMinutes += merged.Sum(m => Math.Max(0, m.eMin - m.sMin));
+                foreach (var m in merged)
+                {
+                    int startHour = Math.Clamp((int)Math.Floor(m.sMin / 60.0), 0, 23);
+                    int endHour = Math.Clamp((int)Math.Ceiling(m.eMin / 60.0), 0, 24);
+                    for (int h = startHour; h < endHour; h++)
+                        affectedByHour[h]++;
+                }
+
+                rows.Add(new Models.DowntimeEquipmentRow
+                {
+                    Title = equipment.Title,
+                    InventoryNumber = equipment.InventoryNumber ?? "-",
+                    IssuesCount = issuesForDay.Count,
+                    TimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(merged)),
+                    RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(repairsMerged)),
+                    SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(setupsMerged))
+                });
+            }
+
+            foreach (var row in rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title))
+                DowntimeDayEquipmentRows.Add(row);
+
+            DowntimeAffectedEquipmentCount = rows.Count;
+            DowntimeTotalIssues = totalIssues;
+            DowntimeRepairsCount = totalRepairs;
+            DowntimeSetupsCount = totalSetups;
+            DowntimeAffectedSharePercent = _masterEquipment.Count == 0 ? 0.0 : rows.Count * 100.0 / _masterEquipment.Count;
+            DowntimeTotalDuration = TimeSpan.FromMinutes(totalMergedDownMinutes).ToString(@"hh\:mm");
+            DowntimeAvgIssuesPerEquipment = rows.Count == 0 ? "0.0" : (totalIssues / (double)rows.Count).ToString("0.0");
+
+            int peakCount = affectedByHour.Max();
+            if (peakCount > 0)
+            {
+                int peakHour = Array.IndexOf(affectedByHour, peakCount);
+                DowntimePeakHour = $"{peakHour:00}:00 ({peakCount})";
+            }
+            else
+            {
+                DowntimePeakHour = "-";
+            }
+
+            var top = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title).FirstOrDefault();
+            DowntimeTopEquipment = top?.Title ?? "-";
+            DowntimeTopEquipmentIssues = top?.IssuesCount ?? 0;
         }
 
         private static System.Collections.Generic.List<(int sMin, int eMin)> MergeIntervals(System.Collections.Generic.List<(int sMin, int eMin)> intervals)

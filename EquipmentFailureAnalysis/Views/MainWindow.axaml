@@ -165,7 +165,7 @@
 					<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="#6B7280" Margin="0,-2,0,2" TextWrapping="Wrap" />
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="4">
-						<Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8">
+                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="FailureAnalysisButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
 								<TextBlock Text="Анализ неисправностей" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Карта тепла, график простоев и поиск оборудования" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -174,7 +174,7 @@
 					</Border>
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="4">
-						<Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8">
+                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DowntimeAnalysisButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
 								<TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Карта тепла, перечень оборудования с фиксацей простоев за день" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -183,7 +183,7 @@
 					</Border>
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="4">
-						<Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8">
+                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="SettingsButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
 								<TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Параметры отображения и конфигурация приложения" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -194,7 +194,7 @@
 			</Border>
 		</Grid>
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
-        <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="1" Grid.Row="1" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Grid Margin="0,0,0,8">
 					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
@@ -388,9 +388,8 @@
 				</Grid>
 		</StackPanel>
 		</ScrollViewer>
-   <Grid Grid.Column="2" Grid.Row="1" Margin="8,12,0,12" MinWidth="380" MaxWidth="460" HorizontalAlignment="Right">
-     <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
-               <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
+   <Grid x:Name="FailureAnalysisRightColumn" Grid.Column="2" Grid.Row="1" Margin="8,0,0,0" MinWidth="380" MaxWidth="460" HorizontalAlignment="Right">
+			   <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
                    <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
 
 					  <TextBlock Grid.Row="0" Text="Статистика" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
@@ -479,6 +478,208 @@
 						</Border>
 					</Grid>
 				</Border>
+ </Grid>
+
+  <Grid x:Name="DowntimeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="7*" />
+			<ColumnDefinition Width="1.9*" />
+		</Grid.ColumnDefinitions>
+
+       <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+			<StackPanel Spacing="10">
+				<Grid Margin="0,0,0,8">
+					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
+						<StackPanel HorizontalAlignment="Stretch">
+							<TextBlock Text="Карта тепла оборудования" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+							<TextBlock Text="Значение ячейки: количество единиц оборудования с неисправностями за день" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
+							<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+								<StackPanel Margin="2">
+									<StackPanel Orientation="Horizontal" Margin="0,6,0,6">
+										<TextBlock Width="72" />
+										<ItemsControl ItemsSource="{Binding DayHeaders}">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Margin="2" Background="Transparent">
+														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+
+									<ItemsControl ItemsSource="{Binding DowntimeMonthRows}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel Orientation="Vertical" />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<StackPanel Orientation="Horizontal" Margin="2">
+													<TextBlock Text="{Binding MonthName}" Width="72" VerticalAlignment="Center" Margin="2" />
+													<ItemsControl ItemsSource="{Binding Days}">
+														<ItemsControl.ItemsPanel>
+															<ItemsPanelTemplate>
+																<StackPanel Orientation="Horizontal" />
+															</ItemsPanelTemplate>
+														</ItemsControl.ItemsPanel>
+														<ItemsControl.ItemTemplate>
+															<DataTemplate>
+																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
+																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
+																	<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="4" Background="{Binding ., Converter={StaticResource DayCellConverter}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
+																	</Border>
+																</Button>
+															</DataTemplate>
+														</ItemsControl.ItemTemplate>
+													</ItemsControl>
+												</StackPanel>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</ScrollViewer>
+						</StackPanel>
+					</Border>
+				</Grid>
+
+				<Grid>
+					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
+						<StackPanel>
+							<TextBlock Text="Оборудование с неисправностями за выбранный день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+							<TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='Дата: {0:dd.MM.yyyy}'}" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
+
+							<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,2,4,6">
+								<TextBlock Grid.Column="0" Text="Оборудование" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+								<TextBlock Grid.Column="1" Text="График" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+							</Grid>
+							<Border Height="1" Background="#E6EAF0" Margin="0,0,0,4" />
+
+							<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="460">
+								<ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,4">
+												<StackPanel Grid.Column="0" Margin="0,4,8,0" Spacing="2">
+													<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="#1F2937" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+													<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="#6B7280" />
+													<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
+												</StackPanel>
+												<Border Grid.Column="1" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="6" Background="#FFFFFF">
+													<views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Height="56" ShowHourLabels="False" />
+												</Border>
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</StackPanel>
+		</ScrollViewer>
+
+       <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="380" MaxWidth="460" HorizontalAlignment="Right">
+			<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+				<Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+					<TextBlock Grid.Row="0" Text="Статистик8а" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					<TextBlock Grid.Row="0" Text="Сводка по выбранному дню простоев" FontSize="12" Foreground="#6B7280" Margin="0,22,0,0" />
+
+					<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+						<Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+							<StackPanel>
+								<TextBlock Text="Дата" FontSize="12" Foreground="#7A4BAE" />
+								<TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
+							</StackPanel>
+						</Border>
+						<Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="12" Width="140" Margin="8,0,0,0">
+							<StackPanel>
+								<TextBlock Text="Охват" FontSize="12" Foreground="#1976D2" />
+								<TextBlock Text="{Binding DowntimeAffectedSharePercent, StringFormat='{}{0:0.0}%'}" FontWeight="Bold" />
+							</StackPanel>
+						</Border>
+					</Grid>
+
+					<Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="10">
+						<StackPanel Spacing="8">
+							<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="6">
+								<Border Grid.Row="0" Grid.Column="0" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="Оборудование" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeAffectedEquipmentCount, StringFormat='{}{0} ед.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Row="0" Grid.Column="1" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="События" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeTotalIssues, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Row="1" Grid.Column="0" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="Ремонты" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeRepairsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Row="1" Grid.Column="1" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="Настройки" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeSetupsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Row="2" Grid.Column="0" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="Суммарный простой" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeTotalDuration}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Row="2" Grid.Column="1" Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+									<StackPanel>
+										<TextBlock Text="Ср. событий / ед." FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DowntimeAvgIssuesPerEquipment}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+									</StackPanel>
+								</Border>
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<Border Grid.Row="3" Background="#FFFFFF" CornerRadius="8" Padding="10" BorderBrush="#E6EAF0" BorderThickness="1" VerticalAlignment="Stretch">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Ключевые показатели дня" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+								<StackPanel>
+									<TextBlock Text="Пиковый час по количеству оборудования" FontSize="11" Foreground="#6B7280" />
+									<TextBlock Text="{Binding DowntimePeakHour}" FontSize="14" FontWeight="SemiBold" Foreground="#111827" />
+								</StackPanel>
+							</Border>
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="8">
+								<StackPanel>
+									<TextBlock Text="Оборудование с максимальным числом событий" FontSize="11" Foreground="#6B7280" />
+									<TextBlock Text="{Binding DowntimeTopEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+									<TextBlock Text="{Binding DowntimeTopEquipmentIssues, StringFormat='{}{0} событий'}" FontSize="12" Foreground="#6B7280" />
+								</StackPanel>
+							</Border>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
 	</Grid>
+	<Border x:Name="SettingsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,12,8,12" Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" IsVisible="False" />
 	</Grid>
 </Window>
