@@ -973,7 +973,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 });
             }
 
-            foreach (var row in rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title))
+            foreach (var row in rows.OrderByDescending(r => r.IssuesCount))
                 DowntimeDayEquipmentRows.Add(row);
 
             DowntimeAffectedEquipmentCount = rows.Count;

@@ -212,7 +212,7 @@
 										ItemsSource="{Binding EquipmentCollection}"
 										SelectedItem="{Binding SelectedEquipmentFromSearch, Mode=TwoWay}"
 										Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-										IsEditable="True"
+                                        IsEditable="True"
 										HorizontalAlignment="Stretch"
 										BorderThickness="0"
 										Background="Transparent"
@@ -486,7 +486,7 @@
 			<ColumnDefinition Width="1.9*" />
 		</Grid.ColumnDefinitions>
 
-       <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+       <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel Spacing="10">
 				<Grid Margin="0,0,0,8">
 					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
@@ -494,7 +494,7 @@
 						<StackPanel HorizontalAlignment="Stretch">
 							<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
 							<TextBlock Text="Значение ячейки: количество единиц оборудования с неисправностями за день" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
-							<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                          <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
 								<StackPanel Margin="2">
 									<StackPanel Orientation="Horizontal" Margin="0,6,0,6">
 										<TextBlock Width="72" />
@@ -565,7 +565,7 @@
 							</Grid>
 							<Border Height="1" Background="#E6EAF0" Margin="0,0,0,4" />
 
-							<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="460">
+                          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" MaxHeight="460">
 								<ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
 									<ItemsControl.ItemsPanel>
 										<ItemsPanelTemplate>
