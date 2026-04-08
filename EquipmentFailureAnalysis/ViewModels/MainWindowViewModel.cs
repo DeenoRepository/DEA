@@ -32,6 +32,13 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _employeeAnalysisRows;
             set => this.RaiseAndSetIfChanged(ref _employeeAnalysisRows, value);
         }
+
+        private ObservableCollection<Models.DashboardTrendPoint> _dashboardMonthlyTrends = new ObservableCollection<Models.DashboardTrendPoint>();
+        public ObservableCollection<Models.DashboardTrendPoint> DashboardMonthlyTrends
+        {
+            get => _dashboardMonthlyTrends;
+            set => this.RaiseAndSetIfChanged(ref _dashboardMonthlyTrends, value);
+        }
         public ReactiveCommand<EquipmentInfo, Unit> LoadEquipmentCommand { get; }
         public ObservableCollection<int> DayHeaders { get; set; } = new ObservableCollection<int>();
         public ObservableCollection<int> DayHours { get; set; } = new ObservableCollection<int>();
@@ -334,6 +341,118 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _employeeSlaBreaches;
             set => this.RaiseAndSetIfChanged(ref _employeeSlaBreaches, value);
+        }
+
+        private int _dashboardCurrentPeriodIssues;
+        public int DashboardCurrentPeriodIssues
+        {
+            get => _dashboardCurrentPeriodIssues;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodIssues, value);
+        }
+
+        private int _dashboardPreviousPeriodIssues;
+        public int DashboardPreviousPeriodIssues
+        {
+            get => _dashboardPreviousPeriodIssues;
+            set => this.RaiseAndSetIfChanged(ref _dashboardPreviousPeriodIssues, value);
+        }
+
+        private double _dashboardIssuesTrendPercent;
+        public double DashboardIssuesTrendPercent
+        {
+            get => _dashboardIssuesTrendPercent;
+            set => this.RaiseAndSetIfChanged(ref _dashboardIssuesTrendPercent, value);
+        }
+
+        private string _dashboardIssuesTrendText = "Стабильно";
+        public string DashboardIssuesTrendText
+        {
+            get => _dashboardIssuesTrendText;
+            set => this.RaiseAndSetIfChanged(ref _dashboardIssuesTrendText, value);
+        }
+
+        private int _dashboardCurrentPeriodRepairs;
+        public int DashboardCurrentPeriodRepairs
+        {
+            get => _dashboardCurrentPeriodRepairs;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodRepairs, value);
+        }
+
+        private int _dashboardCurrentPeriodSetups;
+        public int DashboardCurrentPeriodSetups
+        {
+            get => _dashboardCurrentPeriodSetups;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSetups, value);
+        }
+
+        private string _dashboardCurrentPeriodAvgDuration = "00:00";
+        public string DashboardCurrentPeriodAvgDuration
+        {
+            get => _dashboardCurrentPeriodAvgDuration;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodAvgDuration, value);
+        }
+
+        private int _dashboardCurrentPeriodAffectedEquipment;
+        public int DashboardCurrentPeriodAffectedEquipment
+        {
+            get => _dashboardCurrentPeriodAffectedEquipment;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodAffectedEquipment, value);
+        }
+
+        private int _dashboardCurrentPeriodActiveEmployees;
+        public int DashboardCurrentPeriodActiveEmployees
+        {
+            get => _dashboardCurrentPeriodActiveEmployees;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodActiveEmployees, value);
+        }
+
+        private double _dashboardCurrentPeriodSlaCompliancePercent;
+        public double DashboardCurrentPeriodSlaCompliancePercent
+        {
+            get => _dashboardCurrentPeriodSlaCompliancePercent;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSlaCompliancePercent, value);
+        }
+
+        private int _dashboardCurrentPeriodSlaBreaches;
+        public int DashboardCurrentPeriodSlaBreaches
+        {
+            get => _dashboardCurrentPeriodSlaBreaches;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSlaBreaches, value);
+        }
+
+        private int _dashboardMaxIssuesInMonth;
+        public int DashboardMaxIssuesInMonth
+        {
+            get => _dashboardMaxIssuesInMonth;
+            set => this.RaiseAndSetIfChanged(ref _dashboardMaxIssuesInMonth, value);
+        }
+
+        private string _dashboardTopPerformer = "-";
+        public string DashboardTopPerformer
+        {
+            get => _dashboardTopPerformer;
+            set => this.RaiseAndSetIfChanged(ref _dashboardTopPerformer, value);
+        }
+
+        private string _dashboardTopPerformerValue = "-";
+        public string DashboardTopPerformerValue
+        {
+            get => _dashboardTopPerformerValue;
+            set => this.RaiseAndSetIfChanged(ref _dashboardTopPerformerValue, value);
+        }
+
+        private string _dashboardRiskEquipment = "-";
+        public string DashboardRiskEquipment
+        {
+            get => _dashboardRiskEquipment;
+            set => this.RaiseAndSetIfChanged(ref _dashboardRiskEquipment, value);
+        }
+
+        private string _dashboardRiskEquipmentValue = "0 событий";
+        public string DashboardRiskEquipmentValue
+        {
+            get => _dashboardRiskEquipmentValue;
+            set => this.RaiseAndSetIfChanged(ref _dashboardRiskEquipmentValue, value);
         }
 
         public ObservableCollection<string> EmployeeAnalysisMonthOptions { get; } = new ObservableCollection<string>();
@@ -1041,6 +1160,131 @@ namespace EquipmentFailureAnalysis.ViewModels
             EmployeeAnalysisPeriodDescription = string.IsNullOrWhiteSpace(SelectedEmployeeAnalysisMonth)
                 ? "Текущий месяц"
                 : SelectedEmployeeAnalysisMonth;
+
+            BuildDashboard();
+        }
+
+        private void BuildDashboard()
+        {
+            var now = DateTime.Now;
+            var currentPeriodStart = now.Date.AddDays(-30);
+            var currentPeriodEnd = now.Date.AddDays(1);
+            var previousPeriodStart = currentPeriodStart.AddDays(-30);
+            var previousPeriodEnd = currentPeriodStart;
+
+            var currentIssues = GetIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
+            var previousIssues = GetIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
+
+            DashboardCurrentPeriodIssues = currentIssues.Count;
+            DashboardPreviousPeriodIssues = previousIssues.Count;
+
+            var previousBaseline = Math.Max(1, DashboardPreviousPeriodIssues);
+            DashboardIssuesTrendPercent = (DashboardCurrentPeriodIssues - DashboardPreviousPeriodIssues) * 100.0 / previousBaseline;
+            if (DashboardCurrentPeriodIssues > DashboardPreviousPeriodIssues)
+                DashboardIssuesTrendText = "Рост нагрузки";
+            else if (DashboardCurrentPeriodIssues < DashboardPreviousPeriodIssues)
+                DashboardIssuesTrendText = "Снижение нагрузки";
+            else
+                DashboardIssuesTrendText = "Стабильно";
+
+            DashboardCurrentPeriodRepairs = currentIssues.Count(i => i.Issue.Type == IssueType.Ремонт);
+            DashboardCurrentPeriodSetups = currentIssues.Count(i => i.Issue.Type == IssueType.Настройка);
+
+            var avgDurationMinutes = currentIssues.Count == 0
+                ? 0.0
+                : currentIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+            DashboardCurrentPeriodAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
+
+            DashboardCurrentPeriodAffectedEquipment = currentIssues
+                .Select(i => i.Equipment.Title)
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .Count();
+
+            var assignedCurrentIssues = currentIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
+            DashboardCurrentPeriodActiveEmployees = assignedCurrentIssues
+                .Select(i => i.Issue.Responsible!.Trim())
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .Count();
+
+            var slaMetCount = assignedCurrentIssues.Count(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+            DashboardCurrentPeriodSlaBreaches = Math.Max(0, assignedCurrentIssues.Count - slaMetCount);
+            DashboardCurrentPeriodSlaCompliancePercent = assignedCurrentIssues.Count == 0
+                ? 0.0
+                : slaMetCount * 100.0 / assignedCurrentIssues.Count;
+
+            var topPerformer = EmployeeAnalysisRows.FirstOrDefault();
+            DashboardTopPerformer = topPerformer?.Name ?? "-";
+            DashboardTopPerformerValue = topPerformer == null
+                ? "Нет данных"
+                : $"Оценка {topPerformer.PerformanceSummary}, SLA {topPerformer.SlaCompliancePercent:0.#}%";
+
+            var topRiskEquipment = currentIssues
+                .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ThenBy(x => x.Name)
+                .FirstOrDefault();
+            DashboardRiskEquipment = AddSoftWrapOpportunities(topRiskEquipment?.Name ?? "-");
+            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 событий" : $"{topRiskEquipment.Count} событий за 30 дней";
+
+            BuildDashboardMonthlyTrends(now);
+        }
+
+        private void BuildDashboardMonthlyTrends(DateTime referenceDate)
+        {
+            var months = new System.Collections.Generic.List<(DateTime start, DateTime end, string label)>();
+            var culture = new CultureInfo("ru-RU");
+
+            for (int i = 5; i >= 0; i--)
+            {
+                var start = new DateTime(referenceDate.Year, referenceDate.Month, 1).AddMonths(-i);
+                var end = start.AddMonths(1);
+                months.Add((start, end, start.ToString("MMM yyyy", culture)));
+            }
+
+            var trendItems = months
+                .Select(m =>
+                {
+                    var monthIssues = GetIssuesOverlappingPeriod(m.start, m.end).ToList();
+                    var avgMinutes = monthIssues.Count == 0
+                        ? 0.0
+                        : monthIssues.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+
+                    var monthAssignedIssues = monthIssues
+                        .Where(x => !IsUnassignedResponsible(x.Issue.Responsible))
+                        .ToList();
+                    var monthSlaMetCount = monthAssignedIssues
+                        .Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var monthSlaPercent = monthAssignedIssues.Count == 0
+                        ? 0.0
+                        : monthSlaMetCount * 100.0 / monthAssignedIssues.Count;
+
+                    return new Models.DashboardTrendPoint
+                    {
+                        PeriodLabel = m.label,
+                        IssuesCount = monthIssues.Count,
+                        RepairsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Ремонт),
+                        SetupsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Настройка),
+                        AvgDurationText = FormatDuration(TimeSpan.FromMinutes(avgMinutes)),
+                        SlaCompliancePercent = monthSlaPercent
+                    };
+                })
+                .ToList();
+
+            var maxIssues = Math.Max(1, trendItems.Max(t => t.IssuesCount));
+            DashboardMaxIssuesInMonth = maxIssues;
+            foreach (var item in trendItems)
+                item.IntensityPercent = item.IssuesCount * 100.0 / maxIssues;
+
+            DashboardMonthlyTrends = new ObservableCollection<Models.DashboardTrendPoint>(trendItems);
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> GetIssuesOverlappingPeriod(DateTime start, DateTime end)
+        {
+            return _masterEquipment
+                .SelectMany(eq => eq.Issues
+                    .Where(issue => issue.End > start && issue.Start < end)
+                    .Select(issue => new EmployeeIssueProjection { Equipment = eq, Issue = issue }));
         }
 
         private void RebuildEmployeeMonthOptions()

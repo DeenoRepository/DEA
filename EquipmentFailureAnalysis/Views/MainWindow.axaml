@@ -124,7 +124,7 @@
 	<Grid>
         <Grid.ColumnDefinitions>
 			<!-- Use star sizing so layout adapts when window is resized -->
-          <ColumnDefinition Width="1.5*" />
+         <ColumnDefinition Width="240" />
 			<ColumnDefinition Width="7*" />
           <ColumnDefinition Width="1.9*" />
 		</Grid.ColumnDefinitions>
@@ -159,6 +159,15 @@
                 <StackPanel Spacing="10">
 					<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 					<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="#6B7280" Margin="0,-2,0,2" TextWrapping="Wrap" />
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
+						<Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DashboardButton_Click">
+							<StackPanel Spacing="2" HorizontalAlignment="Left">
+                               <TextBlock Text="Панель управления" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
+								<TextBlock Text="Общие тренды по работам, простоям и эффективности сотрудников" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+							</StackPanel>
+						</Button>
+					</Border>
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
                      <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="FailureAnalysisButton_Click">
@@ -198,6 +207,186 @@
 				</StackPanel>
 			</Border>
 		</Grid>
+  <Grid x:Name="DashboardPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="7*" />
+			<ColumnDefinition Width="1.9*" />
+		</Grid.ColumnDefinitions>
+
+		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+			<StackPanel Spacing="10">
+				<Grid>
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel>
+                          <TextBlock Text="Состояние работ" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Показывает текущую интенсивность работ и ключевые изменения относительно предыдущего периода" FontSize="12" Foreground="#6B7280" Margin="0,2,0,10" TextWrapping="Wrap" />
+
+							<Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+								<Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+									<StackPanel>
+										<TextBlock Text="События за 30 дн." FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DashboardCurrentPeriodIssues, StringFormat='{}{0}'}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+										<TextBlock Text="{Binding DashboardIssuesTrendText}" FontSize="11" Foreground="#2563EB" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+									<StackPanel>
+										<TextBlock Text="Предыдущие 30 дн." FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DashboardPreviousPeriodIssues, StringFormat='{}{0}'}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+										<TextBlock Text="{Binding DashboardIssuesTrendPercent, StringFormat='Δ {0:+0.0;-0.0;0}%'}" FontSize="11" Foreground="#B45309" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+									<StackPanel>
+										<TextBlock Text="Активное оборудование" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DashboardCurrentPeriodAffectedEquipment, StringFormat='{}{0} ед.'}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+										<TextBlock Text="{Binding EquipmentCollection.Count, StringFormat='В системе: {0}'}" FontSize="11" Foreground="#6B7280" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Column="3" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+									<StackPanel>
+										<TextBlock Text="Средняя длительность" FontSize="11" Foreground="#6B7280" />
+										<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+										<TextBlock Text="на одно событие" FontSize="11" Foreground="#6B7280" />
+									</StackPanel>
+								</Border>
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+
+                <Grid>
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Тренды по месяцам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Динамика нагрузки и качества выполнения по последним месяцам" FontSize="12" Foreground="#6B7280" />
+
+							<Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+								<Border Grid.Column="0" Background="#EEF4FF" BorderBrush="#D9E7FF" BorderThickness="1" CornerRadius="0" Padding="8,4">
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<TextBlock Text="Пик:" FontSize="11" Foreground="#4B5563" />
+										<TextBlock Text="{Binding DashboardMaxIssuesInMonth}" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8" />
+									</StackPanel>
+								</Border>
+								<Border Grid.Column="1" Background="#ECFDF5" BorderBrush="#CFF4E1" BorderThickness="1" CornerRadius="0" Padding="8,4">
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<TextBlock Text="SLA:" FontSize="11" Foreground="#4B5563" />
+										<TextBlock Text="{Binding DashboardCurrentPeriodSlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" FontWeight="SemiBold" Foreground="#0F766E" />
+									</StackPanel>
+								</Border>
+							</Grid>
+
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+								<Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
+									<StackPanel Spacing="4">
+										<TextBlock Text="События" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+										<ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+                                                  <Grid ColumnDefinitions="1.2*,3*,56" ColumnSpacing="6" Margin="0,1">
+														<TextBlock Grid.Column="0" Text="{Binding PeriodLabel}" FontSize="11" Foreground="#4B5563" VerticalAlignment="Center" />
+														<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding DataContext.DashboardMaxIssuesInMonth, RelativeSource={RelativeSource AncestorType=Window}}" Value="{Binding IssuesCount}" Height="7" VerticalAlignment="Center" />
+                                                      <TextBlock Grid.Column="2" Text="{Binding IssuesCount}" FontSize="11" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" />
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</Border>
+
+								<Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
+									<StackPanel Spacing="4">
+										<TextBlock Text="SLA" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+										<ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+                                                  <Grid ColumnDefinitions="1.2*,3*,68" ColumnSpacing="6" Margin="0,1">
+														<TextBlock Grid.Column="0" Text="{Binding PeriodLabel}" FontSize="11" Foreground="#4B5563" VerticalAlignment="Center" />
+														<ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding SlaCompliancePercent}" Height="7" VerticalAlignment="Center" />
+                                                      <TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="11" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" />
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</Border>
+							</Grid>
+
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
+								<StackPanel Spacing="3">
+									<Grid ColumnDefinitions="1.2*,0.8*,0.8*,0.8*,*" Margin="2,0">
+										<TextBlock Grid.Column="0" Text="Месяц" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+										<TextBlock Grid.Column="1" Text="Соб." FontSize="12" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="2" Text="Рем." FontSize="12" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="3" Text="Наст." FontSize="12" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="4" Text="Ср. время" FontSize="12" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Right" />
+									</Grid>
+									<ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Border BorderBrush="#EDF1F5" BorderThickness="0,1,0,0" Padding="2,3">
+                                                    <Grid ColumnDefinitions="1.2*,0.8*,0.8*,0.8*,*">
+														<TextBlock Grid.Column="0" Text="{Binding PeriodLabel}" FontSize="12" Foreground="#1F2937" />
+														<TextBlock Grid.Column="1" Text="{Binding IssuesCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+														<TextBlock Grid.Column="2" Text="{Binding RepairsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+														<TextBlock Grid.Column="3" Text="{Binding SetupsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+														<TextBlock Grid.Column="4" Text="{Binding AvgDurationText}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+													</Grid>
+												</Border>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</Border>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</StackPanel>
+		</ScrollViewer>
+
+		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+			<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Качество команды" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					<TextBlock Text="Индикаторы SLA и персональной эффективности за последние 30 дней" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="SLA за период" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardCurrentPeriodSlaCompliancePercent, StringFormat='Соблюдение: {0:0.0}%'}" FontSize="14" FontWeight="SemiBold" Foreground="#0F766E" />
+							<TextBlock Text="{Binding DashboardCurrentPeriodSlaBreaches, StringFormat='Нарушений: {0}'}" FontSize="12" Foreground="#B91C1C" />
+							<ProgressBar Minimum="0" Maximum="100" Value="{Binding DashboardCurrentPeriodSlaCompliancePercent}" Height="7" Margin="0,6,0,0" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Лучший исполнитель" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="14" FontWeight="SemiBold" Foreground="#111827" TextWrapping="Wrap" />
+							<TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Зона внимания" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="14" FontWeight="SemiBold" Foreground="#111827" TextWrapping="WrapWithOverflow" />
+							<TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="12" Foreground="#6B7280" />
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</Border>
+		</Grid>
+	</Grid>
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
         <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="1" Grid.Row="1" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -322,7 +511,7 @@
 																</ToolTip.Tip>
 																<Button.ContextMenu>
 																	<ContextMenu>
-																		<MenuItem Header="Показать в дашборде" Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding DataContext.SelectedEquipment, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                 <MenuItem Header="Показать в панели управления" Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding DataContext.SelectedEquipment, RelativeSource={RelativeSource AncestorType=Window}}" />
 																	</ContextMenu>
 																</Button.ContextMenu>
 																</Button>
@@ -797,12 +986,12 @@
 							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10" Margin="0,8,0,0">
 								<StackPanel Spacing="6">
 									<TextBlock Text="Структура событий" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-									<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
 										<TextBlock Grid.Column="0" Text="Ремонты" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
 										<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding EmployeeTotalIssues}" Value="{Binding EmployeeRepairsTotal}" Height="8" VerticalAlignment="Center" />
 										<TextBlock Grid.Column="2" Text="{Binding EmployeeRepairsTotal, StringFormat='{}{0}'}" FontSize="11" Foreground="#111827" VerticalAlignment="Center" />
 									</Grid>
-									<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
 										<TextBlock Grid.Column="0" Text="Настройки" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
 										<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding EmployeeTotalIssues}" Value="{Binding EmployeeSetupsTotal}" Height="8" VerticalAlignment="Center" />
 										<TextBlock Grid.Column="2" Text="{Binding EmployeeSetupsTotal, StringFormat='{}{0}'}" FontSize="11" Foreground="#111827" VerticalAlignment="Center" />

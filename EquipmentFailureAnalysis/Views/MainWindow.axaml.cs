@@ -17,10 +17,11 @@ namespace EquipmentFailureAnalysis.Views
     public partial class MainWindow : Window
     {
         private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
-        private AppPage _currentPage = AppPage.FailureAnalysis;
+        private AppPage _currentPage = AppPage.Dashboard;
 
         private enum AppPage
         {
+            Dashboard,
             FailureAnalysis,
             DowntimeAnalysis,
             Settings,
@@ -184,6 +185,12 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        private void DashboardButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _currentPage = AppPage.Dashboard;
+            UpdatePageVisibility();
+        }
+
         private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
@@ -209,10 +216,15 @@ namespace EquipmentFailureAnalysis.Views
 
         private void UpdatePageVisibility()
         {
+            var isDashboardPage = _currentPage == AppPage.Dashboard;
             var isFailureAnalysisPage = _currentPage == AppPage.FailureAnalysis;
             var isDowntimeAnalysisPage = _currentPage == AppPage.DowntimeAnalysis;
             var isSettingsPage = _currentPage == AppPage.Settings;
             var isEmployeeAnalysisPage = _currentPage == AppPage.EmployeeAnalysis;
+
+            var dashboardPage = this.FindControl<Control>("DashboardPage");
+            if (dashboardPage != null)
+                dashboardPage.IsVisible = isDashboardPage;
 
             var failureCenterColumn = this.FindControl<Control>("FailureAnalysisCenterColumn");
             if (failureCenterColumn != null)
