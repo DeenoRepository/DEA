@@ -7,6 +7,10 @@ using EquipmentFailureAnalysis.Utility;
 using System.Linq;
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -22,11 +26,155 @@ namespace EquipmentFailureAnalysis.Views
             Settings
         }
 
+        private async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var url = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty;
+            var username = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty;
+            var token = this.FindControl<TextBox>("JiraTokenBox")?.Text ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                await ShowMessageAsync("Ошибка", "Укажите URL XML-ресурса Jira.");
+                return;
+            }
+
+            try
+            {
+                using var client = new HttpClient();
+
+                if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(token))
+                {
+                    var authBytes = Encoding.UTF8.GetBytes($"{username}:{token}");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authBytes));
+                }
+
+                var xmlContent = await client.GetStringAsync(url);
+                if (string.IsNullOrWhiteSpace(xmlContent))
+                {
+                    await ShowMessageAsync("Ошибка", "Ресурс Jira вернул пустой ответ.");
+                    return;
+                }
+
+                var tempPath = Path.Combine(Path.GetTempPath(), $"dea_jira_{Guid.NewGuid():N}.xml");
+                await File.WriteAllTextAsync(tempPath, xmlContent, Encoding.UTF8);
+
+                try
+                {
+                    var decoder = new XmlDataDecoder(tempPath);
+                    var items = decoder.DecodeEquipment();
+
+                    if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                    {
+                        vm.ImportEquipment(items);
+                    }
+
+                    await ShowMessageAsync("Импорт", "Импорт данных из Jira успешно завершен.");
+                }
+                finally
+                {
+                    try
+                    {
+                        if (File.Exists(tempPath))
+                            File.Delete(tempPath);
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowMessageAsync("Ошибка импорта Jira", ex.Message);
+            }
+        }
+
+        private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+        {
+            var wnd = new Window
+            {
+                Title = title,
+                Width = 480,
+                Height = 160,
+                Content = new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    Margin = new Thickness(14)
+                }
+            };
+
+            await wnd.ShowDialog(this);
+        }
+
         public MainWindow()
         {
             InitializeComponent();
+            LoadJiraSettingsToUi();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
             UpdatePageVisibility();
+        }
+
+        private void JiraSettingsField_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            SaveJiraSettingsFromUi();
+        }
+
+        private sealed class JiraImportSettings
+        {
+            public string JiraResourceUrl { get; set; } = string.Empty;
+            public string JiraUsername { get; set; } = string.Empty;
+        }
+
+        private string GetJiraSettingsFile()
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EquipmentFailureAnalysis");
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            return Path.Combine(dir, "jira_import_settings.json");
+        }
+
+        private void SaveJiraSettingsFromUi()
+        {
+            try
+            {
+                var settings = new JiraImportSettings
+                {
+                    JiraResourceUrl = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty,
+                    JiraUsername = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty
+                };
+
+                var json = JsonSerializer.Serialize(settings);
+                File.WriteAllText(GetJiraSettingsFile(), json);
+            }
+            catch
+            {
+                // ignore persistence errors
+            }
+        }
+
+        private void LoadJiraSettingsToUi()
+        {
+            try
+            {
+                var file = GetJiraSettingsFile();
+                if (!File.Exists(file))
+                    return;
+
+                var json = File.ReadAllText(file);
+                var settings = JsonSerializer.Deserialize<JiraImportSettings>(json);
+                if (settings == null)
+                    return;
+
+                var urlBox = this.FindControl<TextBox>("JiraResourceUrlBox");
+                if (urlBox != null)
+                    urlBox.Text = settings.JiraResourceUrl ?? string.Empty;
+
+                var usernameBox = this.FindControl<TextBox>("JiraUsernameBox");
+                if (usernameBox != null)
+                    usernameBox.Text = settings.JiraUsername ?? string.Empty;
+            }
+            catch
+            {
+                // ignore invalid settings file
+            }
         }
 
         private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)

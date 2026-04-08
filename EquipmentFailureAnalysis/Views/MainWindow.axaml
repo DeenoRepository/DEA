@@ -680,6 +680,51 @@
 			</Border>
 		</Grid>
 	</Grid>
-	<Border x:Name="SettingsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,12,8,12" Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" IsVisible="False" />
+ <Grid x:Name="SettingsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="7*" />
+			<ColumnDefinition Width="1.9*" />
+		</Grid.ColumnDefinitions>
+
+		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+			<StackPanel Spacing="10">
+              <Grid MaxWidth="700" HorizontalAlignment="Left">
+					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
+                   <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="10">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Настройки импорта Jira" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="Укажите параметры подключения к Jira XML-ресурсу и нажмите «Импорт из Jira»." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+
+                            <StackPanel Spacing="4">
+								<TextBlock Text="URL XML-ресурса Jira" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+                              <TextBox x:Name="JiraResourceUrlBox" Watermark="https://your-jira/.../searchrequest-xml/..." Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+							</StackPanel>
+
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <StackPanel Grid.Column="0" Spacing="4">
+									<TextBlock Text="Логин Jira (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+                                    <TextBox x:Name="JiraUsernameBox" Watermark="user@company.com" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+								</StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4">
+									<TextBlock Text="API Token / пароль (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+									<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
+								</StackPanel>
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</StackPanel>
+		</ScrollViewer>
+
+		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="380" MaxWidth="460" HorizontalAlignment="Right">
+			<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Действия" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					<TextBlock Text="Импортирует XML c Jira и обновляет данные оборудования в приложении." FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+					<Button Content="Импорт из Jira" MinWidth="140" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="ImportFromJiraButton_Click" />
+				</StackPanel>
+			</Border>
+		</Grid>
+	</Grid>
 	</Grid>
 </Window>
