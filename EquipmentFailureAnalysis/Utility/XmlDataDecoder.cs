@@ -140,7 +140,11 @@ namespace EquipmentFailureAnalysis.Utility
                 string description = xmlNode["description"]?.InnerText ?? string.Empty;
                 if (!string.IsNullOrEmpty(description))
                 {
-                    description = Regex.Replace(description, "</?p\\s*>", string.Empty, RegexOptions.IgnoreCase).Trim();
+                    description = Regex.Replace(description, "<\\s*br\\s*/?\\s*>", string.Empty, RegexOptions.IgnoreCase);
+                    description = description.Replace("<\\br>", string.Empty, StringComparison.OrdinalIgnoreCase)
+                                             .Replace("</br>", string.Empty, StringComparison.OrdinalIgnoreCase);
+                    description = Regex.Replace(description, "</?p\\s*>", string.Empty, RegexOptions.IgnoreCase);
+                    description = Regex.Replace(description, "\\s+", " ").Trim();
                     if (description.Length > 0)
                         description = char.ToUpper(description[0]) + (description.Length > 1 ? description.Substring(1) : "");
                 }

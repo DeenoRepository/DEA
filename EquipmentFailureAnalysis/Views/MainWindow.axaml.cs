@@ -23,7 +23,8 @@ namespace EquipmentFailureAnalysis.Views
         {
             FailureAnalysis,
             DowntimeAnalysis,
-            Settings
+            Settings,
+            EmployeeAnalysis
         }
 
         private async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
@@ -200,11 +201,18 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _currentPage = AppPage.EmployeeAnalysis;
+            UpdatePageVisibility();
+        }
+
         private void UpdatePageVisibility()
         {
             var isFailureAnalysisPage = _currentPage == AppPage.FailureAnalysis;
             var isDowntimeAnalysisPage = _currentPage == AppPage.DowntimeAnalysis;
             var isSettingsPage = _currentPage == AppPage.Settings;
+            var isEmployeeAnalysisPage = _currentPage == AppPage.EmployeeAnalysis;
 
             var failureCenterColumn = this.FindControl<Control>("FailureAnalysisCenterColumn");
             if (failureCenterColumn != null)
@@ -221,6 +229,10 @@ namespace EquipmentFailureAnalysis.Views
             var settingsPage = this.FindControl<Control>("SettingsPage");
             if (settingsPage != null)
                 settingsPage.IsVisible = isSettingsPage;
+
+            var employeeAnalysisPage = this.FindControl<Control>("EmployeeAnalysisPage");
+            if (employeeAnalysisPage != null)
+                employeeAnalysisPage.IsVisible = isEmployeeAnalysisPage;
         }
 
         private void EquipmentSearchBox_GotFocus(object? sender, GotFocusEventArgs e)

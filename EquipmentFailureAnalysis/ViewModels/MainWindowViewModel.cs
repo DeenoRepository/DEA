@@ -5,11 +5,18 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
 using System.Reactive;
+using System.Globalization;
 
 namespace EquipmentFailureAnalysis.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private sealed class EmployeeIssueProjection
+        {
+            public required EquipmentInfo Equipment { get; init; }
+            public required Issue Issue { get; init; }
+        }
+
         public ObservableCollection<EquipmentInfo> EquipmentCollection { get; set; }
         // master list containing all equipment (unmodified)
         private System.Collections.Generic.List<EquipmentInfo> _masterEquipment = new System.Collections.Generic.List<EquipmentInfo>();
@@ -19,6 +26,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.MonthRow> DowntimeMonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows { get; set; } = new ObservableCollection<Models.DowntimeEquipmentRow>();
+        private ObservableCollection<Models.EmployeeAnalysisRow> _employeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>();
+        public ObservableCollection<Models.EmployeeAnalysisRow> EmployeeAnalysisRows
+        {
+            get => _employeeAnalysisRows;
+            set => this.RaiseAndSetIfChanged(ref _employeeAnalysisRows, value);
+        }
         public ReactiveCommand<EquipmentInfo, Unit> LoadEquipmentCommand { get; }
         public ObservableCollection<int> DayHeaders { get; set; } = new ObservableCollection<int>();
         public ObservableCollection<int> DayHours { get; set; } = new ObservableCollection<int>();
@@ -212,6 +225,138 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipmentIssues, value);
         }
 
+        private int _employeeTotalCount;
+        public int EmployeeTotalCount
+        {
+            get => _employeeTotalCount;
+            set => this.RaiseAndSetIfChanged(ref _employeeTotalCount, value);
+        }
+
+        private int _employeeTotalIssues;
+        public int EmployeeTotalIssues
+        {
+            get => _employeeTotalIssues;
+            set => this.RaiseAndSetIfChanged(ref _employeeTotalIssues, value);
+        }
+
+        private string _employeeAvgDuration = "00:00";
+        public string EmployeeAvgDuration
+        {
+            get => _employeeAvgDuration;
+            set => this.RaiseAndSetIfChanged(ref _employeeAvgDuration, value);
+        }
+
+        private double _employeeCoveragePercent;
+        public double EmployeeCoveragePercent
+        {
+            get => _employeeCoveragePercent;
+            set => this.RaiseAndSetIfChanged(ref _employeeCoveragePercent, value);
+        }
+
+        private string _employeeTopByIssues = "-";
+        public string EmployeeTopByIssues
+        {
+            get => _employeeTopByIssues;
+            set => this.RaiseAndSetIfChanged(ref _employeeTopByIssues, value);
+        }
+
+        private string _employeeTopByDuration = "-";
+        public string EmployeeTopByDuration
+        {
+            get => _employeeTopByDuration;
+            set => this.RaiseAndSetIfChanged(ref _employeeTopByDuration, value);
+        }
+
+        private string _employeeTopByIssuesValue = "0";
+        public string EmployeeTopByIssuesValue
+        {
+            get => _employeeTopByIssuesValue;
+            set => this.RaiseAndSetIfChanged(ref _employeeTopByIssuesValue, value);
+        }
+
+        private string _employeeTopByDurationValue = "00:00";
+        public string EmployeeTopByDurationValue
+        {
+            get => _employeeTopByDurationValue;
+            set => this.RaiseAndSetIfChanged(ref _employeeTopByDurationValue, value);
+        }
+
+        private int _employeeUnassignedIssues;
+        public int EmployeeUnassignedIssues
+        {
+            get => _employeeUnassignedIssues;
+            set => this.RaiseAndSetIfChanged(ref _employeeUnassignedIssues, value);
+        }
+
+        private int _employeeRepairsTotal;
+        public int EmployeeRepairsTotal
+        {
+            get => _employeeRepairsTotal;
+            set => this.RaiseAndSetIfChanged(ref _employeeRepairsTotal, value);
+        }
+
+        private int _employeeSetupsTotal;
+        public int EmployeeSetupsTotal
+        {
+            get => _employeeSetupsTotal;
+            set => this.RaiseAndSetIfChanged(ref _employeeSetupsTotal, value);
+        }
+
+        private string _employeeAvgEquipmentPerEmployee = "0.0";
+        public string EmployeeAvgEquipmentPerEmployee
+        {
+            get => _employeeAvgEquipmentPerEmployee;
+            set => this.RaiseAndSetIfChanged(ref _employeeAvgEquipmentPerEmployee, value);
+        }
+
+        private double _slaTargetMinutes = 30;
+        public double SlaTargetMinutes
+        {
+            get => _slaTargetMinutes;
+            set
+            {
+                var normalized = Math.Max(30, Math.Round(value));
+                this.RaiseAndSetIfChanged(ref _slaTargetMinutes, normalized);
+                if (_masterEquipment.Count > 0)
+                    BuildEmployeeAnalysis();
+            }
+        }
+
+        private double _employeeSlaCompliancePercent;
+        public double EmployeeSlaCompliancePercent
+        {
+            get => _employeeSlaCompliancePercent;
+            set => this.RaiseAndSetIfChanged(ref _employeeSlaCompliancePercent, value);
+        }
+
+        private int _employeeSlaBreaches;
+        public int EmployeeSlaBreaches
+        {
+            get => _employeeSlaBreaches;
+            set => this.RaiseAndSetIfChanged(ref _employeeSlaBreaches, value);
+        }
+
+        public ObservableCollection<string> EmployeeAnalysisMonthOptions { get; } = new ObservableCollection<string>();
+
+        private string _selectedEmployeeAnalysisMonth = "Текущий месяц";
+        public string SelectedEmployeeAnalysisMonth
+        {
+            get => _selectedEmployeeAnalysisMonth;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedEmployeeAnalysisMonth, value);
+                if (_masterEquipment.Count > 0)
+                    BuildEmployeeAnalysis();
+            }
+        }
+
+        private string _employeeAnalysisPeriodDescription = "Текущий месяц";
+        public string EmployeeAnalysisPeriodDescription
+        {
+            get => _employeeAnalysisPeriodDescription;
+            set => this.RaiseAndSetIfChanged(ref _employeeAnalysisPeriodDescription, value);
+        }
+
         private int _faultsForDay;
         public int FaultsForDay
         {
@@ -336,6 +481,17 @@ namespace EquipmentFailureAnalysis.ViewModels
                 EquipmentCollection.Add(e);
         }
 
+        private void FillSearchWithFirstEquipmentIfNeeded(bool force = false)
+        {
+            if (EquipmentCollection.Count == 0)
+                return;
+
+            if (!force && !string.IsNullOrWhiteSpace(SearchQuery))
+                return;
+
+            SearchQuery = EquipmentCollection[0].Title ?? string.Empty;
+        }
+
         public MainWindowViewModel()
         {
             // prepare day headers 1..31 for the heatmap top row
@@ -351,10 +507,12 @@ namespace EquipmentFailureAnalysis.ViewModels
             var all = xmlDataDecoder.DecodeEquipment().ToList();
             all.ForEach(e => { /* ensure Issues collection is not null */ });
             _masterEquipment = all;
+            RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
             // apply initial type filter and sort
             ApplyTypeFilterAndSort();
+            FillSearchWithFirstEquipmentIfNeeded();
 
             // DayCellSize will be adjusted by view to fit available area
 
@@ -659,6 +817,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             BuildDowntimeHeatmap();
             BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
+            BuildEmployeeAnalysis();
         }
 
         // Refresh daily indices and month rows for UI for a given equipment without reassigning commands
@@ -732,10 +891,12 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             var all = imported.ToList();
             _masterEquipment = all;
+            RebuildEmployeeMonthOptions();
             // keep left column ordering by total issues
             _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
             EquipmentCollection.Clear();
             ApplyFilter();
+            FillSearchWithFirstEquipmentIfNeeded(force: true);
 
             // auto-select first
             if (EquipmentCollection.Count > 0)
@@ -750,6 +911,200 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             BuildDowntimeHeatmap();
             BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
+            BuildEmployeeAnalysis();
+        }
+
+        private void BuildEmployeeAnalysis()
+        {
+            var issuesWithEquipmentAll = _masterEquipment
+                .SelectMany(eq => eq.Issues.Select(issue => new EmployeeIssueProjection { Equipment = eq, Issue = issue }))
+                .ToList();
+
+            var issuesWithEquipment = FilterEmployeeIssuesBySelectedMonth(issuesWithEquipmentAll).ToList();
+
+            EmployeeTotalIssues = issuesWithEquipment.Count;
+
+            var assignedIssues = issuesWithEquipment
+                .Where(x => !IsUnassignedResponsible(x.Issue.Responsible))
+                .ToList();
+
+            EmployeeUnassignedIssues = issuesWithEquipment.Count - assignedIssues.Count;
+            EmployeeRepairsTotal = assignedIssues.Count(x => x.Issue.Type == IssueType.Ремонт);
+            EmployeeSetupsTotal = assignedIssues.Count(x => x.Issue.Type == IssueType.Настройка);
+
+            var slaMetTotal = assignedIssues.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+            EmployeeSlaBreaches = Math.Max(0, assignedIssues.Count - slaMetTotal);
+            EmployeeSlaCompliancePercent = assignedIssues.Count == 0
+                ? 0.0
+                : slaMetTotal * 100.0 / assignedIssues.Count;
+
+            EmployeeCoveragePercent = EmployeeTotalIssues == 0
+                ? 0.0
+                : assignedIssues.Count * 100.0 / EmployeeTotalIssues;
+
+            var rows = assignedIssues
+                .GroupBy(x => x.Issue.Responsible!.Trim(), StringComparer.CurrentCultureIgnoreCase)
+                .Select(g =>
+                {
+                    var issues = g.Select(x => x.Issue).ToList();
+                    var totalDuration = TimeSpan.FromMinutes(issues.Sum(i => Math.Max(0, (i.End - i.Start).TotalMinutes)));
+                    var avgMinutes = issues.Count == 0 ? 0.0 : totalDuration.TotalMinutes / issues.Count;
+                    var lastIssueDate = issues.Count == 0 ? DateTime.MinValue : issues.Max(i => i.End);
+
+                    return new Models.EmployeeAnalysisRow
+                    {
+                        Name = g.Key,
+                        IssuesCount = issues.Count,
+                        EventSharePercent = assignedIssues.Count == 0 ? 0.0 : issues.Count * 100.0 / assignedIssues.Count,
+                        RepairsCount = issues.Count(i => i.Type == IssueType.Ремонт),
+                        SetupsCount = issues.Count(i => i.Type == IssueType.Настройка),
+                        RepairsSharePercent = issues.Count == 0 ? 0.0 : issues.Count(i => i.Type == IssueType.Ремонт) * 100.0 / issues.Count,
+                        SlaMetCount = issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= SlaTargetMinutes),
+                        SlaCompliancePercent = issues.Count == 0
+                            ? 0.0
+                            : issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= SlaTargetMinutes) * 100.0 / issues.Count,
+                        EquipmentCount = g.Select(x => x.Equipment.Title).Distinct(StringComparer.CurrentCultureIgnoreCase).Count(),
+                        TotalDuration = totalDuration,
+                        TotalDurationText = FormatDuration(totalDuration),
+                        AvgDurationMinutes = avgMinutes,
+                        AvgDurationText = FormatDuration(TimeSpan.FromMinutes(avgMinutes)),
+                        LastIssueDate = lastIssueDate,
+                        LastIssueDateText = lastIssueDate == DateTime.MinValue ? "-" : lastIssueDate.ToString("dd.MM.yyyy")
+                    };
+                })
+                .ToList();
+
+            if (rows.Count > 0)
+            {
+                const double repairComplexityWeight = 1.35;
+                const double setupComplexityWeight = 1.0;
+
+                var maxIssues = Math.Max(1, rows.Max(r => r.IssuesCount));
+                var maxEquipment = Math.Max(1, rows.Max(r => r.EquipmentCount));
+                var minAvgMinutes = rows.Min(r => r.AvgDurationMinutes);
+                var maxAvgMinutes = rows.Max(r => r.AvgDurationMinutes);
+                var avgSpan = Math.Max(1.0, maxAvgMinutes - minAvgMinutes);
+                var maxComplexityLoad = Math.Max(
+                    1.0,
+                    rows.Max(r => r.RepairsCount * repairComplexityWeight + r.SetupsCount * setupComplexityWeight));
+
+                foreach (var row in rows)
+                {
+                    var shareScore = Math.Clamp(row.EventSharePercent, 0, 100);
+                    var slaScore = Math.Clamp(row.SlaCompliancePercent, 0, 100);
+                    var speedScore = Math.Clamp(100.0 - ((row.AvgDurationMinutes - minAvgMinutes) / avgSpan) * 100.0, 0, 100);
+                    var loadScore = row.IssuesCount * 100.0 / maxIssues;
+                    var complexityLoadScore = (row.RepairsCount * repairComplexityWeight + row.SetupsCount * setupComplexityWeight)
+                        * 100.0 / maxComplexityLoad;
+                    var coverageScore = row.EquipmentCount * 100.0 / maxEquipment;
+
+                    var score = slaScore * 0.40
+                                + shareScore * 0.15
+                                + speedScore * 0.15
+                                + loadScore * 0.10
+                                + complexityLoadScore * 0.10
+                                + coverageScore * 0.10;
+
+                    row.PerformanceScore = Math.Round(score, 1);
+                    var grade = row.PerformanceScore >= 85 ? "A"
+                        : row.PerformanceScore >= 70 ? "B"
+                        : row.PerformanceScore >= 55 ? "C"
+                        : "D";
+                    row.PerformanceSummary = $"{row.PerformanceScore:0.0} ({grade})";
+                }
+            }
+
+            rows = rows
+                .OrderByDescending(r => r.PerformanceScore)
+                .ThenByDescending(r => r.SlaCompliancePercent)
+                .ThenByDescending(r => r.IssuesCount)
+                .ThenBy(r => r.Name)
+                .ToList();
+
+            EmployeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>(rows);
+            EmployeeTotalCount = rows.Count;
+            EmployeeAvgEquipmentPerEmployee = rows.Count == 0 ? "0.0" : rows.Average(r => r.EquipmentCount).ToString("0.0");
+
+            var avgDurationMinutes = assignedIssues.Count == 0
+                ? 0.0
+                : assignedIssues.Sum(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes)) / assignedIssues.Count;
+            EmployeeAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
+
+            var topByIssues = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Name).FirstOrDefault();
+            EmployeeTopByIssues = topByIssues?.Name ?? "-";
+            EmployeeTopByIssuesValue = topByIssues == null ? "0" : $"{topByIssues.IssuesCount} событий";
+
+            var topByDuration = rows.OrderByDescending(r => r.TotalDuration).ThenBy(r => r.Name).FirstOrDefault();
+            EmployeeTopByDuration = topByDuration?.Name ?? "-";
+            EmployeeTopByDurationValue = topByDuration?.TotalDurationText ?? "00:00";
+
+            EmployeeAnalysisPeriodDescription = string.IsNullOrWhiteSpace(SelectedEmployeeAnalysisMonth)
+                ? "Текущий месяц"
+                : SelectedEmployeeAnalysisMonth;
+        }
+
+        private void RebuildEmployeeMonthOptions()
+        {
+            var previous = SelectedEmployeeAnalysisMonth;
+            var allMonthsOption = "Все месяцы";
+
+            EmployeeAnalysisMonthOptions.Clear();
+            EmployeeAnalysisMonthOptions.Add(allMonthsOption);
+
+            var ru = new CultureInfo("ru-RU");
+            var months = _masterEquipment
+                .SelectMany(eq => eq.Issues)
+                .Select(i => new DateTime(i.Start.Year, i.Start.Month, 1))
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            foreach (var month in months)
+                EmployeeAnalysisMonthOptions.Add(month.ToString("MMMM yyyy", ru));
+
+            var currentMonth = DateTime.Now.ToString("MMMM yyyy", ru);
+            if (!string.IsNullOrWhiteSpace(previous) && EmployeeAnalysisMonthOptions.Contains(previous))
+                SelectedEmployeeAnalysisMonth = previous;
+            else if (EmployeeAnalysisMonthOptions.Contains(currentMonth))
+                SelectedEmployeeAnalysisMonth = currentMonth;
+            else
+                SelectedEmployeeAnalysisMonth = allMonthsOption;
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> FilterEmployeeIssuesBySelectedMonth(System.Collections.Generic.IEnumerable<EmployeeIssueProjection> source)
+        {
+            if (string.IsNullOrWhiteSpace(SelectedEmployeeAnalysisMonth) || SelectedEmployeeAnalysisMonth == "Все месяцы")
+                return source;
+
+            var ru = new CultureInfo("ru-RU");
+            if (!DateTime.TryParseExact(SelectedEmployeeAnalysisMonth, "MMMM yyyy", ru, DateTimeStyles.None, out var monthDate))
+                return source;
+
+            var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
+            var monthEnd = monthStart.AddMonths(1);
+            return source.Where(x => x.Issue.Start < monthEnd && x.Issue.End >= monthStart);
+        }
+
+        private static bool IsUnassignedResponsible(string? responsible)
+        {
+            if (string.IsNullOrWhiteSpace(responsible))
+                return true;
+
+            var value = responsible.Trim();
+            return value == "-"
+                   || value == "-1"
+                   || value.Equals("Не назначен", StringComparison.CurrentCultureIgnoreCase)
+                   || value.Equals("unassigned", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("null", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string FormatDuration(TimeSpan duration)
+        {
+            if (duration < TimeSpan.Zero)
+                duration = TimeSpan.Zero;
+
+            var hours = (int)duration.TotalHours;
+            return $"{hours:00}:{duration.Minutes:00}";
         }
 
         // Return issues for equipment filtered by ShowRepairs/ShowSetups
