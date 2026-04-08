@@ -215,32 +215,56 @@ namespace EquipmentFailureAnalysis.Views
                 return false;
 
             var builder = new StringBuilder();
+            if (repair != null && setup != null)
+            {
+                builder.AppendLine("Пересечение событий");
+                builder.AppendLine();
+            }
+
+            var hasEventBlock = false;
+
             if (repair != null)
             {
-                builder.AppendLine("Ремонт");
-                AppendAnnotationTooltip(builder, repair);
+                if (hasEventBlock)
+                    AppendTooltipBlockGap(builder);
+
+                AppendAnnotationTooltip(builder, "Ремонт", repair);
+                hasEventBlock = true;
             }
 
             if (setup != null)
             {
-                if (builder.Length > 0)
-                    builder.AppendLine();
+                if (hasEventBlock)
+                    AppendTooltipBlockGap(builder);
 
-                builder.AppendLine("Настройка");
-                AppendAnnotationTooltip(builder, setup);
+                AppendAnnotationTooltip(builder, "Настройка", setup);
             }
 
             tooltipText = builder.ToString().TrimEnd();
             return tooltipText.Length > 0;
         }
 
-        private static void AppendAnnotationTooltip(StringBuilder builder, Models.Annotation annotation)
+        private static void AppendAnnotationTooltip(StringBuilder builder, string title, Models.Annotation annotation)
         {
-            builder.AppendLine($"Описание: {annotation.Description}");
-            builder.AppendLine($"Ответственный: {annotation.Responsible}");
-            builder.AppendLine($"Начало: {annotation.StartDate:dd.MM.yyyy HH:mm}");
-            builder.AppendLine($"Окончание: {annotation.EndDate:dd.MM.yyyy HH:mm}");
-            builder.Append($"Затраченное время: {annotation.Duration}");
+            var start = annotation.StartDate.ToString("HH:mm");
+            var end = annotation.EndDate.ToString("HH:mm");
+            var duration = string.IsNullOrWhiteSpace(annotation.Duration) ? "—" : annotation.Duration.Trim();
+            var responsible = string.IsNullOrWhiteSpace(annotation.Responsible) ? "Не назначен" : annotation.Responsible.Trim();
+            var description = string.IsNullOrWhiteSpace(annotation.Description) ? "Без описания" : annotation.Description.Trim();
+
+            if (description.Length > 90)
+                description = description.Substring(0, 87) + "...";
+
+            builder.AppendLine($"{title}  •  {start}–{end}  •  {duration}");
+            builder.AppendLine($"Ответственный: {responsible}");
+            builder.Append(description);
+        }
+
+        private static void AppendTooltipBlockGap(StringBuilder builder)
+        {
+            builder.AppendLine();
+            builder.AppendLine("────────────");
+            builder.AppendLine();
         }
 
         public override void Render(DrawingContext context)
