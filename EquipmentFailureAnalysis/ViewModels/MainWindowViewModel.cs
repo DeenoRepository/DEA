@@ -996,8 +996,34 @@ namespace EquipmentFailureAnalysis.ViewModels
             }
 
             var top = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title).FirstOrDefault();
-            DowntimeTopEquipment = top?.Title ?? "-";
+            DowntimeTopEquipment = AddSoftWrapOpportunities(top?.Title ?? "-");
             DowntimeTopEquipmentIssues = top?.IssuesCount ?? 0;
+        }
+
+        private static string AddSoftWrapOpportunities(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "-";
+
+            var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].Length <= 16)
+                    continue;
+
+                var token = parts[i];
+                var chunked = new System.Text.StringBuilder(token.Length + (token.Length / 16));
+                for (int j = 0; j < token.Length; j++)
+                {
+                    chunked.Append(token[j]);
+                    if ((j + 1) % 16 == 0 && j < token.Length - 1)
+                        chunked.Append('\u200B');
+                }
+
+                parts[i] = chunked.ToString();
+            }
+
+            return string.Join(" ", parts);
         }
 
         private static System.Collections.Generic.List<(int sMin, int eMin)> MergeIntervals(System.Collections.Generic.List<(int sMin, int eMin)> intervals)

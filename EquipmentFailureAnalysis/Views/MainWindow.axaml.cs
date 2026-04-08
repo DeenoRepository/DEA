@@ -37,6 +37,11 @@ namespace EquipmentFailureAnalysis.Views
 
         private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
+            if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                vm.ShowDowntimeDayCommand.Execute(DateTime.Now.Date).Subscribe();
+            }
+
             _currentPage = AppPage.DowntimeAnalysis;
             UpdatePageVisibility();
         }
