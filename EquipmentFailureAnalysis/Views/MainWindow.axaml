@@ -129,7 +129,7 @@
         <Grid.ColumnDefinitions>
 			<!-- Use star sizing so layout adapts when window is resized -->
           <ColumnDefinition Width="1.5*" />
-			<ColumnDefinition Width="6*" />
+			<ColumnDefinition Width="7*" />
           <ColumnDefinition Width="1.9*" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
@@ -158,7 +158,7 @@
 		</Grid>
 	</Border>
 
-    <Grid Grid.Column="0" Grid.Row="1" Margin="8,0,12,0" MinWidth="180" MaxWidth="290">
+    <Grid Grid.Column="0" Grid.Row="1" Margin="8,0,12,0" MinWidth="180" MaxWidth="290" HorizontalAlignment="Left">
            <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="12">
                 <StackPanel Spacing="10">
 					<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
@@ -185,7 +185,7 @@
 			</Border>
 		</Grid>
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
-        <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch">
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Grid Margin="0,0,0,8">
 					<Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
@@ -379,7 +379,7 @@
 				</Grid>
 		</StackPanel>
 		</ScrollViewer>
-   <Grid Grid.Column="2" Grid.Row="1" Margin="8" MinWidth="200" MaxWidth="330">
+   <Grid Grid.Column="2" Grid.Row="1" Margin="8" MinWidth="380" MaxWidth="430" HorizontalAlignment="Right">
      <Border Background="#12000000" CornerRadius="8" Margin="0,6,0,0" />
                <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="8" Padding="14">
                    <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
