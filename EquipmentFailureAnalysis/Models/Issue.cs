@@ -26,6 +26,12 @@ namespace EquipmentFailureAnalysis.Models
 
         // Флаг, указывающий на несоответствие между указанным Type и DetectedType
         public bool TypeSuspicious { get; set; } = false;
+
+        // NLP-оценка вероятности того, что запись относится к ремонту (0..1)
+        public double RepairProbability { get; set; }
+
+        // NLP-оценка вероятности того, что запись относится к настройке (0..1)
+        public double SetupProbability { get; set; }
     }
 
     public enum IssueType

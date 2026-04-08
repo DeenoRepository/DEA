@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Globalization;
 using System.IO;
+using System.Net;
 
 namespace EquipmentFailureAnalysis.Utility
 {
@@ -21,6 +22,18 @@ namespace EquipmentFailureAnalysis.Utility
             "customfield_10500", // Сектор сборки (2.xml)
             "customfield_10519", // Сектор сборки (1.xml)
             "customfield_10524"  // Сектор измерений (3.xml)
+        };
+
+        // Стемы ремонтных операций (включая производные формы слов)
+        private static readonly string[] repairWordStems =
+        {
+            "разбор", "демонтаж", "снят", "выем", "очист", "обмыв", "промыв", "обезжир", "слив", "откач",
+            "расконсервац", "дефект", "осмотр", "вскрыт", "замер", "обмер", "простукив", "восстанов", "реставрац",
+            "ремонт", "капитал", "переборк", "шлифов", "полиров", "притир", "проточ", "расточ", "правк", "рихтов",
+            "заделк", "замен", "смен", "подмен", "установк", "монтаж", "сборк", "сочлен", "запрессовк", "выпрессовк",
+            "креплен", "фиксац", "заправк", "доливк", "уплотнен", "сверлен", "зенкер", "резк", "обрезк", "вырубк",
+            "срубан", "клепк", "склеив", "покрас", "изоляц", "обмотк", "латк", "заплатк", "вытяжк", "центровк",
+            "шплинтовк", "протяжк", "набивк", "прихватк", "подварк"
         };
 
         public XmlDataDecoder()
@@ -94,37 +107,19 @@ namespace EquipmentFailureAnalysis.Utility
             {
                 // Фильтр по статусу (пропускаем нерешенные задачи)
                 string status = xmlNode["status"]?.InnerText ?? string.Empty;
-                if (!status.Equals("Решен", StringComparison.OrdinalIgnoreCase))
+                string resolution = xmlNode["resolution"]?.InnerText ?? string.Empty;
+                if (!IsResolved(status, resolution))
                     continue;
 
                 // 1. Поиск данных об оборудовании в кастомных полях
-                XmlNode? equipmentNode = null;
-                foreach (var id in equipmentFieldIds)
-                {
-                    equipmentNode = xmlNode.SelectSingleNode($"customfields/customfield[@id='{id}']/customfieldvalues/customfieldvalue");
-                    if (equipmentNode != null) break;
-                }
-
-                string? equipmentText = equipmentNode?.InnerText?.Trim();
+                var equipmentText = FindEquipmentFieldValue(xmlNode);
                 string title = "Unknown Equipment";
                 int uid = 0;
                 string? inventoryNumber = null;
 
                 if (!string.IsNullOrEmpty(equipmentText))
                 {
-                    // Регулярное выражение для парсинга названий типа:
-                    // "ПКВ-2 58" или "Станок инв.340050" или "Прибор зав.1445"
-                    var m = Regex.Match(equipmentText, @"^(?<Name>.*?)[\s\t]+(?:инв\.|зав\.)?[\s\t]*(?<ID>\d+)$", RegexOptions.IgnoreCase);
-                    if (m.Success)
-                    {
-                        title = m.Groups["Name"].Value.Trim();
-                        inventoryNumber = m.Groups["ID"].Value;
-                        int.TryParse(inventoryNumber, out uid);
-                    }
-                    else
-                    {
-                        title = equipmentText;
-                    }
+                    ParseEquipmentText(equipmentText, out title, out inventoryNumber, out uid);
                 }
                 else
                 {
@@ -133,31 +128,31 @@ namespace EquipmentFailureAnalysis.Utility
                 }
 
                 // 2. Парсинг дат (с учетом формата JIRA RSS)
-                DateTime.TryParse(xmlNode["created"]?.InnerText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime start);
-                DateTime.TryParse(xmlNode["resolved"]?.InnerText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime end);
+                DateTime start = ParseJiraDate(xmlNode["created"]?.InnerText);
+                DateTime end = ParseJiraDate(xmlNode["resolved"]?.InnerText);
+                if (end == default)
+                    end = ParseJiraDate(xmlNode["updated"]?.InnerText);
+                if (start == default)
+                    start = end == default ? DateTime.Now : end;
+                if (end == default || end < start)
+                    end = start;
 
                 // 3. Обработка описания (чистка HTML)
-                string description = xmlNode["description"]?.InnerText ?? string.Empty;
-                if (!string.IsNullOrEmpty(description))
-                {
-                    description = Regex.Replace(description, "<\\s*br\\s*/?\\s*>", string.Empty, RegexOptions.IgnoreCase);
-                    description = description.Replace("<\\br>", string.Empty, StringComparison.OrdinalIgnoreCase)
-                                             .Replace("</br>", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    description = Regex.Replace(description, "</?p\\s*>", string.Empty, RegexOptions.IgnoreCase);
-                    description = Regex.Replace(description, "\\s+", " ").Trim();
-                    if (description.Length > 0)
-                        description = char.ToUpper(description[0]) + (description.Length > 1 ? description.Substring(1) : "");
-                }
+                string description = NormalizeText(xmlNode["description"]?.InnerText ?? string.Empty, true);
+                string issueSummary = NormalizeText(xmlNode["summary"]?.InnerText ?? string.Empty, true);
 
                 // 4. Тип работ (кастомное поле 10501)
-                var typeNode = xmlNode.SelectSingleNode("customfields/customfield[@id='customfield_10501']/customfieldvalues/customfieldvalue");
-                string? typeText = typeNode?.InnerText?.Trim();
+                var typeText = FindCustomFieldValue(xmlNode, "customfield_10501")
+                    ?? FindCustomFieldValueByNameContains(xmlNode, "тип проводимых работ");
 
-                IssueType issueType = IssueType.Ремонт; // По умолчанию
-                if (!string.IsNullOrEmpty(typeText) && typeText.Contains("Настрой", StringComparison.OrdinalIgnoreCase))
-                {
-                    issueType = IssueType.Настройка;
-                }
+                var requestTypeText = FindCustomFieldValue(xmlNode, "customfield_10001")
+                    ?? FindCustomFieldValueByNameContains(xmlNode, "тип запроса клиента")
+                    ?? string.Empty;
+
+                var explicitType = ParseExplicitType(typeText);
+                var nlpEvaluation = EvaluateWorkTypeNlp(issueSummary, description, requestTypeText, typeText);
+                var detectedType = DetectTypeFromText(issueSummary, description, requestTypeText, typeText, nlpEvaluation);
+                var finalType = ResolveFinalType(explicitType, detectedType, issueSummary, description, requestTypeText, nlpEvaluation);
 
                 // 5. Ответственный: приоритет у ФИО из assignee.InnerText,
                 // затем username, затем резервное поле customfield_10502
@@ -177,8 +172,8 @@ namespace EquipmentFailureAnalysis.Utility
 
                 if (IsMissingResponsible(responsible))
                 {
-                    var respNode = xmlNode.SelectSingleNode("customfields/customfield[@id='customfield_10502']/customfieldvalues/customfieldvalue");
-                    var fallbackResponsible = respNode?.InnerText?.Trim();
+                    var fallbackResponsible = FindCustomFieldValue(xmlNode, "customfield_10502")
+                        ?? FindCustomFieldValueByNameContains(xmlNode, "фио автора");
                     if (!IsMissingResponsible(fallbackResponsible))
                         responsible = fallbackResponsible;
                 }
@@ -188,104 +183,13 @@ namespace EquipmentFailureAnalysis.Utility
                     Start = start,
                     End = end,
                     Description = description,
-                    Type = issueType,
-                    Responsible = string.IsNullOrEmpty(responsible) ? "Не назначен" : responsible
+                    Type = finalType,
+                    Responsible = string.IsNullOrEmpty(responsible) ? "Не назначен" : responsible,
+                    RepairProbability = nlpEvaluation.RepairProbability,
+                    SetupProbability = nlpEvaluation.SetupProbability
                 };
-
-                // NLP-like heuristic: token scoring with keyword lists and simple normalization
-                try
-                {
-                    // Build normalized text sources separately to weight title higher than description
-                    string normDesc = Regex.Replace((description ?? string.Empty).ToLowerInvariant(), "[\\p{P}\t\\n\\r]+", " ").Trim();
-                    string normTitle = Regex.Replace((title ?? string.Empty).ToLowerInvariant(), "[\\p{P}\t\\n\\r]+", " ").Trim();
-                    string normType = (typeText ?? string.Empty).ToLowerInvariant();
-
-                    // Expanded keyword sets with common stems
-                    var repairKeywords = new[] { "ремонт", "поломк", "слом", "замен", "неисправн", "поврежд", "не работает", "не запуска", "не включ", "авар", "протеч", "течь", "трещ", "корроз", "замык" };
-                    var setupKeywords = new[] { "настрой", "налад", "калибр", "конфиг", "параметр", "пусконал", "установк", "тонк", "регул", "калибров", "калиброван", "конфигурац" };
-
-                    int repairScore = 0;
-                    int setupScore = 0;
-
-                    // helper: count keyword occurrences in a text (simple substring match)
-                    int CountMatches(string text, string keyword)
-                    {
-                        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(keyword)) return 0;
-                        return Regex.Matches(text, Regex.Escape(keyword)).Count;
-                    }
-
-                    // Count occurrences in description and title with different weights
-                    foreach (var k in repairKeywords)
-                    {
-                        repairScore += CountMatches(normDesc, k) * 1;   // description weight
-                        repairScore += CountMatches(normTitle, k) * 2;  // title weight
-                    }
-                    foreach (var k in setupKeywords)
-                    {
-                        setupScore += CountMatches(normDesc, k) * 1;
-                        setupScore += CountMatches(normTitle, k) * 2;
-                    }
-
-                    // simple negation: if description contains patterns like "не настрой" reduce setup score
-                    var negations = new[] { "не", "нет", "без", "исключая", "отмена" };
-                    foreach (var neg in negations)
-                    {
-                        foreach (var k in repairKeywords)
-                            if (normDesc.Contains(neg + " " + k)) repairScore = Math.Max(0, repairScore - 1);
-                        foreach (var k in setupKeywords)
-                            if (normDesc.Contains(neg + " " + k)) setupScore = Math.Max(0, setupScore - 1);
-                    }
-
-                    // Boost by explicit type field strongly
-                    if (!string.IsNullOrEmpty(normType))
-                    {
-                        if (normType.Contains("настрой")) setupScore += 5;
-                        if (normType.Contains("ремонт")) repairScore += 5;
-                    }
-
-                    // If description explicitly contains words like "настройка завершена" or "ремонт выполнен" weight further
-                    if (Regex.IsMatch(normDesc, "(настройка|наладка)\\s+заверш|(настроен|наладчик)", RegexOptions.IgnoreCase)) setupScore += 2;
-                    if (Regex.IsMatch(normDesc, "(ремонт|замена)\\s+(выполн|заверш|проведен)|поломка", RegexOptions.IgnoreCase)) repairScore += 2;
-
-                    // Decide detected type; require clear margin
-                    EquipmentFailureAnalysis.Models.IssueType? detected = null;
-                    int diff = repairScore - setupScore;
-                    if (repairScore + setupScore == 0)
-                    {
-                        detected = null;
-                    }
-                    else if (diff >= 2)
-                    {
-                        detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
-                    }
-                    else if (diff <= -2)
-                    {
-                        detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
-                    }
-                    else
-                    {
-                        // close scores -> prefer explicit field if exists
-                        if (!string.IsNullOrEmpty(normType))
-                        {
-                            if (normType.Contains("настрой")) detected = EquipmentFailureAnalysis.Models.IssueType.Настройка;
-                            else if (normType.Contains("ремонт")) detected = EquipmentFailureAnalysis.Models.IssueType.Ремонт;
-                        }
-                    }
-
-                    // If we detected a type confidently, update issue.Type to improve grouping
-                    var originalType = issue.Type;
-                    if (detected.HasValue)
-                    {
-                        issue.Type = detected.Value;
-                    }
-
-                    issue.DetectedType = detected;
-                    issue.TypeSuspicious = detected.HasValue && detected.Value != originalType;
-                }
-                catch
-                {
-                    // don't fail parsing on analysis errors
-                }
+                issue.DetectedType = detectedType;
+                issue.TypeSuspicious = explicitType.HasValue && detectedType.HasValue && explicitType.Value != detectedType.Value;
 
                 // 6. Группировка: ищем, нет ли уже такого оборудования в коллекции
                 EquipmentInfo? equipment = equipmentCollection.FirstOrDefault(e =>
@@ -306,6 +210,326 @@ namespace EquipmentFailureAnalysis.Utility
             }
 
             return equipmentCollection;
+        }
+
+        private static bool IsResolved(string status, string resolution)
+        {
+            static bool ContainsAny(string source, params string[] values) =>
+                values.Any(v => source.Contains(v, StringComparison.OrdinalIgnoreCase));
+
+            var st = (status ?? string.Empty).Trim();
+            var rs = (resolution ?? string.Empty).Trim();
+            return ContainsAny(st, "Решен", "Закрыт", "Выполн") || ContainsAny(rs, "Готово", "Выполн", "Решено");
+        }
+
+        private static string? FindCustomFieldValue(XmlNode issueNode, string fieldId)
+        {
+            var node = issueNode.SelectSingleNode($"customfields/customfield[@id='{fieldId}']/customfieldvalues/customfieldvalue");
+            return node?.InnerText?.Trim();
+        }
+
+        private static string? FindCustomFieldValueByNameContains(XmlNode issueNode, string namePart)
+        {
+            var fields = issueNode.SelectNodes("customfields/customfield");
+            if (fields == null)
+                return null;
+
+            foreach (XmlNode field in fields)
+            {
+                var name = field.SelectSingleNode("customfieldname")?.InnerText?.Trim();
+                if (string.IsNullOrWhiteSpace(name) || !name.Contains(namePart, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var value = field.SelectSingleNode("customfieldvalues/customfieldvalue")?.InnerText?.Trim();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+
+            return null;
+        }
+
+        private string? FindEquipmentFieldValue(XmlNode issueNode)
+        {
+            foreach (var id in equipmentFieldIds)
+            {
+                var value = FindCustomFieldValue(issueNode, id);
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+
+            return FindCustomFieldValueByNameContains(issueNode, "оборудован");
+        }
+
+        private static void ParseEquipmentText(string equipmentText, out string title, out string? inventoryNumber, out int uid)
+        {
+            title = equipmentText;
+            inventoryNumber = null;
+            uid = 0;
+
+            if (string.IsNullOrWhiteSpace(equipmentText))
+                return;
+
+            var text = Regex.Replace(equipmentText, "\\s+", " ").Trim();
+
+            if (text.Equals("иное", StringComparison.OrdinalIgnoreCase))
+            {
+                title = "Не указано";
+                return;
+            }
+
+            var labeledId = Regex.Match(text, @"(?:инв\.?|зав\.?)\s*(?<id>\d{2,})\s*$", RegexOptions.IgnoreCase);
+            if (labeledId.Success)
+            {
+                inventoryNumber = labeledId.Groups["id"].Value;
+                title = Regex.Replace(text, @"(?:инв\.?|зав\.?)\s*\d{2,}\s*$", string.Empty, RegexOptions.IgnoreCase).Trim();
+                int.TryParse(inventoryNumber, out uid);
+                return;
+            }
+
+            var trailingId = Regex.Match(text, @"^(?<name>.+?)\s+(?<id>\d{2,})\s*$", RegexOptions.IgnoreCase);
+            if (trailingId.Success)
+            {
+                title = trailingId.Groups["name"].Value.Trim();
+                inventoryNumber = trailingId.Groups["id"].Value;
+                int.TryParse(inventoryNumber, out uid);
+                return;
+            }
+
+            title = text;
+        }
+
+        private static DateTime ParseJiraDate(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return default;
+
+            if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var dto))
+                return dto.LocalDateTime;
+
+            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out var dt))
+                return dt;
+
+            return default;
+        }
+
+        private static string NormalizeText(string value, bool capitalizeFirst)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var decoded = WebUtility.HtmlDecode(value);
+            decoded = Regex.Replace(decoded, "<\\s*br\\s*/?\\s*>", " ", RegexOptions.IgnoreCase);
+            decoded = Regex.Replace(decoded, "</?p\\s*>", " ", RegexOptions.IgnoreCase);
+            decoded = Regex.Replace(decoded, "<[^>]+>", " ");
+            decoded = Regex.Replace(decoded, "\\s+", " ").Trim();
+
+            if (!capitalizeFirst || decoded.Length == 0)
+                return decoded;
+
+            return char.ToUpper(decoded[0]) + (decoded.Length > 1 ? decoded[1..] : string.Empty);
+        }
+
+        private static IssueType? ParseExplicitType(string? typeText)
+        {
+            if (string.IsNullOrWhiteSpace(typeText))
+                return null;
+
+            if (typeText.Contains("Настрой", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Включ", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Отключ", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Подключ", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Налад", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Калибр", StringComparison.OrdinalIgnoreCase))
+                return IssueType.Настройка;
+
+            if (typeText.Contains("Ремонт", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Неисправ", StringComparison.OrdinalIgnoreCase) ||
+                typeText.Contains("Полом", StringComparison.OrdinalIgnoreCase) ||
+                repairWordStems.Any(s => typeText.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                return IssueType.Ремонт;
+
+            return null;
+        }
+
+        private static IssueType? DetectTypeFromText(string summary, string description, string requestTypeText, string? explicitTypeText, (double RepairScore, double SetupScore, double RepairProbability, double SetupProbability) nlp)
+        {
+            var text = (summary + " " + description + " " + requestTypeText).ToLowerInvariant();
+
+            if (text.Contains("не включ"))
+                return IssueType.Ремонт;
+
+            if (text.Contains("настройка") || text.Contains("настройить") || text.Contains("включение") || text.Contains("отключение") || text.Contains("подключение"))
+                return IssueType.Настройка;
+
+            if (nlp.RepairScore == 0 && nlp.SetupScore == 0)
+                return null;
+
+            // Для снижения ложных "ремонт" при работах по настройке:
+            // если признаки настройки не слабее ремонта — считаем это настройкой.
+            if (nlp.SetupScore > 0 && nlp.SetupScore >= nlp.RepairScore)
+                return IssueType.Настройка;
+
+            if (nlp.RepairProbability >= 0.60)
+                return IssueType.Ремонт;
+
+            if (nlp.SetupProbability >= 0.55)
+                return IssueType.Настройка;
+
+            var diff = nlp.RepairScore - nlp.SetupScore;
+            if (diff >= 1.8)
+                return IssueType.Ремонт;
+            if (diff <= -1.8)
+                return IssueType.Настройка;
+
+            return null;
+        }
+
+        private static IssueType InferFallbackType(string summary, string description, string requestTypeText, (double RepairScore, double SetupScore, double RepairProbability, double SetupProbability)? nlp = null)
+        {
+            var text = (summary + " " + description + " " + requestTypeText).ToLowerInvariant();
+
+            if (text.Contains("не включ"))
+                return IssueType.Ремонт;
+
+            if (text.Contains("настройка") || text.Contains("настройить") || text.Contains("включение") || text.Contains("отключение") || text.Contains("подключение"))
+                return IssueType.Настройка;
+
+            var repairKeywords = new[]
+            {
+                "ремонт", "неисправ", "полом", "слом", "замен", "авар", "не работает", "не горит", "замык", "течь", "протеч", "вышел из строя"
+            }.Concat(repairWordStems).ToArray();
+
+            if (repairKeywords.Any(k => text.Contains(k)))
+                return IssueType.Ремонт;
+
+            var eval = nlp ?? EvaluateWorkTypeNlp(summary, description, requestTypeText, null);
+            if (eval.RepairProbability > eval.SetupProbability && eval.RepairProbability >= 0.58)
+                return IssueType.Ремонт;
+
+            if (text.Contains("настрой") || text.Contains("налад") || text.Contains("калибр") || text.Contains("регулир") || text.Contains("параметр")
+                || text.Contains("включ") || text.Contains("выключ") || text.Contains("подключ") || text.Contains("отключ"))
+                return IssueType.Настройка;
+
+            // Если явных признаков ремонта нет, по умолчанию считаем это настройкой.
+            return IssueType.Настройка;
+        }
+
+        private static IssueType ResolveFinalType(
+            IssueType? explicitType,
+            IssueType? detectedType,
+            string summary,
+            string description,
+            string requestTypeText,
+            (double RepairScore, double SetupScore, double RepairProbability, double SetupProbability) nlp)
+        {
+            if (explicitType == IssueType.Ремонт)
+            {
+                // Если в тексте нет признаков ремонта, даже при явном "Ремонт"
+                // считаем это настройкой (согласно правилам проекта).
+                if (!HasStrongRepairMarkers(summary, description, requestTypeText))
+                    return detectedType ?? InferFallbackType(summary, description, requestTypeText, nlp);
+            }
+
+            if (explicitType.HasValue)
+                return explicitType.Value;
+
+            return detectedType ?? InferFallbackType(summary, description, requestTypeText, nlp);
+        }
+
+        private static bool HasStrongRepairMarkers(string summary, string description, string requestTypeText)
+        {
+            var text = (summary + " " + description + " " + requestTypeText).ToLowerInvariant();
+
+            if (text.Contains("не включ"))
+                return true;
+
+            var repairKeywords = new[]
+            {
+                "ремонт", "неисправ", "полом", "слом", "замен", "авар", "не работает", "не горит", "замык", "течь", "протеч", "вышел из строя"
+            }.Concat(repairWordStems).ToArray();
+
+            return repairKeywords.Any(k => text.Contains(k));
+        }
+
+        private static (double RepairScore, double SetupScore, double RepairProbability, double SetupProbability) EvaluateWorkTypeNlp(string summary, string description, string requestTypeText, string? explicitTypeText)
+        {
+            var text = ((summary ?? string.Empty) + " " + (description ?? string.Empty) + " " + (requestTypeText ?? string.Empty)).ToLowerInvariant();
+            var explicitText = (explicitTypeText ?? string.Empty).ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(text))
+                return (0, 0, 0.5, 0.5);
+
+            static int Count(string source, string pattern) => Regex.Matches(source, Regex.Escape(pattern), RegexOptions.IgnoreCase).Count;
+
+            // Простая NLP-оценка на основе n-грамм и ключевых стемов с весами
+            var repairPhrases = new (string Pattern, double Weight)[]
+            {
+                ("не включ", 3.6),
+                ("не работает", 2.8),
+                ("не горит", 2.4),
+                ("вышел из строя", 2.7),
+                ("требует ремонта", 2.5),
+                ("замена", 1.8),
+                ("авар", 1.7),
+                ("полом", 1.8),
+                ("неисправ", 2.2),
+                ("ремонт", 2.0),
+                ("течь", 1.6),
+                ("протеч", 1.6)
+            };
+
+            var setupPhrases = new (string Pattern, double Weight)[]
+            {
+                ("настрой", 2.2),
+                ("настройка", 2.8),
+                ("налад", 2.0),
+                ("калибр", 2.0),
+                ("регулир", 1.8),
+                ("параметр", 1.6),
+                ("пусконалад", 2.1),
+                ("корректиров", 1.7),
+                ("включ", 1.4),
+                ("включение", 1.8),
+                ("выключ", 1.4),
+                ("отключ", 1.8),
+                ("отключение", 1.9),
+                ("подключ", 1.5),
+                ("подключение", 1.9)
+            };
+
+            double repairScore = 0;
+            double setupScore = 0;
+
+            foreach (var (pattern, weight) in repairPhrases)
+                repairScore += Count(text, pattern) * weight;
+
+            // Производные ремонтных слов
+            foreach (var stem in repairWordStems)
+                repairScore += Count(text, stem) * 1.35;
+
+            foreach (var (pattern, weight) in setupPhrases)
+                setupScore += Count(text, pattern) * weight;
+
+            if (requestTypeText.Contains("Проблем", StringComparison.OrdinalIgnoreCase) || requestTypeText.Contains("Инцидент", StringComparison.OrdinalIgnoreCase))
+                repairScore += 0.8;
+
+            if (requestTypeText.Contains("Запрос", StringComparison.OrdinalIgnoreCase) || requestTypeText.Contains("Обслужив", StringComparison.OrdinalIgnoreCase))
+                setupScore += 0.6;
+
+            if (explicitText.Contains("ремонт"))
+                repairScore += 2.5;
+            if (explicitText.Contains("настрой"))
+                setupScore += 2.5;
+
+            // Сглаживание, чтобы всегда получить вероятности
+            var repairSmoothed = Math.Max(0, repairScore) + 1.0;
+            var setupSmoothed = Math.Max(0, setupScore) + 1.0;
+            var total = repairSmoothed + setupSmoothed;
+
+            var repairProb = repairSmoothed / total;
+            var setupProb = setupSmoothed / total;
+
+            return (repairScore, setupScore, repairProb, setupProb);
         }
     }
 }
