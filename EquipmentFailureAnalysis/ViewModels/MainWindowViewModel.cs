@@ -543,7 +543,18 @@ namespace EquipmentFailureAnalysis.ViewModels
                         var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
                         var desc = issue.Description ?? string.Empty;
                         var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
-                        dayAnnotations.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
+                        dayAnnotations.Add(new Models.Annotation
+                        {
+                            Hour = sMin / 60.0,
+                            StartHour = sMin / 60.0,
+                            EndHour = eMin / 60.0,
+                            Description = desc,
+                            Responsible = resp,
+                            StartDate = overlapStart,
+                            EndDate = overlapEnd,
+                            Duration = duration.ToString(@"hh\:mm"),
+                            Type = issue.Type
+                        });
 
                         // also mark hourly buckets (for compatibility)
                         int startHour = (int)Math.Floor(sMin / 60.0);
@@ -804,7 +815,18 @@ namespace EquipmentFailureAnalysis.ViewModels
                 var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
                 var desc = issue.Description ?? string.Empty;
                 var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
-                annList.Add(new Models.Annotation { Hour = sMin / 60.0, Description = desc, Responsible = resp, Duration = duration.ToString(@"hh\:mm"), Type = issue.Type });
+                annList.Add(new Models.Annotation
+                {
+                    Hour = sMin / 60.0,
+                    StartHour = sMin / 60.0,
+                    EndHour = eMin / 60.0,
+                    Description = desc,
+                    Responsible = resp,
+                    StartDate = overlapStart,
+                    EndDate = overlapEnd,
+                    Duration = duration.ToString(@"hh\:mm"),
+                    Type = issue.Type
+                });
             }
 
             // compute stats
@@ -930,6 +952,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                 var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
                 var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
 
+                var rowAnnotations = new System.Collections.Generic.List<Models.Annotation>();
+
                 foreach (var issue in issuesForDay)
                 {
                     var overlapStart = issue.Start < dayStart ? dayStart : issue.Start;
@@ -947,6 +971,19 @@ namespace EquipmentFailureAnalysis.ViewModels
                         repairsIntervals.Add((sMin, eMin));
                     else if (issue.Type == IssueType.Настройка)
                         setupsIntervals.Add((sMin, eMin));
+
+                    rowAnnotations.Add(new Models.Annotation
+                    {
+                        Hour = sMin / 60.0,
+                        StartHour = sMin / 60.0,
+                        EndHour = eMin / 60.0,
+                        Description = issue.Description ?? string.Empty,
+                        Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "-" : issue.Responsible,
+                        StartDate = overlapStart,
+                        EndDate = overlapEnd,
+                        Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
+                        Type = issue.Type
+                    });
                 }
 
                 var merged = MergeIntervals(intervals);
@@ -969,7 +1006,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                     IssuesCount = issuesForDay.Count,
                     TimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(merged)),
                     RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(repairsMerged)),
-                    SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(setupsMerged))
+                    SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(setupsMerged)),
+                    Annotations = new ObservableCollection<Models.Annotation>(
+                        rowAnnotations.OrderBy(a => a.StartHour).ThenBy(a => a.EndHour))
                 });
             }
 

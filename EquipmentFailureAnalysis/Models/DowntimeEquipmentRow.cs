@@ -11,5 +11,6 @@ namespace EquipmentFailureAnalysis.Models
         public ObservableCollection<TimelinePoint> TimelinePoints { get; set; } = new ObservableCollection<TimelinePoint>();
         public ObservableCollection<TimelinePoint> RepairsTimelinePoints { get; set; } = new ObservableCollection<TimelinePoint>();
         public ObservableCollection<TimelinePoint> SetupsTimelinePoints { get; set; } = new ObservableCollection<TimelinePoint>();
+        public ObservableCollection<Annotation> Annotations { get; set; } = new ObservableCollection<Annotation>();
     }
 }

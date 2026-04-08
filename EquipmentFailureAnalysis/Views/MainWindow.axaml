@@ -581,7 +581,7 @@
 													<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
 												</StackPanel>
 												<Border Grid.Column="1" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="6" Padding="6" Background="#FFFFFF">
-													<views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Height="56" ShowHourLabels="False" />
+                                                   <views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
 												</Border>
 											</Grid>
 										</DataTemplate>

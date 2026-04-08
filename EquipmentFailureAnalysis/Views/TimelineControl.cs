@@ -1,16 +1,20 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Text;
 
 namespace EquipmentFailureAnalysis.Views
 {
     public class TimelineControl : Control
     {
         private static readonly Typeface UiTypeface = new Typeface("Segoe UI");
+        private string? _currentTooltipText;
 
         public static readonly StyledProperty<IList?> ItemsProperty = AvaloniaProperty.Register<TimelineControl, IList?>(nameof(Items));
 
@@ -78,7 +82,8 @@ namespace EquipmentFailureAnalysis.Views
                 InvalidateVisual();
             });
 
-            // pointer hover tooltip removed; annotations drawn inline
+            PointerMoved += OnPointerMoved;
+            PointerExited += OnPointerExited;
         }
 
         public static readonly StyledProperty<bool> ShowHourLabelsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(ShowHourLabels), true);
@@ -126,6 +131,116 @@ namespace EquipmentFailureAnalysis.Views
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             InvalidateVisual();
+        }
+
+        private void OnPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (ShowHourLabels)
+            {
+                CloseTooltip();
+                return;
+            }
+
+            var point = e.GetPosition(this);
+            if (TryBuildTooltipText(point, out var tooltipText))
+            {
+                if (!string.Equals(_currentTooltipText, tooltipText, StringComparison.Ordinal))
+                {
+                    _currentTooltipText = tooltipText;
+                    ToolTip.SetTip(this, tooltipText);
+                }
+
+                ToolTip.SetIsOpen(this, true);
+            }
+            else
+            {
+                CloseTooltip();
+            }
+        }
+
+        private void OnPointerExited(object? sender, PointerEventArgs e)
+        {
+            CloseTooltip();
+        }
+
+        private void CloseTooltip()
+        {
+            ToolTip.SetIsOpen(this, false);
+            _currentTooltipText = null;
+        }
+
+        private bool TryBuildTooltipText(Point point, out string tooltipText)
+        {
+            tooltipText = string.Empty;
+
+            var bounds = Bounds;
+            double w = bounds.Width;
+            double h = bounds.Height;
+            if (w <= 0 || h <= 0)
+                return false;
+
+            double left = 4;
+            double right = 4;
+            double top = 4;
+            double bottom = ShowHourLabels ? 70 : 4;
+
+            double plotW = Math.Max(1, w - left - right);
+            double plotH = Math.Max(1, h - top - bottom);
+            double y1 = top + 0.1 * plotH;
+            double y0 = top + 0.9 * plotH;
+
+            if (point.X < left || point.X > left + plotW || point.Y < y1 || point.Y > y0)
+                return false;
+
+            var annSource = Annotations as IList;
+            if (annSource == null || annSource.Count == 0)
+                return false;
+
+            double hour = (point.X - left) / (plotW / 24.0);
+            hour = Math.Clamp(hour, 0.0, 24.0);
+
+            var repair = annSource
+                .OfType<Models.Annotation>()
+                .Where(a => a.Type == Models.IssueType.Ремонт && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
+                .OrderBy(a => a.StartHour)
+                .FirstOrDefault();
+
+            var setup = annSource
+                .OfType<Models.Annotation>()
+                .Where(a => a.Type == Models.IssueType.Настройка && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
+                .OrderBy(a => a.StartHour)
+                .FirstOrDefault();
+
+            if (repair == null && setup == null)
+                return false;
+
+            var builder = new StringBuilder();
+            if (repair != null)
+            {
+                builder.AppendLine("Ремонт");
+                AppendAnnotationTooltip(builder, repair);
+            }
+
+            if (setup != null)
+            {
+                if (builder.Length > 0)
+                    builder.AppendLine();
+
+                builder.AppendLine("Настройка");
+                AppendAnnotationTooltip(builder, setup);
+            }
+
+            tooltipText = builder.ToString().TrimEnd();
+            return tooltipText.Length > 0;
+        }
+
+        private static void AppendAnnotationTooltip(StringBuilder builder, Models.Annotation annotation)
+        {
+            builder.AppendLine($"Описание: {annotation.Description}");
+            builder.AppendLine($"Ответственный: {annotation.Responsible}");
+            builder.AppendLine($"Начало: {annotation.StartDate:dd.MM.yyyy HH:mm}");
+            builder.AppendLine($"Окончание: {annotation.EndDate:dd.MM.yyyy HH:mm}");
+            builder.Append($"Затраченное время: {annotation.Duration}");
         }
 
         public override void Render(DrawingContext context)
@@ -219,8 +334,8 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             int annRows = annCount == 0 ? 0 : (annSingleRow ? 1 : 2);
-            double maxAnnH = annCount > 0 ? System.Linq.Enumerable.Max(annHeights) : 0;
-            double annSpace = annRows * (maxAnnH + gap) + 28; // extra for connector/marker (raised)
+            double maxAnnH = annCount > 0 ? annHeights.Max() : 0;
+            double annSpace = ShowHourLabels ? annRows * (maxAnnH + gap) + 28 : 0;
 
             // shift plot down
             top += annSpace;
@@ -326,121 +441,120 @@ namespace EquipmentFailureAnalysis.Views
                 context.DrawText(ftLbl, new Point(sx - approxW / 2.0, top - labelFont - 4));
             }
 
-            // draw annotations (markers + small text above graph)
-            var connectorPen = new Pen(Brushes.Gray, 1) { DashStyle = new DashStyle(new double[] { 1, 2 }, 0) };
-            var placedRects = new System.Collections.Generic.List<Rect>();
-
-            for (int i = 0; i < annCount; i++)
+            if (ShowHourLabels)
             {
-                var a = annObjs[i];
-                double ax = annCenters[i];
+                // draw annotations (markers + small text above graph)
+                var connectorPen = new Pen(Brushes.Gray, 1) { DashStyle = new DashStyle(new double[] { 1, 2 }, 0) };
+                var placedRects = new System.Collections.Generic.List<Rect>();
 
-                Color typeColor = Color.Parse("#E65100");
-                try
+                for (int i = 0; i < annCount; i++)
                 {
-                    if (a.Type == Models.IssueType.Ремонт)
-                        typeColor = Color.Parse("#C62828");
-                    else if (a.Type == Models.IssueType.Настройка)
-                        typeColor = Color.Parse("#F9A825");
-                }
-                catch { }
+                    var a = annObjs[i];
+                    double ax = annCenters[i];
 
-                var markerBrush = new SolidColorBrush(typeColor);
-                var marker = new Rect(ax - 6, top - 13, 12, 12);
-                var eg = new EllipseGeometry(new Rect(marker.X, marker.Y, marker.Width, marker.Height));
-                context.DrawGeometry(markerBrush, new Pen(Brushes.White, 1), eg);
-
-                string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
-                string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
-                string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
-
-                int maxLen2 = 52;
-                if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
-                if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
-
-                string line1 = "Описание: " + rawDescription;
-                string line2 = "Ответственный: " + rawResponsible;
-                string line3 = "Длительность: " + rawDuration;
-
-                // recalc width/height based on actual text lengths to avoid overflow
-                double wRect = annWidths[i];
-                double hRect = annHeights[i];
-                // approximate text widths
-                double ft1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                double ft2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                double ft3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                double contentW = Math.Max(ft1w, Math.Max(ft2w, ft3w));
-                wRect = Math.Max(wRect, contentW + 12); // padding
-
-                double xRect = ax - wRect / 2.0;
-                double minX = left;
-                double maxX = left + plotW - wRect;
-                xRect = Math.Max(minX, Math.Min(xRect, maxX));
-
-                double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
-
-                // simple collision avoidance: nudge horizontally if intersects previous
-                var candidate = new Rect(xRect, yRect, wRect, hRect);
-                int tries = 0;
-                while (tries < 10)
-                {
-                    bool coll = false;
-                    foreach (var pr in placedRects)
+                    Color typeColor = Color.Parse("#E65100");
+                    try
                     {
-                        if (pr.Intersects(candidate))
-                        {
-                            coll = true;
-                            // try move right
-                            double nx = pr.X + pr.Width + gap;
-                            if (nx <= maxX) candidate = new Rect(nx, candidate.Y, candidate.Width, candidate.Height);
-                            else
-                            {
-                                // move leftmost
-                                candidate = new Rect(minX, candidate.Y, candidate.Width, candidate.Height);
-                                // try move up one extra row if chess mode
-                                if (!annSingleRow)
-                                    candidate = new Rect(candidate.X, candidate.Y - (hRect + gap), candidate.Width, candidate.Height);
-                            }
-                            break;
-                        }
+                        if (a.Type == Models.IssueType.Ремонт)
+                            typeColor = Color.Parse("#C62828");
+                        else if (a.Type == Models.IssueType.Настройка)
+                            typeColor = Color.Parse("#F9A825");
                     }
-                    if (!coll) break;
-                    tries++;
+                    catch { }
+
+                    var markerBrush = new SolidColorBrush(typeColor);
+                    var marker = new Rect(ax - 6, top - 13, 12, 12);
+                    var eg = new EllipseGeometry(new Rect(marker.X, marker.Y, marker.Width, marker.Height));
+                    context.DrawGeometry(markerBrush, new Pen(Brushes.White, 1), eg);
+
+                    string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
+                    string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
+                    string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
+
+                    int maxLen2 = 52;
+                    if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
+                    if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
+
+                    string line1 = "Описание: " + rawDescription;
+                    string line2 = "Ответственный: " + rawResponsible;
+                    string line3 = "Длительность: " + rawDuration;
+
+                    // recalc width/height based on actual text lengths to avoid overflow
+                    double wRect = annWidths[i];
+                    double hRect = annHeights[i];
+                    // approximate text widths
+                    double ft1w = Math.Max(0, line1.Length * (annFont * 0.6));
+                    double ft2w = Math.Max(0, line2.Length * (annFont * 0.6));
+                    double ft3w = Math.Max(0, line3.Length * (annFont * 0.6));
+                    double contentW = Math.Max(ft1w, Math.Max(ft2w, ft3w));
+                    wRect = Math.Max(wRect, contentW + 12); // padding
+
+                    double xRect = ax - wRect / 2.0;
+                    double minX = left;
+                    double maxX = left + plotW - wRect;
+                    xRect = Math.Max(minX, Math.Min(xRect, maxX));
+
+                    double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
+
+                    // simple collision avoidance: nudge horizontally if intersects previous
+                    var candidate = new Rect(xRect, yRect, wRect, hRect);
+                    int tries = 0;
+                    while (tries < 10)
+                    {
+                        bool coll = false;
+                        foreach (var pr in placedRects)
+                        {
+                            if (pr.Intersects(candidate))
+                            {
+                                coll = true;
+                                // try move right
+                                double nx = pr.X + pr.Width + gap;
+                                if (nx <= maxX) candidate = new Rect(nx, candidate.Y, candidate.Width, candidate.Height);
+                                else
+                                {
+                                    // move leftmost
+                                    candidate = new Rect(minX, candidate.Y, candidate.Width, candidate.Height);
+                                    // try move up one extra row if chess mode
+                                    if (!annSingleRow)
+                                        candidate = new Rect(candidate.X, candidate.Y - (hRect + gap), candidate.Width, candidate.Height);
+                                }
+                                break;
+                            }
+                        }
+                        if (!coll) break;
+                        tries++;
+                    }
+
+                    placedRects.Add(candidate);
+
+                    var textRect = candidate;
+                    var startPoint = new Point(ax, top);
+                    var endPoint = new Point(textRect.X + textRect.Width / 2.0, textRect.Y + textRect.Height);
+                    context.DrawLine(connectorPen, startPoint, endPoint);
+
+                    // ensure the annotation box is wide enough for text and has padding
+                    double annFt1w = Math.Max(0, line1.Length * (annFont * 0.6));
+                    double annFt2w = Math.Max(0, line2.Length * (annFont * 0.6));
+                    double annFt3w = Math.Max(0, line3.Length * (annFont * 0.6));
+                    double annContentW = Math.Max(annFt1w, Math.Max(annFt2w, annFt3w));
+                    wRect = Math.Max(wRect, annContentW + 12); // padding
+                    // clamp width so it doesn't overflow plot area
+                    wRect = Math.Min(wRect, plotW - 8);
+                    textRect = new Rect(Math.Max(left, Math.Min(left + plotW - wRect, textRect.X)), textRect.Y, wRect, hRect);
+
+                    // draw rectangular annotation box with solid background and thin border
+                    var fillBrush2 = new SolidColorBrush(Color.FromArgb(248, 255, 255, 255));
+                    var borderPen2 = new Pen(new SolidColorBrush(Color.FromArgb(220, typeColor.R, typeColor.G, typeColor.B)), 1.2);
+                    var roundedTextRect = new RoundedRect(textRect, 6);
+                    context.DrawRectangle(fillBrush2, borderPen2, roundedTextRect);
+
+                    var ft1 = new FormattedText(line1, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTitleTypeface, annFont, Brushes.Black);
+                    var ft2 = new FormattedText(line2, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
+                    var ft3 = new FormattedText(line3, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
+                    context.DrawText(ft1, new Point(textRect.X + 6, textRect.Y + 4));
+                    context.DrawText(ft2, new Point(textRect.X + 6, textRect.Y + 4 + annFont + 3));
+                    context.DrawText(ft3, new Point(textRect.X + 6, textRect.Y + 4 + 2 * (annFont + 3)));
                 }
-
-                placedRects.Add(candidate);
-
-                var textRect = candidate;
-                var startPoint = new Point(ax, top);
-                var endPoint = new Point(textRect.X + textRect.Width / 2.0, textRect.Y + textRect.Height);
-                context.DrawLine(connectorPen, startPoint, endPoint);
-
-                // ensure the annotation box is wide enough for text and has padding
-                double annFt1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                double annFt2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                double annFt3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                double annContentW = Math.Max(annFt1w, Math.Max(annFt2w, annFt3w));
-                wRect = Math.Max(wRect, annContentW + 12); // padding
-                // clamp width so it doesn't overflow plot area
-                wRect = Math.Min(wRect, plotW - 8);
-                textRect = new Rect(Math.Max(left, Math.Min(left + plotW - wRect, textRect.X)), textRect.Y, wRect, hRect);
-
-                // draw rectangular annotation box with solid background and thin border
-                var rx = textRect.X;
-                var ry = textRect.Y;
-                var rw2 = textRect.Width;
-                var rh2 = textRect.Height;
-                var fillBrush2 = new SolidColorBrush(Color.FromArgb(248, 255, 255, 255));
-                var borderPen2 = new Pen(new SolidColorBrush(Color.FromArgb(220, typeColor.R, typeColor.G, typeColor.B)), 1.2);
-                var roundedTextRect = new RoundedRect(textRect, 6);
-                context.DrawRectangle(fillBrush2, borderPen2, roundedTextRect);
-
-                var ft1 = new FormattedText(line1, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTitleTypeface, annFont, Brushes.Black);
-                var ft2 = new FormattedText(line2, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
-                var ft3 = new FormattedText(line3, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
-                context.DrawText(ft1, new Point(textRect.X + 6, textRect.Y + 4));
-                context.DrawText(ft2, new Point(textRect.X + 6, textRect.Y + 4 + annFont + 3));
-                context.DrawText(ft3, new Point(textRect.X + 6, textRect.Y + 4 + 2 * (annFont + 3)));
             }
 
             // tooltips removed per request (annotations show multiline text directly)
