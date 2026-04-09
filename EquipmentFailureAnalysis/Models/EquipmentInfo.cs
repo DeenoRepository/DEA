@@ -9,6 +9,7 @@ namespace EquipmentFailureAnalysis.Models
         public string Title { get; set; } = string.Empty;
         // Inventory number (инвентарный номер)
         public string? InventoryNumber { get; set; }
+        public string? Subdivision { get; set; }
 
         // List of issues (неисправностей) related to this equipment
         public System.Collections.ObjectModel.ObservableCollection<Issue> Issues { get; set; }

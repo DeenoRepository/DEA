@@ -15,6 +15,7 @@ namespace EquipmentFailureAnalysis.Utility
     {
         private XmlDocument xmlDocument;
         private ObservableCollection<EquipmentInfo>? equipmentCollection;
+        private const string SubdivisionAttributeName = "dea-subdivision";
 
         // ID полей оборудования из разных проектов (Сектор сборки, Сектор измерений и др.)
         private readonly string[] equipmentFieldIds = {
@@ -31,7 +32,10 @@ namespace EquipmentFailureAnalysis.Utility
             {
                 var defaultPath = Path.Combine("Data", "EquipmentData.xml");
                 if (File.Exists(defaultPath))
+                {
                     xmlDocument.Load(defaultPath);
+                    AnnotateItemsWithSubdivision(xmlDocument, ExtractSubdivisionFromDocument(xmlDocument));
+                }
             }
             catch
             {
@@ -43,6 +47,7 @@ namespace EquipmentFailureAnalysis.Utility
         {
             xmlDocument = new XmlDocument();
             xmlDocument.Load(filePath);
+            AnnotateItemsWithSubdivision(xmlDocument, ExtractSubdivisionFromDocument(xmlDocument));
         }
 
         // Load and merge multiple XML files: items from subsequent files are appended
@@ -57,6 +62,7 @@ namespace EquipmentFailureAnalysis.Utility
 
             // Load the first document as the base
             xmlDocument.Load(paths[0]);
+            AnnotateItemsWithSubdivision(xmlDocument, ExtractSubdivisionFromDocument(xmlDocument));
 
             // Try to find a <channel> node to append items to; fall back to document element
             XmlNode? appendTarget = xmlDocument.SelectSingleNode("//channel") ?? xmlDocument.DocumentElement;
@@ -68,10 +74,12 @@ namespace EquipmentFailureAnalysis.Utility
                 {
                     var temp = new XmlDocument();
                     temp.Load(paths[i]);
+                    var tempSubdivision = ExtractSubdivisionFromDocument(temp);
                     var items = temp.GetElementsByTagName("item");
                     foreach (XmlNode item in items)
                     {
                         var imported = xmlDocument.ImportNode(item, true);
+                        TrySetItemSubdivision(imported, tempSubdivision);
                         if (appendTarget != null)
                             appendTarget.AppendChild(imported);
                         else if (xmlDocument.DocumentElement != null)
@@ -85,13 +93,67 @@ namespace EquipmentFailureAnalysis.Utility
             }
         }
 
+        private static string ExtractSubdivisionFromDocument(XmlDocument document)
+        {
+            var channelTitle = document.SelectSingleNode("//channel/title")?.InnerText;
+            return ParseSubdivisionFromChannelTitle(channelTitle);
+        }
+
+        private static string ParseSubdivisionFromChannelTitle(string? channelTitle)
+        {
+            if (string.IsNullOrWhiteSpace(channelTitle))
+                return string.Empty;
+
+            var cleaned = Regex.Replace(channelTitle.Trim(), @"\s*\([^)]*\)\s*$", string.Empty).Trim();
+            var separatorIndex = cleaned.IndexOf(" - ", StringComparison.Ordinal);
+            if (separatorIndex >= 0 && separatorIndex + 3 < cleaned.Length)
+                return cleaned.Substring(separatorIndex + 3).Trim();
+
+            return cleaned;
+        }
+
+        private static void AnnotateItemsWithSubdivision(XmlDocument document, string subdivision)
+        {
+            if (string.IsNullOrWhiteSpace(subdivision))
+                return;
+
+            var items = document.GetElementsByTagName("item");
+            foreach (XmlNode item in items)
+            {
+                TrySetItemSubdivision(item, subdivision);
+            }
+        }
+
+        private static void TrySetItemSubdivision(XmlNode itemNode, string subdivision)
+        {
+            if (string.IsNullOrWhiteSpace(subdivision))
+                return;
+
+            if (itemNode is XmlElement itemElement)
+                itemElement.SetAttribute(SubdivisionAttributeName, subdivision);
+        }
+
+        private static string GetItemSubdivision(XmlNode itemNode, string fallbackSubdivision)
+        {
+            if (itemNode is XmlElement itemElement)
+            {
+                var value = itemElement.GetAttribute(SubdivisionAttributeName);
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value.Trim();
+            }
+
+            return fallbackSubdivision;
+        }
+
         public ObservableCollection<EquipmentInfo> DecodeEquipment()
         {
             XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("item");
             equipmentCollection = new ObservableCollection<EquipmentInfo>();
+            var fallbackSubdivision = ExtractSubdivisionFromDocument(xmlDocument);
 
             foreach (XmlNode xmlNode in xmlNodeList)
             {
+                var subdivision = GetItemSubdivision(xmlNode, fallbackSubdivision);
                 // Фильтр по статусу (пропускаем нерешенные задачи)
                 string status = xmlNode["status"]?.InnerText ?? string.Empty;
                 if (!status.Equals("Решен", StringComparison.OrdinalIgnoreCase))
@@ -285,7 +347,8 @@ namespace EquipmentFailureAnalysis.Utility
 
                 // 6. Группировка: ищем, нет ли уже такого оборудования в коллекции
                 EquipmentInfo? equipment = equipmentCollection.FirstOrDefault(e =>
-                    (uid != 0 && e.Uid == uid) || e.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+                    ((uid != 0 && e.Uid == uid) || e.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                    && string.Equals(e.Subdivision ?? string.Empty, subdivision ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
                 if (equipment == null)
                 {
@@ -293,7 +356,8 @@ namespace EquipmentFailureAnalysis.Utility
                     {
                         Title = title,
                         Uid = uid,
-                        InventoryNumber = inventoryNumber
+                        InventoryNumber = inventoryNumber,
+                        Subdivision = subdivision
                     };
                     equipmentCollection.Add(equipment);
                 }

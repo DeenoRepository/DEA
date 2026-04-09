@@ -1177,6 +1177,11 @@ namespace EquipmentFailureAnalysis.ViewModels
                     return new Models.EmployeeAnalysisRow
                     {
                         Name = g.Key,
+                        Subdivision = string.Join(", ", g
+                            .Select(x => x.Equipment.Subdivision)
+                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                            .Select(s => s!.Trim())
+                            .Distinct(StringComparer.CurrentCultureIgnoreCase)),
                         IssuesCount = issues.Count,
                         EventSharePercent = assignedIssues.Count == 0 ? 0.0 : issues.Count * 100.0 / assignedIssues.Count,
                         RepairsCount = issues.Count(i => i.Type == IssueType.Ремонт),
@@ -1194,6 +1199,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                         LastIssueDate = lastIssueDate,
                         LastIssueDateText = lastIssueDate == DateTime.MinValue ? "-" : lastIssueDate.ToString("dd.MM.yyyy")
                     };
+                })
+                .Select(r =>
+                {
+                    if (string.IsNullOrWhiteSpace(r.Subdivision))
+                        r.Subdivision = "-";
+                    return r;
                 })
                 .ToList();
 

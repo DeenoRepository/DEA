@@ -1050,18 +1050,19 @@
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
 						<StackPanel>
 							<TextBlock Text="Детализация по сотрудникам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
-							<Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,2,4,6">
+                           <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,2,4,6">
 								<TextBlock Grid.Column="0" Text="Сотрудник" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
-								<TextBlock Grid.Column="1" Text="Доля" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="2" Text="SLA" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="3" Text="Итог" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="4" Text="События" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="5" Text="Ремонт" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="6" Text="Настройка" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="7" Text="Ср. время" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="8" Text="Сумма" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="9" Text="Ед. обор." FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-								<TextBlock Grid.Column="10" Text="Последнее" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+                              <TextBlock Grid.Column="1" Text="Подразделение" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+								<TextBlock Grid.Column="2" Text="Доля" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="3" Text="SLA" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="4" Text="Итог" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="5" Text="События" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="6" Text="Ремонт" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="7" Text="Настройка" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="8" Text="Ср. время" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="9" Text="Сумма" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="10" Text="Ед. обор." FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="11" Text="Последнее" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 							</Grid>
 							<Border Height="1" Background="#E6EAF0" Margin="0,0,0,4" />
                           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" MaxHeight="560">
@@ -1073,18 +1074,19 @@
 									</ItemsControl.ItemsPanel>
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
-											<Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,3">
+                                       <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,3">
 												<TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="#1F2937" TextTrimming="CharacterEllipsis" MaxLines="1" />
-												<TextBlock Grid.Column="1" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#2563EB" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#0F766E" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="3" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="4" Text="{Binding IssuesCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="5" Text="{Binding RepairsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="6" Text="{Binding SetupsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="7" Text="{Binding AvgDurationText}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="8" Text="{Binding TotalDurationText}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="9" Text="{Binding EquipmentCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
-												<TextBlock Grid.Column="10" Text="{Binding LastIssueDateText}" FontSize="12" Foreground="#4B5563" HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="1" Text="{Binding Subdivision}" FontSize="12" Foreground="#4B5563" TextTrimming="CharacterEllipsis" MaxLines="1" Margin="6,0,8,0" />
+											<TextBlock Grid.Column="2" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#2563EB" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="3" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#0F766E" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="4" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="5" Text="{Binding IssuesCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="6" Text="{Binding RepairsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="7" Text="{Binding SetupsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="8" Text="{Binding AvgDurationText}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="9" Text="{Binding TotalDurationText}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="10" Text="{Binding EquipmentCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
+											<TextBlock Grid.Column="11" Text="{Binding LastIssueDateText}" FontSize="12" Foreground="#4B5563" HorizontalAlignment="Right" />
 											</Grid>
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>

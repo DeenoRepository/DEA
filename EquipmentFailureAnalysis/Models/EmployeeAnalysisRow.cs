@@ -5,6 +5,7 @@ namespace EquipmentFailureAnalysis.Models
     public class EmployeeAnalysisRow
     {
         public string Name { get; set; } = "Не назначен";
+        public string Subdivision { get; set; } = "-";
         public int IssuesCount { get; set; }
         public double EventSharePercent { get; set; }
         public int RepairsCount { get; set; }
