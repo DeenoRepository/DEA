@@ -1874,10 +1874,12 @@ namespace EquipmentFailureAnalysis.ViewModels
             if (LoadEquipmentCommand == null)
                 return;
 
+            var selectedDate = AnalysisDate.Date;
+
             LoadEquipmentCommand.Execute(SelectedEquipment).Subscribe(_ =>
             {
                 if (ShowDayTimelineCommand != null)
-                    ShowDayTimelineCommand.Execute(AnalysisDate.Date).Subscribe();
+                    ShowDayTimelineCommand.Execute(selectedDate).Subscribe();
             });
         }
 
