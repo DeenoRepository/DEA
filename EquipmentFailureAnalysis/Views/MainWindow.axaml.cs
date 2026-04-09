@@ -195,7 +195,7 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
             {
-                vm.ShowDowntimeDayCommand.Execute(DateTime.Now.Date).Subscribe();
+                vm.ShowDowntimeDayCommand.Execute(vm.DowntimeAnalysisDate).Subscribe();
             }
 
             _currentPage = AppPage.DowntimeAnalysis;

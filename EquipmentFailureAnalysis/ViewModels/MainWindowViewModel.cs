@@ -40,6 +40,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dashboardMonthlyTrends, value);
         }
         public ReactiveCommand<EquipmentInfo, Unit> LoadEquipmentCommand { get; }
+        public ReactiveCommand<Unit, Unit> ResetUniversalFiltersCommand { get; }
         public ObservableCollection<int> DayHeaders { get; set; } = new ObservableCollection<int>();
         public ObservableCollection<int> DayHours { get; set; } = new ObservableCollection<int>();
         public ReactiveCommand<DateTime, Unit> ShowDowntimeDayCommand { get; }
@@ -456,6 +457,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<string> EmployeeAnalysisMonthOptions { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> EmployeeSubdivisionFilters { get; } = new ObservableCollection<string>();
         public ObservableCollection<string> EmployeeTimelineEmployees { get; } = new ObservableCollection<string>();
 
         private string _selectedEmployeeTimelineEmployee = "Все сотрудники";
@@ -467,6 +469,18 @@ namespace EquipmentFailureAnalysis.ViewModels
                 this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, value);
                 if (_masterEquipment.Count > 0)
                     BuildEmployeeSelectedDayTimeline();
+            }
+        }
+
+        private string _selectedEmployeeSubdivisionFilter = "Все группы";
+        public string SelectedEmployeeSubdivisionFilter
+        {
+            get => _selectedEmployeeSubdivisionFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedEmployeeSubdivisionFilter, value);
+                if (_masterEquipment.Count > 0)
+                    BuildEmployeeAnalysis();
             }
         }
 
@@ -606,6 +620,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         };
 
         public ObservableCollection<string> DowntimeResponsibleFilters { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> DowntimeSubdivisionFilters { get; } = new ObservableCollection<string>();
 
         private string _selectedDowntimeIssueTypeFilter = "Все типы";
         public string SelectedDowntimeIssueTypeFilter
@@ -614,6 +629,18 @@ namespace EquipmentFailureAnalysis.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _selectedDowntimeIssueTypeFilter, value);
+                RefreshDowntimeAnalysis();
+                RefreshFailureAnalysis();
+            }
+        }
+
+        private string _selectedDowntimeSubdivisionFilter = "Все группы";
+        public string SelectedDowntimeSubdivisionFilter
+        {
+            get => _selectedDowntimeSubdivisionFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedDowntimeSubdivisionFilter, value);
                 RefreshDowntimeAnalysis();
                 RefreshFailureAnalysis();
             }
@@ -712,8 +739,9 @@ namespace EquipmentFailureAnalysis.ViewModels
         public MainWindowViewModel()
         {
             EmployeeTimelineEmployees.Add("Все сотрудники");
-            SelectedEmployeeTimelineEmployee = "все сотрудники";
+            SelectedEmployeeTimelineEmployee = "Все сотрудники";
             RebuildDowntimeResponsibleFilters();
+            RebuildDowntimeSubdivisionFilters();
 
             // prepare day headers 1..31 for the heatmap top row
             for (int i = 1; i <= 31; i++)
@@ -729,6 +757,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             all.ForEach(e => { /* ensure Issues collection is not null */ });
             _masterEquipment = all;
             RebuildDowntimeResponsibleFilters();
+            RebuildDowntimeSubdivisionFilters();
+            RebuildEmployeeSubdivisionFilters();
             RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
@@ -757,6 +787,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 BuildDowntimeDayEquipmentRows(date);
             });
+
+            ResetUniversalFiltersCommand = ReactiveCommand.Create(ResetUniversalFilters);
 
             // Command that fills DailyDowntimeIndexCollection for the selected equipment
             LoadEquipmentCommand = ReactiveCommand.Create<EquipmentInfo>(equipment =>
@@ -1114,7 +1146,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             var all = imported.ToList();
             _masterEquipment = all;
             RebuildDowntimeResponsibleFilters();
+            RebuildDowntimeSubdivisionFilters();
             RebuildEmployeeMonthOptions();
+            RebuildEmployeeSubdivisionFilters();
             // keep left column ordering by total issues
             _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
             EquipmentCollection.Clear();
@@ -1143,7 +1177,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .SelectMany(eq => eq.Issues.Select(issue => new EmployeeIssueProjection { Equipment = eq, Issue = issue }))
                 .ToList();
 
-            var issuesWithEquipment = FilterEmployeeIssuesBySelectedMonth(issuesWithEquipmentAll).ToList();
+            var issuesWithEquipment = FilterEmployeeIssuesBySelectedSubdivision(
+                FilterEmployeeIssuesBySelectedMonth(issuesWithEquipmentAll)).ToList();
 
             EmployeeTotalIssues = issuesWithEquipment.Count;
 
@@ -1287,7 +1322,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             var previous = SelectedEmployeeTimelineEmployee;
             EmployeeTimelineEmployees.Clear();
-            EmployeeTimelineEmployees.Add("все сотрудники");
+            EmployeeTimelineEmployees.Add("Все сотрудники");
 
             foreach (var name in employeeNames
                 .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -1301,7 +1336,10 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? previous
                 : "Все сотрудники";
 
-            this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, selected);
+            if (string.Equals(_selectedEmployeeTimelineEmployee, selected, StringComparison.CurrentCulture))
+                this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, string.Empty);
+
+            SelectedEmployeeTimelineEmployee = selected;
         }
 
         private void BuildEmployeeSelectedDayTimeline()
@@ -1513,6 +1551,28 @@ namespace EquipmentFailureAnalysis.ViewModels
                 SelectedEmployeeAnalysisMonth = allMonthsOption;
         }
 
+        private void RebuildEmployeeSubdivisionFilters()
+        {
+            var previous = SelectedEmployeeSubdivisionFilter;
+            EmployeeSubdivisionFilters.Clear();
+            EmployeeSubdivisionFilters.Add("Все группы");
+            EmployeeSubdivisionFilters.Add("Без группы");
+
+            foreach (var subdivision in _masterEquipment
+                .Select(eq => eq.Subdivision?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
+            {
+                EmployeeSubdivisionFilters.Add(subdivision!);
+            }
+
+            if (!string.IsNullOrWhiteSpace(previous) && EmployeeSubdivisionFilters.Contains(previous))
+                SelectedEmployeeSubdivisionFilter = previous;
+            else
+                SelectedEmployeeSubdivisionFilter = "Все группы";
+        }
+
         private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> FilterEmployeeIssuesBySelectedMonth(System.Collections.Generic.IEnumerable<EmployeeIssueProjection> source)
         {
             if (string.IsNullOrWhiteSpace(SelectedEmployeeAnalysisMonth) || SelectedEmployeeAnalysisMonth == "Все месяцы")
@@ -1525,6 +1585,18 @@ namespace EquipmentFailureAnalysis.ViewModels
             var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
             var monthEnd = monthStart.AddMonths(1);
             return source.Where(x => x.Issue.Start < monthEnd && x.Issue.End >= monthStart);
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> FilterEmployeeIssuesBySelectedSubdivision(System.Collections.Generic.IEnumerable<EmployeeIssueProjection> source)
+        {
+            if (string.IsNullOrWhiteSpace(SelectedEmployeeSubdivisionFilter)
+                || string.Equals(SelectedEmployeeSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+                return source;
+
+            if (string.Equals(SelectedEmployeeSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                return source.Where(x => string.IsNullOrWhiteSpace(x.Equipment.Subdivision));
+
+            return source.Where(x => string.Equals(x.Equipment.Subdivision?.Trim(), SelectedEmployeeSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
         }
 
         private static bool IsUnassignedResponsible(string? responsible)
@@ -1894,6 +1966,14 @@ namespace EquipmentFailureAnalysis.ViewModels
             });
         }
 
+        private void ResetUniversalFilters()
+        {
+            SelectedDowntimeIssueTypeFilter = "Все типы";
+            SelectedDowntimeResponsibleFilter = "Все ответственные";
+            SelectedDowntimeSubdivisionFilter = "Все группы";
+            DowntimeEquipmentSearchQuery = string.Empty;
+        }
+
         private void RebuildDowntimeResponsibleFilters()
         {
             var previous = SelectedDowntimeResponsibleFilter;
@@ -1916,13 +1996,46 @@ namespace EquipmentFailureAnalysis.ViewModels
                 : "Все ответственные";
         }
 
+        private void RebuildDowntimeSubdivisionFilters()
+        {
+            var previous = SelectedDowntimeSubdivisionFilter;
+            DowntimeSubdivisionFilters.Clear();
+            DowntimeSubdivisionFilters.Add("Все группы");
+            DowntimeSubdivisionFilters.Add("Без группы");
+
+            foreach (var subdivision in _masterEquipment
+                .Select(eq => eq.Subdivision?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
+            {
+                DowntimeSubdivisionFilters.Add(subdivision!);
+            }
+
+            SelectedDowntimeSubdivisionFilter = DowntimeSubdivisionFilters.Contains(previous)
+                ? previous
+                : "Все группы";
+        }
+
+        private bool MatchesDowntimeSubdivision(EquipmentInfo equipment)
+        {
+            if (string.Equals(SelectedDowntimeSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+                return true;
+
+            if (string.Equals(SelectedDowntimeSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                return string.IsNullOrWhiteSpace(equipment.Subdivision);
+
+            return string.Equals(equipment.Subdivision?.Trim(), SelectedDowntimeSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase);
+        }
+
         private System.Collections.Generic.List<EquipmentInfo> FilterDowntimeEquipmentByQuery(System.Collections.Generic.IEnumerable<EquipmentInfo> source)
         {
+            var filteredBySubdivision = source.Where(MatchesDowntimeSubdivision);
             var query = (DowntimeEquipmentSearchQuery ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(query))
-                return source.ToList();
+                return filteredBySubdivision.ToList();
 
-            return source
+            return filteredBySubdivision
                 .Where(eq => (eq.Title?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
                     || (eq.InventoryNumber?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false))
                 .ToList();
@@ -1930,6 +2043,9 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         private System.Collections.Generic.IEnumerable<Issue> GetDowntimeFilteredIssues(EquipmentInfo equipment, DateTime start, DateTime end)
         {
+            if (!MatchesDowntimeSubdivision(equipment))
+                return System.Linq.Enumerable.Empty<Issue>();
+
             var source = equipment.Issues.Where(issue => issue.End > start && issue.Start < end);
 
             source = SelectedDowntimeIssueTypeFilter switch

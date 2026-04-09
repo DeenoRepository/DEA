@@ -83,6 +83,17 @@
 			<Setter Property="Foreground" Value="#1D4ED8" />
 			<Setter Property="CornerRadius" Value="6" />
 		</Style>
+		<Style x:Key="ResetFilterButtonStyle" Selector="Button.resetFilter">
+			<Setter Property="MinWidth" Value="86" />
+			<Setter Property="Padding" Value="12,6" />
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Background" Value="#EEF4FF" />
+			<Setter Property="BorderBrush" Value="#C7D7F7" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Foreground" Value="#1D4ED8" />
+			<Setter Property="CornerRadius" Value="6" />
+		</Style>
 
 		<!-- Legend brushes for heatmap (brighter stops) -->
 		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
@@ -403,7 +414,7 @@
 						<StackPanel Spacing="8">
 							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 							<TextBlock Text="Фильтрация по типу неисправности, ответственному и оборудованию" FontSize="12" Foreground="#6B7280" />
-							<Grid ColumnDefinitions="Auto,170,Auto,220,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="Auto,170,Auto,220,Auto,220,Auto,*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
 								<TextBlock Grid.Column="0" Text="Тип:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
 								<ComboBox Grid.Column="1"
 									ItemsSource="{Binding DowntimeIssueTypeFilters}"
@@ -418,13 +429,24 @@
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
-								<TextBlock Grid.Column="4" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
-								<TextBox Grid.Column="5"
+                                <TextBlock Grid.Column="4" Text="Группа:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="5"
+									ItemsSource="{Binding DowntimeSubdivisionFilters}"
+									SelectedItem="{Binding SelectedDowntimeSubdivisionFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="6" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<TextBox Grid.Column="7"
 									Watermark="Поиск по названию или инв. номеру"
 									Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
+                             <Button Grid.Column="8"
+                                 Classes="resetFilter"
+									Content="Сброс"
+									Command="{Binding ResetUniversalFiltersCommand}" />
 							</Grid>
 						</StackPanel>
 					</Border>
@@ -669,7 +691,7 @@
 						<StackPanel Spacing="8">
 							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 							<TextBlock Text="Фильтрация по типу неисправности, ответственному и оборудованию" FontSize="12" Foreground="#6B7280" />
-							<Grid ColumnDefinitions="Auto,170,Auto,220,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="Auto,170,Auto,220,Auto,220,Auto,*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
 								<TextBlock Grid.Column="0" Text="Тип:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
 								<ComboBox Grid.Column="1"
 									ItemsSource="{Binding DowntimeIssueTypeFilters}"
@@ -684,13 +706,24 @@
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
-								<TextBlock Grid.Column="4" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
-								<TextBox Grid.Column="5"
+                                <TextBlock Grid.Column="4" Text="Группа:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="5"
+									ItemsSource="{Binding DowntimeSubdivisionFilters}"
+									SelectedItem="{Binding SelectedDowntimeSubdivisionFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="6" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<TextBox Grid.Column="7"
 									Watermark="Поиск по названию или инв. номеру"
 									Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
+                             <Button Grid.Column="8"
+                                 Classes="resetFilter"
+									Content="Сброс"
+									Command="{Binding ResetUniversalFiltersCommand}" />
 							</Grid>
 						</StackPanel>
 					</Border>
@@ -979,7 +1012,7 @@
 							<TextBlock Text="Анализ работы сотрудников" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 							<TextBlock Text="Сводная оценка нагрузки, длительности работ и распределения задач по ответственным" FontSize="12" Foreground="#6B7280" Margin="0,2,0,10" TextWrapping="Wrap" />
 
-							<Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="Auto,*,Auto,220,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,10">
 								<TextBlock Grid.Column="0" Text="Период:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
 								<ComboBox Grid.Column="1"
 									ItemsSource="{Binding EmployeeAnalysisMonthOptions}"
@@ -988,8 +1021,16 @@
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
-								<TextBlock Grid.Column="2" Text="SLA, мин:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
-								<NumericUpDown Grid.Column="3"
+                                <TextBlock Grid.Column="2" Text="Группа:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
+								<ComboBox Grid.Column="3"
+									ItemsSource="{Binding EmployeeSubdivisionFilters}"
+									SelectedItem="{Binding SelectedEmployeeSubdivisionFilter, Mode=TwoWay}"
+									HorizontalAlignment="Stretch"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="4" Text="SLA, мин:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
+								<NumericUpDown Grid.Column="5"
 									Width="130"
 									Minimum="30"
 									Maximum="1440"
@@ -1052,7 +1093,7 @@
 							<TextBlock Text="Детализация по сотрудникам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
                            <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,2,4,6">
 								<TextBlock Grid.Column="0" Text="Сотрудник" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
-                              <TextBlock Grid.Column="1" Text="Подразделение" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+                               <TextBlock Grid.Column="1" Text="Группа" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
 								<TextBlock Grid.Column="2" Text="Доля" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 								<TextBlock Grid.Column="3" Text="SLA" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 								<TextBlock Grid.Column="4" Text="Итог" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />

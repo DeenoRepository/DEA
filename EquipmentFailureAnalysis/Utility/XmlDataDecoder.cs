@@ -104,10 +104,10 @@ namespace EquipmentFailureAnalysis.Utility
             if (string.IsNullOrWhiteSpace(channelTitle))
                 return string.Empty;
 
-            var cleaned = Regex.Replace(channelTitle.Trim(), @"\s*\([^)]*\)\s*$", string.Empty).Trim();
-            var separatorIndex = cleaned.IndexOf(" - ", StringComparison.Ordinal);
-            if (separatorIndex >= 0 && separatorIndex + 3 < cleaned.Length)
-                return cleaned.Substring(separatorIndex + 3).Trim();
+            const string portalSuffix = " (Портал поддержки АО \"НЗПП Восток\")";
+            var cleaned = channelTitle.Trim();
+            if (cleaned.EndsWith(portalSuffix, StringComparison.OrdinalIgnoreCase))
+                cleaned = cleaned.Substring(0, cleaned.Length - portalSuffix.Length).TrimEnd();
 
             return cleaned;
         }
