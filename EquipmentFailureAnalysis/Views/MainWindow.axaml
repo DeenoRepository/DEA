@@ -773,31 +773,29 @@
 							</Grid>
 							<Border Height="1" Background="#E6EAF0" Margin="0,0,0,4" />
 
-                          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" MaxHeight="460">
-								<ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
-									<ItemsControl.ItemsPanel>
-										<ItemsPanelTemplate>
-											<StackPanel />
-										</ItemsPanelTemplate>
-									</ItemsControl.ItemsPanel>
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,4">
-                                               <Button Grid.Column="0" Margin="0,0,8,0" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Click="DowntimeEquipmentButton_Click">
-													<StackPanel Spacing="2">
-														<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="#1F2937" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-														<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="#6B7280" />
-														<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
-													</StackPanel>
-												</Button>
-												<Border Grid.Column="1" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="6" Background="#FFFFFF">
-                                                   <views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
-												</Border>
-											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</ScrollViewer>
+                          <ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,4">
+											   <Button Grid.Column="0" Margin="0,0,8,0" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Click="DowntimeEquipmentButton_Click">
+												<StackPanel Spacing="2">
+													<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="#1F2937" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+													<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="#6B7280" />
+													<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
+												</StackPanel>
+											</Button>
+											<Border Grid.Column="1" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="6" Background="#FFFFFF">
+												   <views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
+											</Border>
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
 						</StackPanel>
 					</Border>
 				</Grid>
