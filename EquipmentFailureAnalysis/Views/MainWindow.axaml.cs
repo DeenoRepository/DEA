@@ -214,6 +214,24 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        private void EmployeeTimelinePrevDate_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var current = vm.EmployeeTimelineDate ?? DateTime.Now.Date;
+            vm.EmployeeTimelineDate = current.AddDays(-1);
+        }
+
+        private void EmployeeTimelineNextDate_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var current = vm.EmployeeTimelineDate ?? DateTime.Now.Date;
+            vm.EmployeeTimelineDate = current.AddDays(1);
+        }
+
         private void DowntimeEquipmentButton_Click(object? sender, RoutedEventArgs e)
         {
             if (sender is not Control control)

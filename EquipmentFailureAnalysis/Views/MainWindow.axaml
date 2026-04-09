@@ -71,6 +71,18 @@
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="Background" Value="Transparent" />
 		</Style>
+		<Style x:Key="DateShiftButtonStyle" Selector="Button.dateShift">
+			<Setter Property="Width" Value="30" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="FontSize" Value="13" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Background" Value="#EEF4FF" />
+			<Setter Property="BorderBrush" Value="#C7D7F7" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Foreground" Value="#1D4ED8" />
+			<Setter Property="CornerRadius" Value="6" />
+		</Style>
 
 		<!-- Legend brushes for heatmap (brighter stops) -->
 		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
@@ -247,7 +259,8 @@
 					</Border>
 				</Grid>
 
-                <Grid>
+
+              <Grid Margin="0,0,0,8">
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
 						<StackPanel Spacing="8">
@@ -334,6 +347,7 @@
 						</StackPanel>
 					</Border>
 				</Grid>
+
 			</StackPanel>
 		</ScrollViewer>
 
@@ -382,6 +396,39 @@
         <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="1" Grid.Row="1" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <!-- Top header showing day numbers moved into heatmap block for alignment -->
+
+              <Grid Margin="0,0,0,8">
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Фильтрация по типу неисправности, ответственному и оборудованию" FontSize="12" Foreground="#6B7280" />
+							<Grid ColumnDefinitions="Auto,170,Auto,220,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Тип:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="1"
+									ItemsSource="{Binding DowntimeIssueTypeFilters}"
+									SelectedItem="{Binding SelectedDowntimeIssueTypeFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="2" Text="Ответственный:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="3"
+									ItemsSource="{Binding DowntimeResponsibleFilters}"
+									SelectedItem="{Binding SelectedDowntimeResponsibleFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="4" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<TextBox Grid.Column="5"
+									Watermark="Поиск по названию или инв. номеру"
+									Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
 
                 <Grid Margin="0,0,0,8">
                  <Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
@@ -615,7 +662,40 @@
 		</Grid.ColumnDefinitions>
 
        <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-			<StackPanel Spacing="10">
+           <StackPanel Spacing="10">
+			 <Grid Margin="0,0,0,8">
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Фильтрация по типу неисправности, ответственному и оборудованию" FontSize="12" Foreground="#6B7280" />
+							<Grid ColumnDefinitions="Auto,170,Auto,220,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Тип:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="1"
+									ItemsSource="{Binding DowntimeIssueTypeFilters}"
+									SelectedItem="{Binding SelectedDowntimeIssueTypeFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="2" Text="Ответственный:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="3"
+									ItemsSource="{Binding DowntimeResponsibleFilters}"
+									SelectedItem="{Binding SelectedDowntimeResponsibleFilter, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="4" Text="Оборудование:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<TextBox Grid.Column="5"
+									Watermark="Поиск по названию или инв. номеру"
+									Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+
 				<Grid Margin="0,0,0,8">
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
@@ -865,6 +945,35 @@
 
 		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel Spacing="10">
+               <Grid>
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel Spacing="8">
+							<TextBlock Text="События сотрудника за день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Выберите сотрудника и дату, чтобы увидеть timeline его событий" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+							<Grid ColumnDefinitions="Auto,*,Auto,34,130,34" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Сотрудник:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="1"
+									ItemsSource="{Binding EmployeeTimelineEmployees}"
+									SelectedItem="{Binding SelectedEmployeeTimelineEmployee, Mode=TwoWay}"
+									HorizontalAlignment="Stretch"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+								<TextBlock Grid.Column="2" Text="Дата:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<Button Grid.Column="3" Classes="dateShift" Content="◀" Click="EmployeeTimelinePrevDate_Click" />
+                              <CalendarDatePicker Grid.Column="4" Width="130" MinWidth="130" MaxWidth="160" HorizontalAlignment="Stretch" SelectedDate="{Binding EmployeeTimelineDate, Mode=TwoWay}" />
+								<Button Grid.Column="5" Classes="dateShift" Content="▶" Click="EmployeeTimelineNextDate_Click" />
+							</Grid>
+
+							<Border Background="#FFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
+								<views:TimelineControl Items="{Binding EmployeeTimelinePoints}" RepairsItems="{Binding EmployeeRepairsTimelinePoints}" SetupsItems="{Binding EmployeeSetupsTimelinePoints}" Annotations="{Binding EmployeeTimelineAnnotations}" Height="220" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True" VerticalAlignment="Top" />
+							</Border>
+						</StackPanel>
+					</Border>
+				</Grid>
+
 				<Grid>
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
@@ -872,7 +981,7 @@
 							<TextBlock Text="Анализ работы сотрудников" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 							<TextBlock Text="Сводная оценка нагрузки, длительности работ и распределения задач по ответственным" FontSize="12" Foreground="#6B7280" Margin="0,2,0,10" TextWrapping="Wrap" />
 
-                          <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,10">
+							<Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,10">
 								<TextBlock Grid.Column="0" Text="Период:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
 								<ComboBox Grid.Column="1"
 									ItemsSource="{Binding EmployeeAnalysisMonthOptions}"
@@ -881,9 +990,9 @@
 									Background="#FFFFFF"
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
-                             <TextBlock Grid.Column="2" Text="SLA, мин:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
+								<TextBlock Grid.Column="2" Text="SLA, мин:" VerticalAlignment="Center" FontSize="12" Foreground="#374151" />
 								<NumericUpDown Grid.Column="3"
-                                  Width="130"
+									Width="130"
 									Minimum="30"
 									Maximum="1440"
 									Increment="5"
@@ -892,7 +1001,7 @@
 							</Grid>
 							<TextBlock Text="{Binding EmployeeAnalysisPeriodDescription, StringFormat='Период анализа: {0}'}" FontSize="11" Foreground="#6B7280" Margin="0,0,0,8" />
 
-                          <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+							<Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
 								<Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
 									<StackPanel>
 										<TextBlock Text="Сотрудники" FontSize="11" Foreground="#6B7280" />
@@ -911,7 +1020,7 @@
 										<TextBlock Text="{Binding EmployeeAvgDuration}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
 									</StackPanel>
 								</Border>
-                             <Border Grid.Column="3" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+								<Border Grid.Column="3" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
 									<StackPanel>
 										<TextBlock Text="Без ответственного" FontSize="11" Foreground="#6B7280" />
 										<TextBlock Text="{Binding EmployeeUnassignedIssues, StringFormat='{}{0} шт.'}" FontSize="18" FontWeight="SemiBold" Foreground="#B45309" />
@@ -922,12 +1031,12 @@
 							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10" Margin="0,8,0,0">
 								<StackPanel Spacing="6">
 									<TextBlock Text="Структура событий" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-                                    <Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
+									<Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
 										<TextBlock Grid.Column="0" Text="Ремонты" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
 										<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding EmployeeTotalIssues}" Value="{Binding EmployeeRepairsTotal}" Height="8" VerticalAlignment="Center" />
 										<TextBlock Grid.Column="2" Text="{Binding EmployeeRepairsTotal, StringFormat='{}{0}'}" FontSize="11" Foreground="#111827" VerticalAlignment="Center" />
 									</Grid>
-                                    <Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
+									<Grid ColumnDefinitions="90,*,Auto" ColumnSpacing="8">
 										<TextBlock Grid.Column="0" Text="Настройки" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
 										<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding EmployeeTotalIssues}" Value="{Binding EmployeeSetupsTotal}" Height="8" VerticalAlignment="Center" />
 										<TextBlock Grid.Column="2" Text="{Binding EmployeeSetupsTotal, StringFormat='{}{0}'}" FontSize="11" Foreground="#111827" VerticalAlignment="Center" />
@@ -943,11 +1052,11 @@
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
 						<StackPanel>
 							<TextBlock Text="Детализация по сотрудникам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
-                            <Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,2,4,6">
+							<Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,2,4,6">
 								<TextBlock Grid.Column="0" Text="Сотрудник" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
-                               <TextBlock Grid.Column="1" Text="Доля" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-                               <TextBlock Grid.Column="2" Text="SLA" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
-                               <TextBlock Grid.Column="3" Text="Итог" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="1" Text="Доля" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="2" Text="SLA" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
+								<TextBlock Grid.Column="3" Text="Итог" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 								<TextBlock Grid.Column="4" Text="События" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 								<TextBlock Grid.Column="5" Text="Ремонт" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
 								<TextBlock Grid.Column="6" Text="Настройка" FontWeight="SemiBold" FontSize="12" Foreground="#374151" HorizontalAlignment="Right" />
@@ -966,11 +1075,11 @@
 									</ItemsControl.ItemsPanel>
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
-                                            <Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,3">
+											<Grid ColumnDefinitions="2.2*,0.8*,0.8*,1*,0.9*,0.9*,0.9*,0.9*,0.9*,0.9*,1.1*" Margin="4,3">
 												<TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="#1F2937" TextTrimming="CharacterEllipsis" MaxLines="1" />
-                                               <TextBlock Grid.Column="1" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#2563EB" HorizontalAlignment="Right" />
-                                               <TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#0F766E" HorizontalAlignment="Right" />
-                                               <TextBlock Grid.Column="3" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
+												<TextBlock Grid.Column="1" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#2563EB" HorizontalAlignment="Right" />
+												<TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#0F766E" HorizontalAlignment="Right" />
+												<TextBlock Grid.Column="3" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right" />
 												<TextBlock Grid.Column="4" Text="{Binding IssuesCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
 												<TextBlock Grid.Column="5" Text="{Binding RepairsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />
 												<TextBlock Grid.Column="6" Text="{Binding SetupsCount}" FontSize="12" Foreground="#111827" HorizontalAlignment="Right" />

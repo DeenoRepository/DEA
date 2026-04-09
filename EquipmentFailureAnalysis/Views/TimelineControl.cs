@@ -88,6 +88,22 @@ namespace EquipmentFailureAnalysis.Views
 
         public static readonly StyledProperty<bool> ShowHourLabelsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(ShowHourLabels), true);
 
+        public static readonly StyledProperty<bool> ShowAnnotationsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(ShowAnnotations), true);
+
+        public bool ShowAnnotations
+        {
+            get => GetValue(ShowAnnotationsProperty);
+            set => SetValue(ShowAnnotationsProperty, value);
+        }
+
+        public static readonly StyledProperty<bool> EnableTooltipsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(EnableTooltips), false);
+
+        public bool EnableTooltips
+        {
+            get => GetValue(EnableTooltipsProperty);
+            set => SetValue(EnableTooltipsProperty, value);
+        }
+
         public bool ShowHourLabels
         {
             get => GetValue(ShowHourLabelsProperty);
@@ -135,7 +151,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (ShowHourLabels)
+            if (!(EnableTooltips || !ShowHourLabels))
             {
                 CloseTooltip();
                 return;
@@ -359,7 +375,7 @@ namespace EquipmentFailureAnalysis.Views
 
             int annRows = annCount == 0 ? 0 : (annSingleRow ? 1 : 2);
             double maxAnnH = annCount > 0 ? annHeights.Max() : 0;
-            double annSpace = ShowHourLabels ? annRows * (maxAnnH + gap) + 28 : 0;
+            double annSpace = (ShowHourLabels && ShowAnnotations) ? annRows * (maxAnnH + gap) + 28 : 0;
 
             // shift plot down
             top += annSpace;
@@ -465,7 +481,7 @@ namespace EquipmentFailureAnalysis.Views
                 context.DrawText(ftLbl, new Point(sx - approxW / 2.0, top - labelFont - 4));
             }
 
-            if (ShowHourLabels)
+            if (ShowHourLabels && ShowAnnotations)
             {
                 // draw annotations (markers + small text above graph)
                 var connectorPen = new Pen(Brushes.Gray, 1) { DashStyle = new DashStyle(new double[] { 1, 2 }, 0) };

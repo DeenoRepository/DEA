@@ -456,6 +456,59 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<string> EmployeeAnalysisMonthOptions { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> EmployeeTimelineEmployees { get; } = new ObservableCollection<string>();
+
+        private string _selectedEmployeeTimelineEmployee = "Все сотрудники";
+        public string SelectedEmployeeTimelineEmployee
+        {
+            get => _selectedEmployeeTimelineEmployee;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, value);
+                if (_masterEquipment.Count > 0)
+                    BuildEmployeeSelectedDayTimeline();
+            }
+        }
+
+        private DateTime? _employeeTimelineDate = DateTime.Now.Date;
+        public DateTime? EmployeeTimelineDate
+        {
+            get => _employeeTimelineDate;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _employeeTimelineDate, value);
+                if (_masterEquipment.Count > 0)
+                    BuildEmployeeSelectedDayTimeline();
+            }
+        }
+
+        private ObservableCollection<Models.TimelinePoint> _employeeTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> EmployeeTimelinePoints
+        {
+            get => _employeeTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _employeeTimelinePoints, value);
+        }
+
+        private ObservableCollection<Models.TimelinePoint> _employeeRepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> EmployeeRepairsTimelinePoints
+        {
+            get => _employeeRepairsTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _employeeRepairsTimelinePoints, value);
+        }
+
+        private ObservableCollection<Models.TimelinePoint> _employeeSetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>();
+        public ObservableCollection<Models.TimelinePoint> EmployeeSetupsTimelinePoints
+        {
+            get => _employeeSetupsTimelinePoints;
+            set => this.RaiseAndSetIfChanged(ref _employeeSetupsTimelinePoints, value);
+        }
+
+        private ObservableCollection<Models.Annotation> _employeeTimelineAnnotations = new ObservableCollection<Models.Annotation>();
+        public ObservableCollection<Models.Annotation> EmployeeTimelineAnnotations
+        {
+            get => _employeeTimelineAnnotations;
+            set => this.RaiseAndSetIfChanged(ref _employeeTimelineAnnotations, value);
+        }
 
         private string _selectedEmployeeAnalysisMonth = "Текущий месяц";
         public string SelectedEmployeeAnalysisMonth
@@ -545,6 +598,51 @@ namespace EquipmentFailureAnalysis.ViewModels
             "Настройки"
         };
 
+        public ObservableCollection<string> DowntimeIssueTypeFilters { get; } = new ObservableCollection<string>
+        {
+            "Все типы",
+            "Ремонты",
+            "Настройки"
+        };
+
+        public ObservableCollection<string> DowntimeResponsibleFilters { get; } = new ObservableCollection<string>();
+
+        private string _selectedDowntimeIssueTypeFilter = "Все типы";
+        public string SelectedDowntimeIssueTypeFilter
+        {
+            get => _selectedDowntimeIssueTypeFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedDowntimeIssueTypeFilter, value);
+                RefreshDowntimeAnalysis();
+                RefreshFailureAnalysis();
+            }
+        }
+
+        private string _selectedDowntimeResponsibleFilter = "Все ответственные";
+        public string SelectedDowntimeResponsibleFilter
+        {
+            get => _selectedDowntimeResponsibleFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedDowntimeResponsibleFilter, value);
+                RefreshDowntimeAnalysis();
+                RefreshFailureAnalysis();
+            }
+        }
+
+        private string _downtimeEquipmentSearchQuery = string.Empty;
+        public string DowntimeEquipmentSearchQuery
+        {
+            get => _downtimeEquipmentSearchQuery;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _downtimeEquipmentSearchQuery, value);
+                RefreshDowntimeAnalysis();
+                RefreshFailureAnalysis();
+            }
+        }
+
         private string _selectedIssueTypeFilter = "Все позиции";
         public string SelectedIssueTypeFilter
         {
@@ -613,6 +711,10 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         public MainWindowViewModel()
         {
+            EmployeeTimelineEmployees.Add("Все сотрудники");
+            SelectedEmployeeTimelineEmployee = "все сотрудники";
+            RebuildDowntimeResponsibleFilters();
+
             // prepare day headers 1..31 for the heatmap top row
             for (int i = 1; i <= 31; i++)
             {
@@ -626,6 +728,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             var all = xmlDataDecoder.DecodeEquipment().ToList();
             all.ForEach(e => { /* ensure Issues collection is not null */ });
             _masterEquipment = all;
+            RebuildDowntimeResponsibleFilters();
             RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
@@ -1010,6 +1113,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             var all = imported.ToList();
             _masterEquipment = all;
+            RebuildDowntimeResponsibleFilters();
             RebuildEmployeeMonthOptions();
             // keep left column ordering by total issues
             _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
@@ -1140,6 +1244,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .ThenBy(r => r.Name)
                 .ToList();
 
+            RebuildEmployeeTimelineEmployees(rows.Select(r => r.Name));
+
             EmployeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>(rows);
             EmployeeTotalCount = rows.Count;
             EmployeeAvgEquipmentPerEmployee = rows.Count == 0 ? "0.0" : rows.Average(r => r.EquipmentCount).ToString("0.0");
@@ -1161,7 +1267,88 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? "Текущий месяц"
                 : SelectedEmployeeAnalysisMonth;
 
+            BuildEmployeeSelectedDayTimeline();
+
             BuildDashboard();
+        }
+
+        private void RebuildEmployeeTimelineEmployees(System.Collections.Generic.IEnumerable<string> employeeNames)
+        {
+            var previous = SelectedEmployeeTimelineEmployee;
+            EmployeeTimelineEmployees.Clear();
+            EmployeeTimelineEmployees.Add("все сотрудники");
+
+            foreach (var name in employeeNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(n => n, StringComparer.CurrentCultureIgnoreCase))
+            {
+                EmployeeTimelineEmployees.Add(name);
+            }
+
+            var selected = !string.IsNullOrWhiteSpace(previous) && EmployeeTimelineEmployees.Contains(previous)
+                ? previous
+                : "Все сотрудники";
+
+            this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, selected);
+        }
+
+        private void BuildEmployeeSelectedDayTimeline()
+        {
+            var date = (EmployeeTimelineDate?.Date ?? DateTime.Now.Date);
+            var dayStart = date;
+            var dayEnd = dayStart.AddDays(1);
+            var selectedEmployee = (SelectedEmployeeTimelineEmployee ?? "Все сотрудники").Trim();
+
+            var issuesForDay = _masterEquipment
+                .SelectMany(eq => eq.Issues)
+                .Where(i => i.End > dayStart && i.Start < dayEnd)
+                .Where(i => !IsUnassignedResponsible(i.Responsible))
+                .Where(i => string.Equals(selectedEmployee, "Все сотрудники", StringComparison.CurrentCultureIgnoreCase)
+                    || string.Equals(i.Responsible?.Trim(), selectedEmployee, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+
+            var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var annotations = new System.Collections.Generic.List<Models.Annotation>();
+
+            foreach (var issue in issuesForDay)
+            {
+                var overlapStart = issue.Start < dayStart ? dayStart : issue.Start;
+                var overlapEnd = issue.End > dayEnd ? dayEnd : issue.End;
+                if (overlapEnd <= overlapStart)
+                    continue;
+
+                int sMin = Math.Clamp((int)Math.Round((overlapStart - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                int eMin = Math.Clamp((int)Math.Round((overlapEnd - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                if (eMin <= sMin)
+                    eMin = Math.Min(24 * 60, sMin + 1);
+
+                intervals.Add((sMin, eMin));
+                if (issue.Type == IssueType.Ремонт)
+                    repairsIntervals.Add((sMin, eMin));
+                else if (issue.Type == IssueType.Настройка)
+                    setupsIntervals.Add((sMin, eMin));
+
+                annotations.Add(new Models.Annotation
+                {
+                    Hour = sMin / 60.0,
+                    StartHour = sMin / 60.0,
+                    EndHour = eMin / 60.0,
+                    Description = issue.Description ?? string.Empty,
+                    Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "-" : issue.Responsible,
+                    StartDate = overlapStart,
+                    EndDate = overlapEnd,
+                    Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
+                    Type = issue.Type
+                });
+            }
+
+            EmployeeTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(intervals)));
+            EmployeeRepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(repairsIntervals)));
+            EmployeeSetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(setupsIntervals)));
+            EmployeeTimelineAnnotations = new ObservableCollection<Models.Annotation>(annotations.OrderBy(a => a.StartHour).ThenBy(a => a.EndHour));
         }
 
         private void BuildDashboard()
@@ -1357,9 +1544,39 @@ namespace EquipmentFailureAnalysis.ViewModels
             if (equipment == null)
                 return System.Linq.Enumerable.Empty<Issue>();
 
-            return equipment.Issues.Where(i =>
+            var query = (DowntimeEquipmentSearchQuery ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var matchesEquipment = (equipment.Title?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
+                    || (equipment.InventoryNumber?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false);
+                if (!matchesEquipment)
+                    return System.Linq.Enumerable.Empty<Issue>();
+            }
+
+            var source = equipment.Issues.Where(i =>
                 (ShowRepairs && i.Type == IssueType.Ремонт) ||
                 (ShowSetups && i.Type == IssueType.Настройка));
+
+            source = SelectedDowntimeIssueTypeFilter switch
+            {
+                "Ремонты" => source.Where(i => i.Type == IssueType.Ремонт),
+                "Настройки" => source.Where(i => i.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            if (!string.Equals(SelectedDowntimeResponsibleFilter, "Все ответственные", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(SelectedDowntimeResponsibleFilter, "Без ответственного", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    source = source.Where(i => IsUnassignedResponsible(i.Responsible));
+                }
+                else
+                {
+                    source = source.Where(i => string.Equals(i.Responsible?.Trim(), SelectedDowntimeResponsibleFilter, StringComparison.CurrentCultureIgnoreCase));
+                }
+            }
+
+            return source;
         }
 
         // Apply type filters and sort master list into _allEquipment used for UI
@@ -1490,6 +1707,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             DowntimeMonthRows.Clear();
             var year = DateTime.Now.Year;
+            var filteredEquipment = FilterDowntimeEquipmentByQuery(_masterEquipment);
 
             for (int month = 1; month <= 12; month++)
             {
@@ -1512,7 +1730,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         var day = new DateTime(monthDate.Year, monthDate.Month, d);
                         var dayEnd = day.AddDays(1);
                         cell.Date = day;
-                        cell.Index = _masterEquipment.Count(eq => eq.Issues.Any(issue => issue.End > day && issue.Start < dayEnd));
+                        cell.Index = filteredEquipment.Count(eq => GetDowntimeFilteredIssues(eq, day, dayEnd).Any());
                     }
 
                     monthRow.Days.Add(cell);
@@ -1537,9 +1755,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             double totalMergedDownMinutes = 0.0;
             var affectedByHour = new int[24];
 
-            foreach (var equipment in _masterEquipment)
+            foreach (var equipment in FilterDowntimeEquipmentByQuery(_masterEquipment))
             {
-                var issuesForDay = equipment.Issues.Where(issue => issue.End > dayStart && issue.Start < dayEnd).ToList();
+                var issuesForDay = GetDowntimeFilteredIssues(equipment, dayStart, dayEnd).ToList();
                 if (issuesForDay.Count == 0)
                     continue;
 
@@ -1637,6 +1855,90 @@ namespace EquipmentFailureAnalysis.ViewModels
             var top = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title).FirstOrDefault();
             DowntimeTopEquipment = AddSoftWrapOpportunities(top?.Title ?? "-");
             DowntimeTopEquipmentIssues = top?.IssuesCount ?? 0;
+        }
+
+        private void RefreshDowntimeAnalysis()
+        {
+            if (_masterEquipment.Count == 0)
+                return;
+
+            BuildDowntimeHeatmap();
+            BuildDowntimeDayEquipmentRows(DowntimeAnalysisDate);
+        }
+
+        private void RefreshFailureAnalysis()
+        {
+            if (_masterEquipment.Count == 0 || SelectedEquipment == null)
+                return;
+
+            if (LoadEquipmentCommand == null)
+                return;
+
+            LoadEquipmentCommand.Execute(SelectedEquipment).Subscribe(_ =>
+            {
+                if (ShowDayTimelineCommand != null)
+                    ShowDayTimelineCommand.Execute(AnalysisDate.Date).Subscribe();
+            });
+        }
+
+        private void RebuildDowntimeResponsibleFilters()
+        {
+            var previous = SelectedDowntimeResponsibleFilter;
+            DowntimeResponsibleFilters.Clear();
+            DowntimeResponsibleFilters.Add("Все ответственные");
+            DowntimeResponsibleFilters.Add("Без ответственного");
+
+            foreach (var responsible in _masterEquipment
+                .SelectMany(eq => eq.Issues)
+                .Select(i => i.Responsible?.Trim())
+                .Where(r => !string.IsNullOrWhiteSpace(r) && !IsUnassignedResponsible(r))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(r => r, StringComparer.CurrentCultureIgnoreCase))
+            {
+                DowntimeResponsibleFilters.Add(responsible!);
+            }
+
+            SelectedDowntimeResponsibleFilter = DowntimeResponsibleFilters.Contains(previous)
+                ? previous
+                : "Все ответственные";
+        }
+
+        private System.Collections.Generic.List<EquipmentInfo> FilterDowntimeEquipmentByQuery(System.Collections.Generic.IEnumerable<EquipmentInfo> source)
+        {
+            var query = (DowntimeEquipmentSearchQuery ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(query))
+                return source.ToList();
+
+            return source
+                .Where(eq => (eq.Title?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
+                    || (eq.InventoryNumber?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false))
+                .ToList();
+        }
+
+        private System.Collections.Generic.IEnumerable<Issue> GetDowntimeFilteredIssues(EquipmentInfo equipment, DateTime start, DateTime end)
+        {
+            var source = equipment.Issues.Where(issue => issue.End > start && issue.Start < end);
+
+            source = SelectedDowntimeIssueTypeFilter switch
+            {
+                "Ремонты" => source.Where(i => i.Type == IssueType.Ремонт),
+                "Настройки" => source.Where(i => i.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            if (!string.Equals(SelectedDowntimeResponsibleFilter, "Все ответственные", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(SelectedDowntimeResponsibleFilter, "Без ответственного", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    source = source.Where(i => IsUnassignedResponsible(i.Responsible));
+                }
+                else
+                {
+                    source = source.Where(i => string.Equals(i.Responsible?.Trim(), SelectedDowntimeResponsibleFilter, StringComparison.CurrentCultureIgnoreCase));
+                }
+            }
+
+            return source;
         }
 
         private static string AddSoftWrapOpportunities(string value)
