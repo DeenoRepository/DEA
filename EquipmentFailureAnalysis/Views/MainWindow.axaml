@@ -170,15 +170,6 @@
 					</Border>
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="FailureAnalysisButton_Click">
-							<StackPanel Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Анализ неисправностей" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
-								<TextBlock Text="Карта тепла, график простоев и поиск оборудования" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
-							</StackPanel>
-						</Button>
-					</Border>
-
-					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
                      <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DowntimeAnalysisButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                              <TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
@@ -390,63 +381,6 @@
         <!-- central column: only vertical scrolling; heatmap has its own horizontal scroller -->
         <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="1" Grid.Row="1" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
-				<Grid Margin="0,0,0,8">
-					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
-					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
-						<StackPanel>
-                          <TextBlock Text="Поиск и фильтрация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-							<TextBlock Text="Выберите оборудование через строку поиска и задайте режим отображения данных" FontSize="12" Foreground="#6B7280" Margin="0,2,0,8" />
-							<Grid VerticalAlignment="Center" Margin="0,0,0,8">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*" />
-                                   <ColumnDefinition Width="Auto" />
-								</Grid.ColumnDefinitions>
-                               <Border Grid.Column="0" Background="#FFFFFFFF" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4" VerticalAlignment="Center" Margin="0,0,8,0">
-									<ComboBox Name="EquipmentSearchBox"
-										ItemsSource="{Binding EquipmentCollection}"
-										SelectedItem="{Binding SelectedEquipmentFromSearch, Mode=TwoWay}"
-										Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        IsEditable="True"
-										HorizontalAlignment="Stretch"
-										BorderThickness="0"
-										Background="Transparent"
-                                        PlaceholderText="Поиск оборудования..."
-										MaxDropDownHeight="320">
-										<ComboBox.ItemTemplate>
-											<DataTemplate>
-                                              <Border Background="#F9FBFD" BorderBrush="#E8EDF3" BorderThickness="1" CornerRadius="0" Padding="6,5" Margin="2">
-													<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-														<Ellipse Width="8" Height="8" Fill="{Binding HasIssues, Converter={StaticResource StatusToBrush}}" VerticalAlignment="Center" />
-														<StackPanel Grid.Column="1" Spacing="1">
-															<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" MaxLines="1" Foreground="#111827" />
-															<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" Foreground="#6B7280" FontSize="11" TextTrimming="CharacterEllipsis" MaxLines="1" />
-														</StackPanel>
-														<TextBlock Grid.Column="2" Text="{Binding IssueCount}" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
-													</Grid>
-												</Border>
-											</DataTemplate>
-										</ComboBox.ItemTemplate>
-									</ComboBox>
-								</Border>
-                              <Button Grid.Column="1" MinWidth="110" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="FilterButton_Click">
-									<StackPanel Orientation="Horizontal" Spacing="6">
-										<TextBlock Text="Фильтр:" FontSize="12" Foreground="#6B7280" />
-										<TextBlock Text="{Binding SelectedIssueTypeFilter}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" />
-									</StackPanel>
-								</Button>
-							</Grid>
-                           <Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8,6">
-								<Grid ColumnDefinitions="*,Auto">
-									<StackPanel>
-										<TextBlock Text="Найдено оборудования" FontSize="11" Foreground="#6B7280" />
-										<TextBlock Text="{Binding EquipmentCollection.Count, StringFormat='{}{0} поз.'}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
-									</StackPanel>
-									<TextBlock Grid.Column="1" Text="Нажмите на поиск для выбора" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" Margin="12,0,0,0" />
-								</Grid>
-							</Border>
-						</StackPanel>
-					</Border>
-				</Grid>
                 <!-- Top header showing day numbers moved into heatmap block for alignment -->
 
                 <Grid Margin="0,0,0,8">
@@ -769,11 +703,13 @@
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
 											<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,4">
-												<StackPanel Grid.Column="0" Margin="0,4,8,0" Spacing="2">
-													<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="#1F2937" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-													<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="#6B7280" />
-													<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
-												</StackPanel>
+                                               <Button Grid.Column="0" Margin="0,0,8,0" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Click="DowntimeEquipmentButton_Click">
+													<StackPanel Spacing="2">
+														<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="#1F2937" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+														<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="#6B7280" />
+														<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="#6B7280" />
+													</StackPanel>
+												</Button>
 												<Border Grid.Column="1" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="6" Background="#FFFFFF">
                                                    <views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
 												</Border>

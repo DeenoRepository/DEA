@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Skia;
 using ReactiveUI.Avalonia;
 using System;
 
@@ -16,7 +17,8 @@ namespace EquipmentFailureAnalysis
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
+                .UseWin32()
+                .UseSkia()
                 .WithInterFont()
                 .LogToTrace()
                 .UseReactiveUI();

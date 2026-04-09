@@ -4,6 +4,7 @@ namespace EquipmentFailureAnalysis.Models
 {
     public class DowntimeEquipmentRow
     {
+        public EquipmentInfo? Equipment { get; set; }
         public string Title { get; set; } = string.Empty;
         public string InventoryNumber { get; set; } = string.Empty;
         public int IssuesCount { get; set; }

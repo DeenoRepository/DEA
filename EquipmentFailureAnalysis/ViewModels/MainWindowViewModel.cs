@@ -1600,6 +1600,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                 rows.Add(new Models.DowntimeEquipmentRow
                 {
+                    Equipment = equipment,
                     Title = equipment.Title,
                     InventoryNumber = equipment.InventoryNumber ?? "-",
                     IssuesCount = issuesForDay.Count,

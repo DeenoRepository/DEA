@@ -214,6 +214,25 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        private void DowntimeEquipmentButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not Control control)
+                return;
+
+            if (control.DataContext is not EquipmentFailureAnalysis.Models.DowntimeEquipmentRow row || row.Equipment == null)
+                return;
+
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            vm.LoadEquipmentCommand.Execute(row.Equipment).Subscribe();
+            vm.ShowDayTimelineCommand?.Execute(vm.DowntimeAnalysisDate).Subscribe();
+            vm.SearchQuery = row.Equipment.Title ?? string.Empty;
+
+            _currentPage = AppPage.FailureAnalysis;
+            UpdatePageVisibility();
+        }
+
         private void UpdatePageVisibility()
         {
             var isDashboardPage = _currentPage == AppPage.Dashboard;
