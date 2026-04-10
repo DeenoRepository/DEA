@@ -73,6 +73,14 @@ namespace EquipmentFailureAnalysis.Views
                 return;
 
             vm.ImportEquipment(items);
+            try
+            {
+                PersistedDataStore.SaveJiraImportedEquipment(items);
+            }
+            catch
+            {
+                // ignore persistence errors
+            }
             _currentPage = AppPage.Dashboard;
             UpdatePageVisibility();
         }
