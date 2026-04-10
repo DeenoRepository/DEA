@@ -47,6 +47,7 @@ namespace EquipmentFailureAnalysis.Views
             public string Responsible { get; init; } = string.Empty;
             public string Description { get; init; } = string.Empty;
             public EquipmentFailureAnalysis.Models.IssueType Type { get; init; }
+            public bool IsInProgress { get; init; }
             public double DurationMinutes => Math.Max(0, (End - Start).TotalMinutes);
         }
 
@@ -402,6 +403,7 @@ namespace EquipmentFailureAnalysis.Views
             var includeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true;
             var includeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true;
             var openAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true;
+            var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
             var outputPathBox = this.FindControl<TextBox>("ReportLastFilePathBox");
 
             var startDate = startPicker?.SelectedDate?.Date ?? DateTime.Now.Date.AddDays(-30);
@@ -413,7 +415,7 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             var periodEndExclusive = endDate.AddDays(1);
-            var reportRows = vm.EquipmentCollection
+            var reportRows = vm.GetEquipmentForReports()
                 .SelectMany(eq => (eq.Issues ?? new ObservableCollection<EquipmentFailureAnalysis.Models.Issue>())
                     .Where(issue => issue.End > startDate && issue.Start < periodEndExclusive)
                     .Select(issue => new ReportIssueRow
@@ -425,9 +427,17 @@ namespace EquipmentFailureAnalysis.Views
                         Subdivision = eq.Subdivision ?? string.Empty,
                         Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible!.Trim(),
                         Description = issue.Description ?? string.Empty,
-                        Type = issue.Type
+                        Type = issue.Type,
+                        IsInProgress = issue.IsInProgress
                     }))
                 .ToList();
+
+            if (onlyInProgress)
+            {
+                reportRows = reportRows
+                    .Where(r => r.IsInProgress)
+                    .ToList();
+            }
 
             string groupBy = "По дням";
             if (groupByCombo?.SelectedItem is ComboBoxItem selectedGroup)
@@ -463,6 +473,8 @@ namespace EquipmentFailureAnalysis.Views
             html.AppendLine("<style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:24px}h1,h2{margin:0 0 10px}section{background:#fff;border:1px solid #e5eaf0;padding:14px;margin:0 0 12px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #edf1f5;padding:6px 8px;text-align:left}th{background:#f8fafc} .muted{color:#6b7280;font-size:12px}</style>");
             html.AppendLine("</head><body>");
             html.AppendLine($"<h1>Отчет по метрикам оборудования</h1><div class=\"muted\">Период: {startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}. Сформирован: {DateTime.Now:dd.MM.yyyy HH:mm}</div>");
+            if (onlyInProgress)
+                html.AppendLine("<div class=\"muted\">Режим отчета: только задачи в процессе на момент формирования.</div>");
 
             if (includeDashboard)
             {
@@ -501,16 +513,22 @@ namespace EquipmentFailureAnalysis.Views
                 html.AppendLine("<tr><td colspan=\"6\">Нет данных за выбранный период.</td></tr>");
             html.AppendLine("</tbody></table></section>");
 
-            html.AppendLine("<section><h2>Детализация событий</h2><table><thead><tr><th>Начало</th><th>Окончание</th><th>Оборудование</th><th>Тип</th><th>Ответственный</th><th>Описание</th></tr></thead><tbody>");
+            html.AppendLine("<section><h2>Детализация событий</h2><table><thead><tr><th>Начало</th><th>Окончание / длительность</th><th>Оборудование</th><th>Группа</th><th>Тип</th><th>Ответственный</th><th>Описание</th></tr></thead><tbody>");
             foreach (var item in reportRows.OrderByDescending(x => x.Start).Take(300))
             {
                 var equipment = string.IsNullOrWhiteSpace(item.InventoryNumber)
                     ? item.EquipmentTitle
                     : $"{item.EquipmentTitle} ({item.InventoryNumber})";
-                html.AppendLine($"<tr><td>{item.Start:dd.MM.yyyy HH:mm}</td><td>{item.End:dd.MM.yyyy HH:mm}</td><td>{H(equipment)}</td><td>{H(item.Type.ToString())}</td><td>{H(item.Responsible)}</td><td>{H(item.Description)}</td></tr>");
+
+                var endOrDurationText = item.IsInProgress
+                    ? TimeSpan.FromMinutes(Math.Max(0, (DateTime.Now - item.Start).TotalMinutes)).ToString(@"hh\:mm")
+                    : item.End.ToString("dd.MM.yyyy HH:mm");
+
+                var subdivisionText = string.IsNullOrWhiteSpace(item.Subdivision) ? "-" : item.Subdivision;
+                html.AppendLine($"<tr><td>{item.Start:dd.MM.yyyy HH:mm}</td><td>{H(endOrDurationText)}</td><td>{H(equipment)}</td><td>{H(subdivisionText)}</td><td>{H(item.Type.ToString())}</td><td>{H(item.Responsible)}</td><td>{H(item.Description)}</td></tr>");
             }
             if (reportRows.Count == 0)
-                html.AppendLine("<tr><td colspan=\"6\">Нет событий в выбранном периоде.</td></tr>");
+                html.AppendLine("<tr><td colspan=\"7\">Нет событий в выбранном периоде.</td></tr>");
             html.AppendLine("</tbody></table></section>");
 
             html.AppendLine("</body></html>");

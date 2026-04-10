@@ -22,6 +22,15 @@ namespace EquipmentFailureAnalysis.ViewModels
         private System.Collections.Generic.List<EquipmentInfo> _masterEquipment = new System.Collections.Generic.List<EquipmentInfo>();
         // working list sorted/filtered according to search and type filters
         private System.Collections.Generic.List<EquipmentInfo> _allEquipment = new System.Collections.Generic.List<EquipmentInfo>();
+
+        public System.Collections.Generic.IReadOnlyCollection<EquipmentInfo> GetEquipmentForReports()
+        {
+            if (_masterEquipment != null && _masterEquipment.Count > 0)
+                return _masterEquipment;
+
+            return EquipmentCollection?.ToList() ?? new System.Collections.Generic.List<EquipmentInfo>();
+        }
+
         public ObservableCollection<DailyDowntimeIndex> DailyDowntimeIndexCollection { get; set; }
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.MonthRow> DowntimeMonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();

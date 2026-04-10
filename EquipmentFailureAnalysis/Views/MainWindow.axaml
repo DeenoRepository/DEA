@@ -959,11 +959,12 @@
 								</ComboBox>
 							</Grid>
 
-							<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
+                          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
 								<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="True" />
 								<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="True" />
 								<CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="2" Content="Раздел «Анализ сотрудников»" IsChecked="True" />
 								<CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="3" Content="Открыть после формирования" IsChecked="True" />
+                             <CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Column="4" Content="Только задачи «в процессе»" IsChecked="False" />
 							</Grid>
 
 							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">

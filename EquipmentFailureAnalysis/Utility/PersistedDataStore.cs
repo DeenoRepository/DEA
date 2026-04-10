@@ -17,6 +17,7 @@ namespace EquipmentFailureAnalysis.Utility
             public string Description { get; set; } = string.Empty;
             public IssueType Type { get; set; }
             public string? Responsible { get; set; }
+            public bool IsInProgress { get; set; }
         }
 
         private sealed class PersistedEquipment
@@ -57,7 +58,8 @@ namespace EquipmentFailureAnalysis.Utility
                             End = i.End,
                             Description = i.Description ?? string.Empty,
                             Type = i.Type,
-                            Responsible = i.Responsible
+                            Responsible = i.Responsible,
+                            IsInProgress = i.IsInProgress
                         })
                         .ToList()
                 })
@@ -98,7 +100,8 @@ namespace EquipmentFailureAnalysis.Utility
                             End = issue.End,
                             Description = issue.Description ?? string.Empty,
                             Type = issue.Type,
-                            Responsible = issue.Responsible
+                            Responsible = issue.Responsible,
+                            IsInProgress = issue.IsInProgress
                         });
                     }
 
