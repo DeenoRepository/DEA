@@ -10,12 +10,15 @@ using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace EquipmentFailureAnalysis.Views
 {
     public partial class MainWindow : Window
     {
         private readonly ObservableCollection<string> _jiraFilterIds = new ObservableCollection<string>();
+        private bool _suppressSettingsSave;
+        private INotifyPropertyChanged? _trackedSettingsVm;
 
         private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
         private AppPage _currentPage = AppPage.Dashboard;
@@ -149,6 +152,13 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+            HookSettingsPersistence();
+            LoadJiraSettingsToUi();
+        }
+
         private void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)
         {
             var box = this.FindControl<TextBox>("JiraFilterIdBox");
@@ -186,6 +196,11 @@ namespace EquipmentFailureAnalysis.Views
             public string JiraUsername { get; set; } = string.Empty;
             public string JiraJql { get; set; } = string.Empty;
             public List<string> JiraFilterIds { get; set; } = new List<string>();
+            public string HeatmapSelectedSetting { get; set; } = string.Empty;
+            public int FailureHeatmapMin { get; set; } = 0;
+            public int FailureHeatmapMax { get; set; } = 10;
+            public int DowntimeHeatmapMin { get; set; } = 0;
+            public int DowntimeHeatmapMax { get; set; } = 10;
         }
 
         private string GetJiraSettingsFile()
@@ -205,7 +220,12 @@ namespace EquipmentFailureAnalysis.Views
                     JiraResourceUrl = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty,
                     JiraUsername = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty,
                     JiraJql = this.FindControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty,
-                    JiraFilterIds = GetFilterIdsFromUi().ToList()
+                    JiraFilterIds = GetFilterIdsFromUi().ToList(),
+                    HeatmapSelectedSetting = (DataContext as EquipmentFailureAnalysis.ViewModels.MainWindowViewModel)?.SelectedHeatmapSetting ?? string.Empty,
+                    FailureHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Min,
+                    FailureHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Max,
+                    DowntimeHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Min,
+                    DowntimeHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Max
                 };
 
                 var json = JsonSerializer.Serialize(settings);
@@ -221,6 +241,8 @@ namespace EquipmentFailureAnalysis.Views
         {
             try
             {
+                _suppressSettingsSave = true;
+
                 var file = GetJiraSettingsFile();
                 if (!File.Exists(file))
                     return;
@@ -246,10 +268,61 @@ namespace EquipmentFailureAnalysis.Views
                 var loadedIds = settings.JiraFilterIds ?? new List<string>();
                 foreach (var filterId in loadedIds.Where(v => !string.IsNullOrWhiteSpace(v) && v.All(char.IsDigit)).Distinct(StringComparer.Ordinal))
                     _jiraFilterIds.Add(filterId.Trim());
+
+                if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
+                    var failureOption = vm.HeatmapSettingOptions.FirstOrDefault(v => v.Contains("неисправ", StringComparison.CurrentCultureIgnoreCase));
+                    var downtimeOption = vm.HeatmapSettingOptions.FirstOrDefault(v => v.Contains("просто", StringComparison.CurrentCultureIgnoreCase));
+
+                    if (!string.IsNullOrWhiteSpace(failureOption))
+                    {
+                        vm.SelectedHeatmapSetting = failureOption;
+                        vm.HeatmapColorMin = Math.Max(0, settings.FailureHeatmapMin);
+                        vm.HeatmapColorMax = Math.Max(settings.FailureHeatmapMax, settings.FailureHeatmapMin + 1);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(downtimeOption))
+                    {
+                        vm.SelectedHeatmapSetting = downtimeOption;
+                        vm.HeatmapColorMin = Math.Max(0, settings.DowntimeHeatmapMin);
+                        vm.HeatmapColorMax = Math.Max(settings.DowntimeHeatmapMax, settings.DowntimeHeatmapMin + 1);
+                    }
+
+                    var selected = vm.HeatmapSettingOptions.FirstOrDefault(v => string.Equals(v, settings.HeatmapSelectedSetting, StringComparison.CurrentCultureIgnoreCase));
+                    if (!string.IsNullOrWhiteSpace(selected))
+                        vm.SelectedHeatmapSetting = selected;
+                }
             }
             catch
             {
                 // ignore invalid settings file
+            }
+            finally
+            {
+                _suppressSettingsSave = false;
+            }
+        }
+
+        private void HookSettingsPersistence()
+        {
+            if (_trackedSettingsVm != null)
+                _trackedSettingsVm.PropertyChanged -= OnViewModelPropertyChanged;
+
+            _trackedSettingsVm = DataContext as INotifyPropertyChanged;
+            if (_trackedSettingsVm != null)
+                _trackedSettingsVm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_suppressSettingsSave)
+                return;
+
+            if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.HeatmapColorMin)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.HeatmapColorMax)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedHeatmapSetting))
+            {
+                SaveJiraSettingsFromUi();
             }
         }
 
