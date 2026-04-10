@@ -7,15 +7,16 @@ using EquipmentFailureAnalysis.Utility;
 using System.Linq;
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace EquipmentFailureAnalysis.Views
 {
     public partial class MainWindow : Window
     {
+        private readonly ObservableCollection<string> _jiraFilterIds = new ObservableCollection<string>();
+
         private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
         private AppPage _currentPage = AppPage.Dashboard;
 
@@ -30,62 +31,85 @@ namespace EquipmentFailureAnalysis.Views
 
         private async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
         {
-            var url = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty;
-            var username = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty;
-            var token = this.FindControl<TextBox>("JiraTokenBox")?.Text ?? string.Empty;
+            var (url, username, token, jql, filterIds) = GetJiraApiSettingsFromUi();
 
             if (string.IsNullOrWhiteSpace(url))
             {
-                await ShowMessageAsync("Ошибка", "Укажите URL XML-ресурса Jira.");
+                await ShowMessageAsync("Ошибка", "Укажите URL Jira API.");
                 return;
             }
 
             try
             {
-                using var client = new HttpClient();
+                var decoder = new JiraApiDataDecoder();
+                var effectiveJql = BuildEffectiveJql(jql, filterIds);
+                var items = await decoder.DecodeEquipmentAsync(url, username, token, effectiveJql);
+                ApplyParsedResults(items);
 
-                if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(token))
-                {
-                    var authBytes = Encoding.UTF8.GetBytes($"{username}:{token}");
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authBytes));
-                }
+                var issuesCount = items.Sum(e => e.Issues?.Count ?? 0);
+                var sample = items
+                    .OrderByDescending(e => e.Issues?.Count ?? 0)
+                    .Take(5)
+                    .Select(e => $"• {e} — {e.Issues.Count} событий")
+                    .ToList();
 
-                var xmlContent = await client.GetStringAsync(url);
-                if (string.IsNullOrWhiteSpace(xmlContent))
-                {
-                    await ShowMessageAsync("Ошибка", "Ресурс Jira вернул пустой ответ.");
-                    return;
-                }
+                var sampleText = sample.Count == 0
+                    ? "Нет данных."
+                    : string.Join(Environment.NewLine, sample);
 
-                var tempPath = Path.Combine(Path.GetTempPath(), $"dea_jira_{Guid.NewGuid():N}.xml");
-                await File.WriteAllTextAsync(tempPath, xmlContent, Encoding.UTF8);
-
-                try
-                {
-                    var decoder = new XmlDataDecoder(tempPath);
-                    var items = decoder.DecodeEquipment();
-
-                    if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
-                    {
-                        vm.ImportEquipment(items);
-                    }
-
-                    await ShowMessageAsync("Импорт", "Импорт данных из Jira успешно завершен.");
-                }
-                finally
-                {
-                    try
-                    {
-                        if (File.Exists(tempPath))
-                            File.Delete(tempPath);
-                    }
-                    catch { }
-                }
+                await ShowMessageAsync(
+                    "Импорт из Jira",
+                    $"Импорт завершен. Всего позиций: {decoder.LastTotalPositionsFromApi}, загружено: {decoder.LastLoadedPositionsFromApi}. Найдено оборудования: {items.Count}, событий: {issuesCount}.{Environment.NewLine}{Environment.NewLine}{sampleText}");
             }
             catch (Exception ex)
             {
                 await ShowMessageAsync("Ошибка импорта Jira", ex.Message);
             }
+        }
+
+        private void ApplyParsedResults(ObservableCollection<EquipmentFailureAnalysis.Models.EquipmentInfo> items)
+        {
+            if (this.DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            vm.ImportEquipment(items);
+            _currentPage = AppPage.Dashboard;
+            UpdatePageVisibility();
+        }
+
+        private (string Url, string Username, string Token, string Jql, IReadOnlyCollection<string> FilterIds) GetJiraApiSettingsFromUi()
+        {
+            var url = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty;
+            var username = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty;
+            var token = this.FindControl<TextBox>("JiraTokenBox")?.Text ?? string.Empty;
+            var jql = this.FindControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty;
+            return (url, username, token, jql, GetFilterIdsFromUi());
+        }
+
+        private static string BuildEffectiveJql(string jql, IReadOnlyCollection<string> filterIds)
+        {
+            if (filterIds == null || filterIds.Count == 0)
+                return jql;
+
+            var filterClause = string.Join(" OR ", filterIds.Select(id => $"filter = {id}"));
+            var fromFilters = $"({filterClause}) AND status = 'Решен'";
+
+            if (string.IsNullOrWhiteSpace(jql))
+                return fromFilters;
+
+            return $"({fromFilters}) AND ({jql.Trim()})";
+        }
+
+        private IReadOnlyCollection<string> GetFilterIdsFromUi()
+        {
+            var list = _jiraFilterIds
+                .Select(v => v?.Trim())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Where(v => v.All(char.IsDigit))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            return list;
         }
 
         private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
@@ -109,9 +133,38 @@ namespace EquipmentFailureAnalysis.Views
         public MainWindow()
         {
             InitializeComponent();
+            var list = this.FindControl<ListBox>("JiraFilterIdsList");
+            if (list != null)
+                list.ItemsSource = _jiraFilterIds;
             LoadJiraSettingsToUi();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
             UpdatePageVisibility();
+        }
+
+        private void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var box = this.FindControl<TextBox>("JiraFilterIdBox");
+            var filterId = box?.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(filterId) || !filterId.All(char.IsDigit))
+                return;
+
+            if (_jiraFilterIds.Any(v => string.Equals(v, filterId, StringComparison.Ordinal)))
+                return;
+
+            _jiraFilterIds.Add(filterId);
+            if (box != null)
+                box.Text = string.Empty;
+            SaveJiraSettingsFromUi();
+        }
+
+        private void JiraFilterIdRemoveButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var list = this.FindControl<ListBox>("JiraFilterIdsList");
+            if (list?.SelectedItem is not string selected || string.IsNullOrWhiteSpace(selected))
+                return;
+
+            _jiraFilterIds.Remove(selected);
+            SaveJiraSettingsFromUi();
         }
 
         private void JiraSettingsField_TextChanged(object? sender, TextChangedEventArgs e)
@@ -123,6 +176,8 @@ namespace EquipmentFailureAnalysis.Views
         {
             public string JiraResourceUrl { get; set; } = string.Empty;
             public string JiraUsername { get; set; } = string.Empty;
+            public string JiraJql { get; set; } = string.Empty;
+            public List<string> JiraFilterIds { get; set; } = new List<string>();
         }
 
         private string GetJiraSettingsFile()
@@ -140,7 +195,9 @@ namespace EquipmentFailureAnalysis.Views
                 var settings = new JiraImportSettings
                 {
                     JiraResourceUrl = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty,
-                    JiraUsername = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty
+                    JiraUsername = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty,
+                    JiraJql = this.FindControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty,
+                    JiraFilterIds = GetFilterIdsFromUi().ToList()
                 };
 
                 var json = JsonSerializer.Serialize(settings);
@@ -172,6 +229,15 @@ namespace EquipmentFailureAnalysis.Views
                 var usernameBox = this.FindControl<TextBox>("JiraUsernameBox");
                 if (usernameBox != null)
                     usernameBox.Text = settings.JiraUsername ?? string.Empty;
+
+                var jqlBox = this.FindControl<TextBox>("JiraJqlBox");
+                if (jqlBox != null)
+                    jqlBox.Text = settings.JiraJql ?? string.Empty;
+
+                _jiraFilterIds.Clear();
+                var loadedIds = settings.JiraFilterIds ?? new List<string>();
+                foreach (var filterId in loadedIds.Where(v => !string.IsNullOrWhiteSpace(v) && v.All(char.IsDigit)).Distinct(StringComparer.Ordinal))
+                    _jiraFilterIds.Add(filterId.Trim());
             }
             catch
             {

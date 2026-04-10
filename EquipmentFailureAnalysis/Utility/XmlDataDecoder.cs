@@ -218,7 +218,7 @@ namespace EquipmentFailureAnalysis.Utility
                 }
 
                 // 5. Ответственный: приоритет у ФИО из assignee.InnerText,
-                // затем username, затем резервное поле customfield_10502
+                // затем username
                 static bool IsMissingResponsible(string? value) =>
                     string.IsNullOrWhiteSpace(value)
                     || value == "-1"
@@ -233,13 +233,12 @@ namespace EquipmentFailureAnalysis.Utility
                     ? assigneeFullName
                     : (!IsMissingResponsible(assigneeUsername) ? assigneeUsername : null);
 
-                if (IsMissingResponsible(responsible))
-                {
-                    var respNode = xmlNode.SelectSingleNode("customfields/customfield[@id='customfield_10502']/customfieldvalues/customfieldvalue");
-                    var fallbackResponsible = respNode?.InnerText?.Trim();
-                    if (!IsMissingResponsible(fallbackResponsible))
-                        responsible = fallbackResponsible;
-                }
+                static bool IsExcludedEmployee(string? value) =>
+                    !string.IsNullOrWhiteSpace(value)
+                    && value.Trim().Equals("tv_kpims", StringComparison.OrdinalIgnoreCase);
+
+                if (IsExcludedEmployee(assigneeUsername) || IsExcludedEmployee(responsible))
+                    continue;
 
                 var issue = new Issue
                 {
