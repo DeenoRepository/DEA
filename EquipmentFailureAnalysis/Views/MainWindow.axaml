@@ -210,6 +210,15 @@
 					</Border>
 
 					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
+                        <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="ReportsButton_Click">
+							<StackPanel Spacing="2" HorizontalAlignment="Left">
+								<TextBlock Text="Отчеты" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
+								<TextBlock Text="Сводные отчеты по ключевым метрикам и качеству выполнения" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+							</StackPanel>
+						</Button>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
                         <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="SettingsButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                                 <TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
@@ -919,7 +928,94 @@
 				</Grid>
 			</Border>
 		</Grid>
+ </Grid>
+
+	<Grid x:Name="ReportsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="7*" />
+			<ColumnDefinition Width="1.9*" />
+		</Grid.ColumnDefinitions>
+
+		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+			<StackPanel Spacing="10">
+              <Grid>
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Инструменты формирования отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Выберите период, состав отчета и группировку, затем сформируйте HTML-страницу" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+							<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<CalendarDatePicker x:Name="ReportStartDatePicker" Grid.Column="1" MinWidth="140" HorizontalAlignment="Stretch" />
+								<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<CalendarDatePicker x:Name="ReportEndDatePicker" Grid.Column="3" MinWidth="140" HorizontalAlignment="Stretch" />
+								<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="0" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1">
+									<ComboBoxItem Content="По дням" />
+									<ComboBoxItem Content="По месяцам" />
+									<ComboBoxItem Content="По сотрудникам" />
+									<ComboBoxItem Content="По оборудованию" />
+								</ComboBox>
+							</Grid>
+
+							<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
+								<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="True" />
+								<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="True" />
+								<CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="2" Content="Раздел «Анализ сотрудников»" IsChecked="True" />
+								<CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="3" Content="Открыть после формирования" IsChecked="True" />
+							</Grid>
+
+							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+								<Button Grid.Column="0" Content="Сформировать HTML" MinWidth="170" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
+								<TextBox x:Name="ReportLastFilePathBox" Grid.Column="1" IsReadOnly="True" Watermark="Путь к сформированному отчету" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</StackPanel>
+		</ScrollViewer>
+
+		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+			<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Итоги отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					<TextBlock Text="Ключевые значения по надежности оборудования и эффективности команды" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Средняя длительность" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Оборудование риска" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" TextWrapping="WrapWithOverflow" />
+							<TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="12" Foreground="#6B7280" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel>
+							<TextBlock Text="Лидер по эффективности" FontSize="11" Foreground="#6B7280" />
+							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" TextWrapping="WrapWithOverflow" />
+							<TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="12" Foreground="#6B7280" />
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</Border>
+		</Grid>
 	</Grid>
+
  <Grid x:Name="SettingsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="7*" />
