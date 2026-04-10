@@ -9,6 +9,44 @@ namespace EquipmentFailureAnalysis.Utility
 {
     public class ValueToColorConverter : IValueConverter
     {
+        public const string FailureHeatmapKey = "FailureAnalysis";
+        public const string DowntimeHeatmapKey = "DowntimeAnalysis";
+
+        private static readonly Dictionary<string, (int Min, int Max)> HeatmapRanges = new Dictionary<string, (int Min, int Max)>(StringComparer.OrdinalIgnoreCase)
+        {
+            [FailureHeatmapKey] = (0, 10),
+            [DowntimeHeatmapKey] = (0, 10)
+        };
+
+        public static int HeatmapMinValue
+        {
+            get => GetHeatmapRange(FailureHeatmapKey).Min;
+            set => SetHeatmapRange(FailureHeatmapKey, value, HeatmapMaxValue);
+        }
+
+        public static int HeatmapMaxValue
+        {
+            get => GetHeatmapRange(FailureHeatmapKey).Max;
+            set => SetHeatmapRange(FailureHeatmapKey, HeatmapMinValue, value);
+        }
+
+        public static (int Min, int Max) GetHeatmapRange(string? key)
+        {
+            var effectiveKey = string.IsNullOrWhiteSpace(key) ? FailureHeatmapKey : key.Trim();
+            if (HeatmapRanges.TryGetValue(effectiveKey, out var range))
+                return range;
+
+            return HeatmapRanges[FailureHeatmapKey];
+        }
+
+        public static void SetHeatmapRange(string key, int min, int max)
+        {
+            var effectiveKey = string.IsNullOrWhiteSpace(key) ? FailureHeatmapKey : key.Trim();
+            var normalizedMin = Math.Max(0, min);
+            var normalizedMax = Math.Max(normalizedMin + 1, max);
+            HeatmapRanges[effectiveKey] = (normalizedMin, normalizedMax);
+        }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             int v = 0;
@@ -17,8 +55,10 @@ namespace EquipmentFailureAnalysis.Utility
             else if (value is string s && int.TryParse(s, out var sv))
                 v = sv;
 
-            // clamp 0..10 -> 0..1
-            double t = Math.Max(0.0, Math.Min(1.0, v / 10.0));
+            var (min, max) = GetHeatmapRange(parameter as string);
+
+            var range = max - min;
+            double t = Math.Max(0.0, Math.Min(1.0, (v - min) / (double)range));
 
             // Use a slightly brighter gradient palette: green -> yellow -> orange -> red
             // green = (129, 199, 132) #81C784

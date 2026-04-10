@@ -59,6 +59,111 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dayCellSize, value);
         }
 
+        private const string FailureHeatmapOption = "Карта тепла неисправностей";
+        private const string DowntimeHeatmapOption = "Карта тепла простоев";
+
+        public ObservableCollection<string> HeatmapSettingOptions { get; } = new ObservableCollection<string>();
+
+        private int _failureHeatmapColorMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Min;
+        private int _failureHeatmapColorMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Max;
+        private int _downtimeHeatmapColorMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Min;
+        private int _downtimeHeatmapColorMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Max;
+
+        private string _selectedHeatmapSetting = FailureHeatmapOption;
+        public string SelectedHeatmapSetting
+        {
+            get => _selectedHeatmapSetting;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedHeatmapSetting, value);
+                this.RaisePropertyChanged(nameof(HeatmapColorMin));
+                this.RaisePropertyChanged(nameof(HeatmapColorMax));
+            }
+        }
+
+        public int HeatmapColorMin
+        {
+            get => IsDowntimeHeatmapSelected ? _downtimeHeatmapColorMin : _failureHeatmapColorMin;
+            set
+            {
+                var normalizedMin = Math.Max(0, value);
+                var currentMax = IsDowntimeHeatmapSelected ? _downtimeHeatmapColorMax : _failureHeatmapColorMax;
+                var normalizedMax = Math.Max(currentMax, normalizedMin + 1);
+
+                var minChanged = IsDowntimeHeatmapSelected
+                    ? normalizedMin != _downtimeHeatmapColorMin
+                    : normalizedMin != _failureHeatmapColorMin;
+                var maxChanged = IsDowntimeHeatmapSelected
+                    ? normalizedMax != _downtimeHeatmapColorMax
+                    : normalizedMax != _failureHeatmapColorMax;
+                if (!minChanged && !maxChanged)
+                    return;
+
+                if (minChanged)
+                {
+                    if (IsDowntimeHeatmapSelected)
+                        _downtimeHeatmapColorMin = normalizedMin;
+                    else
+                        _failureHeatmapColorMin = normalizedMin;
+                }
+
+                if (maxChanged)
+                {
+                    if (IsDowntimeHeatmapSelected)
+                        _downtimeHeatmapColorMax = normalizedMax;
+                    else
+                        _failureHeatmapColorMax = normalizedMax;
+                }
+
+                this.RaisePropertyChanged(nameof(HeatmapColorMin));
+                this.RaisePropertyChanged(nameof(HeatmapColorMax));
+                ApplyHeatmapColorRange();
+            }
+        }
+
+        public int HeatmapColorMax
+        {
+            get => IsDowntimeHeatmapSelected ? _downtimeHeatmapColorMax : _failureHeatmapColorMax;
+            set
+            {
+                var normalizedMax = Math.Max(1, value);
+                var currentMin = IsDowntimeHeatmapSelected ? _downtimeHeatmapColorMin : _failureHeatmapColorMin;
+                var normalizedMin = Math.Min(currentMin, normalizedMax - 1);
+
+                var maxChanged = IsDowntimeHeatmapSelected
+                    ? normalizedMax != _downtimeHeatmapColorMax
+                    : normalizedMax != _failureHeatmapColorMax;
+                var minChanged = IsDowntimeHeatmapSelected
+                    ? normalizedMin != _downtimeHeatmapColorMin
+                    : normalizedMin != _failureHeatmapColorMin;
+                if (!maxChanged && !minChanged)
+                    return;
+
+                if (maxChanged)
+                {
+                    if (IsDowntimeHeatmapSelected)
+                        _downtimeHeatmapColorMax = normalizedMax;
+                    else
+                        _failureHeatmapColorMax = normalizedMax;
+                }
+
+                if (minChanged)
+                {
+                    if (IsDowntimeHeatmapSelected)
+                        _downtimeHeatmapColorMin = normalizedMin;
+                    else
+                        _failureHeatmapColorMin = normalizedMin;
+                }
+
+                this.RaisePropertyChanged(nameof(HeatmapColorMin));
+                this.RaisePropertyChanged(nameof(HeatmapColorMax));
+                ApplyHeatmapColorRange();
+            }
+        }
+
+        private bool IsDowntimeHeatmapSelected =>
+            string.Equals(SelectedHeatmapSetting, DowntimeHeatmapOption, StringComparison.CurrentCultureIgnoreCase);
+
         // Monthly stats for selected equipment
         private int _repairsLastMonth;
         public int RepairsLastMonth
@@ -738,6 +843,10 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         public MainWindowViewModel()
         {
+            HeatmapSettingOptions.Add(FailureHeatmapOption);
+            HeatmapSettingOptions.Add(DowntimeHeatmapOption);
+            SelectedHeatmapSetting = FailureHeatmapOption;
+
             EmployeeTimelineEmployees.Add("Все сотрудники");
             SelectedEmployeeTimelineEmployee = "Все сотрудники";
             RebuildDowntimeResponsibleFilters();
@@ -1964,6 +2073,15 @@ namespace EquipmentFailureAnalysis.ViewModels
                 if (ShowDayTimelineCommand != null)
                     ShowDayTimelineCommand.Execute(selectedDate).Subscribe();
             });
+        }
+
+        private void ApplyHeatmapColorRange()
+        {
+            ValueToColorConverter.SetHeatmapRange(ValueToColorConverter.FailureHeatmapKey, _failureHeatmapColorMin, _failureHeatmapColorMax);
+            ValueToColorConverter.SetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey, _downtimeHeatmapColorMin, _downtimeHeatmapColorMax);
+
+            RefreshDowntimeAnalysis();
+            RefreshFailureAnalysis();
         }
 
         private void ResetUniversalFilters()

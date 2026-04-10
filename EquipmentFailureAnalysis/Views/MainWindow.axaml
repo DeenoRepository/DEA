@@ -502,7 +502,7 @@
                                                                 <Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
 																		Command="{Binding DataContext.ShowDayTimelineCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 																		CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                                                    <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=FailureAnalysis}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
 																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
 																	</Border>
                                                                 <ToolTip.Tip>
@@ -775,7 +775,7 @@
 																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
 																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-																	<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
 																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
 																	</Border>
 																</Button>
@@ -964,6 +964,31 @@
 									<TextBlock Text="API Token / пароль (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
 									<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
 								</StackPanel>
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+
+				<Grid MaxWidth="700" HorizontalAlignment="Left">
+					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel Spacing="8">
+							<TextBlock Text="Настройки карты тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Цвет ячеек изменяется от зелёного до красного в пределах заданного диапазона." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+                           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Карта:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<ComboBox Grid.Column="1"
+									ItemsSource="{Binding HeatmapSettingOptions}"
+									SelectedItem="{Binding SelectedHeatmapSetting, Mode=TwoWay}"
+									Background="#FFFFFF"
+									BorderBrush="#D1D5DB"
+									BorderThickness="1" />
+							</Grid>
+							<Grid ColumnDefinitions="Auto,130,Auto,130" ColumnSpacing="8" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="Минимум:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<NumericUpDown Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" />
+								<TextBlock Grid.Column="2" Text="Максимум:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+								<NumericUpDown Grid.Column="3" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" />
 							</Grid>
 						</StackPanel>
 					</Border>
