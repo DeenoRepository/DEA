@@ -121,7 +121,7 @@ namespace EquipmentFailureAnalysis.Views
                 return jql;
 
             var filterClause = string.Join(" OR ", filterIds.Select(id => $"filter = {id}"));
-            var fromFilters = $"({filterClause}) AND status = 'Решен'";
+            var fromFilters = $"({filterClause}) AND status in ('Решен', 'В процессе', 'Resolved', 'In Progress')";
 
             if (string.IsNullOrWhiteSpace(jql))
                 return fromFilters;

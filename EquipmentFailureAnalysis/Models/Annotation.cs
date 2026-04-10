@@ -22,5 +22,8 @@ namespace EquipmentFailureAnalysis.Models
         public string Duration { get; set; } = string.Empty;
         // issue type (Настройка or Ремонт)
         public IssueType Type { get; set; }
+
+        // пометка, что событие относится к задаче в процессе
+        public bool IsInProgress { get; set; }
     }
 }

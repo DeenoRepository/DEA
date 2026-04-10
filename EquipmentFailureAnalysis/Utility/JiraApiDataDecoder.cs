@@ -85,7 +85,8 @@ namespace EquipmentFailureAnalysis.Utility
                     if (!issueElement.TryGetProperty("fields", out var fields))
                         continue;
 
-                    if (!IsDoneIssue(fields))
+                    var isInProgress = IsInProgressIssueStatus(fields);
+                    if (!IsIncludedIssueStatus(fields))
                         continue;
 
                     var subdivision = GetSubdivision(fields);
@@ -118,6 +119,9 @@ namespace EquipmentFailureAnalysis.Utility
                     DateTime.TryParse(TryGetString(fields, "created"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var start);
                     DateTime.TryParse(TryGetString(fields, "resolutiondate"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var end);
                     if (end == default)
+                        end = isInProgress ? DateTime.Now : start;
+
+                    if (end < start)
                         end = start;
 
                     var description = NormalizeDescription(GetDescriptionText(fields));
@@ -134,7 +138,8 @@ namespace EquipmentFailureAnalysis.Utility
                         End = end,
                         Description = description,
                         Type = issueType,
-                        Responsible = string.IsNullOrWhiteSpace(responsible) ? "Не назначен" : responsible
+                        Responsible = string.IsNullOrWhiteSpace(responsible) ? "Не назначен" : responsible,
+                        IsInProgress = isInProgress
                     };
 
                     var equipment = equipmentCollection.FirstOrDefault(e =>
@@ -186,7 +191,7 @@ namespace EquipmentFailureAnalysis.Utility
             var fields = string.Join(",", fieldsForRequest.Distinct(StringComparer.OrdinalIgnoreCase));
 
             var effectiveJql = string.IsNullOrWhiteSpace(jql)
-                ? "statusCategory = Done ORDER BY resolved DESC"
+                ? "(statusCategory = Done OR statusCategory = 'In Progress') ORDER BY updated DESC"
                 : jql.Trim();
 
             var separator = searchUrl.Contains('?') ? "&" : "?";
@@ -197,18 +202,21 @@ namespace EquipmentFailureAnalysis.Utility
                 + "&fields=" + Uri.EscapeDataString(fields);
         }
 
-        private static bool IsDoneIssue(JsonElement fields)
+        private static bool IsIncludedIssueStatus(JsonElement fields)
         {
             if (fields.TryGetProperty("status", out var status))
             {
                 var categoryKey = TryGetString(status, "statusCategory", "key");
-                if (string.Equals(categoryKey, "done", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(categoryKey, "done", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(categoryKey, "indeterminate", StringComparison.OrdinalIgnoreCase))
                     return true;
 
                 var statusName = TryGetString(status, "name");
                 if (!string.IsNullOrWhiteSpace(statusName)
                     && (statusName.Equals("Решен", StringComparison.OrdinalIgnoreCase)
+                        || statusName.Equals("В процессе", StringComparison.OrdinalIgnoreCase)
                         || statusName.Equals("Resolved", StringComparison.OrdinalIgnoreCase)
+                        || statusName.Equals("In Progress", StringComparison.OrdinalIgnoreCase)
                         || statusName.Equals("Done", StringComparison.OrdinalIgnoreCase)
                         || statusName.Equals("Closed", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -217,6 +225,24 @@ namespace EquipmentFailureAnalysis.Utility
             }
 
             return false;
+        }
+
+        private static bool IsInProgressIssueStatus(JsonElement fields)
+        {
+            if (!fields.TryGetProperty("status", out var status))
+                return false;
+
+            var categoryKey = TryGetString(status, "statusCategory", "key");
+            if (string.Equals(categoryKey, "indeterminate", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            var statusName = TryGetString(status, "name");
+            if (string.IsNullOrWhiteSpace(statusName))
+                return false;
+
+            return statusName.Equals("В процессе", StringComparison.OrdinalIgnoreCase)
+                   || statusName.Equals("В работе", StringComparison.OrdinalIgnoreCase)
+                   || statusName.Equals("In Progress", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string? GetEquipmentText(JsonElement fields, IReadOnlyCollection<string> equipmentFieldIds)

@@ -1074,7 +1074,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                             StartDate = overlapStart,
                             EndDate = overlapEnd,
                             Duration = duration.ToString(@"hh\:mm"),
-                            Type = issue.Type
+                            Type = issue.Type,
+                            IsInProgress = issue.IsInProgress
                         });
 
                         // also mark hourly buckets (for compatibility)
@@ -1499,7 +1500,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                     StartDate = overlapStart,
                     EndDate = overlapEnd,
                     Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
-                    Type = issue.Type
+                    Type = issue.Type,
+                    IsInProgress = issue.IsInProgress
                 });
             }
 
@@ -1833,7 +1835,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                     StartDate = overlapStart,
                     EndDate = overlapEnd,
                     Duration = duration.ToString(@"hh\:mm"),
-                    Type = issue.Type
+                    Type = issue.Type,
+                    IsInProgress = issue.IsInProgress
                 });
             }
 
@@ -1991,7 +1994,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                         StartDate = overlapStart,
                         EndDate = overlapEnd,
                         Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
-                        Type = issue.Type
+                        Type = issue.Type,
+                        IsInProgress = issue.IsInProgress
                     });
                 }
 

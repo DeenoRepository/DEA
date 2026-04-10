@@ -319,6 +319,16 @@ namespace EquipmentFailureAnalysis.Views
                 if (it is Models.Annotation a) annObjs.Add(a);
             annObjs.Sort((a, b) => a.Hour.CompareTo(b.Hour));
 
+            var repairsInProgressDropXs = annObjs
+                .Where(a => a.IsInProgress && a.Type == Models.IssueType.Ремонт)
+                .Select(a => left + a.EndHour * (plotW / 24.0))
+                .ToList();
+
+            var setupsInProgressDropXs = annObjs
+                .Where(a => a.IsInProgress && a.Type == Models.IssueType.Настройка)
+                .Select(a => left + a.EndHour * (plotW / 24.0))
+                .ToList();
+
             // precompute counts and durations of issue types for summary
             int repairCount = 0;
             int setupCount = 0;
@@ -652,7 +662,35 @@ namespace EquipmentFailureAnalysis.Views
                 return segments;
             }
 
-            void DrawSeries(Point[] series, IBrush strokeBrush, IBrush activeAreaBrush)
+            static bool IsNearInProgressDrop(double x, System.Collections.Generic.List<double> markers)
+            {
+                if (markers == null || markers.Count == 0)
+                    return false;
+
+                const double tolerancePx = 1.0;
+                return markers.Any(mx => Math.Abs(mx - x) <= tolerancePx);
+            }
+
+            void DrawZigzagTransition(double x, double yStart, double yEnd, Pen pen)
+            {
+                const double ampX = 2.0;
+                const int segments = 8;
+
+                var prev = new Point(x, yStart);
+                for (int i = 1; i <= segments; i++)
+                {
+                    var t = i / (double)segments;
+                    var yy = yStart + (yEnd - yStart) * t;
+                    var xx = x + ((i % 2 == 0) ? ampX : -ampX);
+                    var current = new Point(xx, yy);
+                    context.DrawLine(pen, prev, current);
+                    prev = current;
+                }
+
+                context.DrawLine(pen, prev, new Point(x, yEnd));
+            }
+
+            void DrawSeries(Point[] series, IBrush strokeBrush, IBrush activeAreaBrush, System.Collections.Generic.List<double> inProgressDropXs)
             {
                 if (series.Length == 0)
                     return;
@@ -682,7 +720,13 @@ namespace EquipmentFailureAnalysis.Views
                     {
                         double nextY = series[i + 1].Y;
                         if (Math.Abs(nextY - y) > 0.1)
-                            context.DrawLine(linePen, new Point(xEnd, y), new Point(xEnd, nextY));
+                        {
+                            var isDropFromOneToZero = Math.Abs(y - y1) < 0.1 && Math.Abs(nextY - y0) < 0.1;
+                            if (isDropFromOneToZero && IsNearInProgressDrop(xEnd, inProgressDropXs))
+                                DrawZigzagTransition(xEnd, y, nextY, linePen);
+                            else
+                                context.DrawLine(linePen, new Point(xEnd, y), new Point(xEnd, nextY));
+                        }
                     }
                 }
             }
@@ -713,8 +757,8 @@ namespace EquipmentFailureAnalysis.Views
                 }
             };
 
-            DrawSeries(repairsPts, repairsStroke, repairsAreaGradient);
-            DrawSeries(setupsPts, setupsStroke, setupsAreaGradient);
+            DrawSeries(repairsPts, repairsStroke, repairsAreaGradient, repairsInProgressDropXs);
+            DrawSeries(setupsPts, setupsStroke, setupsAreaGradient, setupsInProgressDropXs);
 
             var repairsHorizontal = BuildHorizontalSegments(repairsPts);
             var setupsHorizontal = BuildHorizontalSegments(setupsPts);

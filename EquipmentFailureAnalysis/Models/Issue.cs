@@ -32,6 +32,9 @@ namespace EquipmentFailureAnalysis.Models
 
         // NLP-оценка вероятности того, что запись относится к настройке (0..1)
         public double SetupProbability { get; set; }
+
+        // Признак задачи Jira, которая находится в процессе (не завершена)
+        public bool IsInProgress { get; set; }
     }
 
     public enum IssueType
