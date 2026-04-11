@@ -940,35 +940,67 @@
 			<StackPanel Spacing="10">
               <Grid>
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
-					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
-						<StackPanel Spacing="8">
-							<TextBlock Text="Инструменты формирования отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-							<TextBlock Text="Выберите период, состав отчета и группировку, затем сформируйте HTML-страницу" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+                   <Border Background="{StaticResource CardBackground}" BorderBrush="#DCE4EE" BorderThickness="1" CornerRadius="0" Padding="16">
+						<StackPanel Spacing="12">
+							<StackPanel Spacing="3">
+								<TextBlock Text="Инструменты формирования отчета" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+								<TextBlock Text="Выберите период, параметры отбора и состав отчета, затем сформируйте HTML-файл" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+							</StackPanel>
 
-							<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-								<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
-								<CalendarDatePicker x:Name="ReportStartDatePicker" Grid.Column="1" MinWidth="140" HorizontalAlignment="Stretch" />
-								<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
-								<CalendarDatePicker x:Name="ReportEndDatePicker" Grid.Column="3" MinWidth="140" HorizontalAlignment="Stretch" />
-								<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
-								<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="0" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1">
-									<ComboBoxItem Content="По дням" />
-									<ComboBoxItem Content="По месяцам" />
-									<ComboBoxItem Content="По сотрудникам" />
-									<ComboBoxItem Content="По оборудованию" />
-								</ComboBox>
-							</Grid>
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+								<StackPanel Spacing="8">
+									<TextBlock Text="Параметры периода и группировки" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+									<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+										<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+										<CalendarDatePicker x:Name="ReportStartDatePicker" Grid.Column="1" MinWidth="140" HorizontalAlignment="Stretch" />
+										<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+										<CalendarDatePicker x:Name="ReportEndDatePicker" Grid.Column="3" MinWidth="140" HorizontalAlignment="Stretch" />
+										<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+										<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="0" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1">
+											<ComboBoxItem Content="По дням" />
+											<ComboBoxItem Content="По месяцам" />
+											<ComboBoxItem Content="По сотрудникам" />
+											<ComboBoxItem Content="По оборудованию" />
+										</ComboBox>
+									</Grid>
+								</StackPanel>
+							</Border>
 
-                          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
-								<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="True" />
-								<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="True" />
-								<CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="2" Content="Раздел «Анализ сотрудников»" IsChecked="True" />
-								<CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="3" Content="Открыть после формирования" IsChecked="True" />
-                             <CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Column="4" Content="Только задачи «в процессе»" IsChecked="False" />
-							</Grid>
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+								<StackPanel Spacing="8">
+									<TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+									<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
+										<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="True" />
+										<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="True" />
+										<CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="2" Content="Раздел «Анализ сотрудников»" IsChecked="True" />
+										<CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="3" Content="Открыть после формирования" IsChecked="True" />
+										<CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Column="4" Content="Только задачи «в процессе»" IsChecked="False" />
+									</Grid>
+									<Grid ColumnDefinitions="Auto,Auto,130,*" ColumnSpacing="8" VerticalAlignment="Center">
+										<CheckBox x:Name="ReportFilterByDurationCheckBox" Grid.Column="0" Content="Фильтр по длительности" IsChecked="False" VerticalAlignment="Center" />
+										<TextBlock Grid.Column="1" Text="мин. ≥" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
+										<NumericUpDown x:Name="ReportMinDurationMinutesUpDown" Grid.Column="2" Minimum="0" Maximum="10080" Increment="5" FormatString="F0" Value="60" />
+									</Grid>
+								</StackPanel>
+							</Border>
+
+							<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+								<StackPanel Spacing="8">
+									<TextBlock Text="Поля детализации отчета" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+									<Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+										<CheckBox x:Name="ReportFieldStartCheckBox" Grid.Row="0" Grid.Column="0" Content="Начало" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldEndCheckBox" Grid.Row="0" Grid.Column="1" Content="Окончание / длительность" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldEquipmentCheckBox" Grid.Row="0" Grid.Column="2" Content="Оборудование" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldSubdivisionCheckBox" Grid.Row="0" Grid.Column="3" Content="Группа" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldTypeCheckBox" Grid.Row="1" Grid.Column="0" Content="Тип" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldResponsibleCheckBox" Grid.Row="1" Grid.Column="1" Content="Ответственный" IsChecked="True" />
+										<CheckBox x:Name="ReportFieldDescriptionCheckBox" Grid.Row="1" Grid.Column="2" Content="Описание" IsChecked="True" />
+									</Grid>
+								</StackPanel>
+							</Border>
 
 							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-								<Button Grid.Column="0" Content="Сформировать HTML" MinWidth="170" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
+								<Button Grid.Column="0" Content="Сформировать HTML" MinWidth="180" Padding="14,8" Background="#1D4ED8" Foreground="#FFFFFF" BorderBrush="#1E40AF" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
 								<TextBox x:Name="ReportLastFilePathBox" Grid.Column="1" IsReadOnly="True" Watermark="Путь к сформированному отчету" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
 							</Grid>
 						</StackPanel>

@@ -48,7 +48,7 @@ namespace EquipmentFailureAnalysis.Views
             public string Description { get; init; } = string.Empty;
             public EquipmentFailureAnalysis.Models.IssueType Type { get; init; }
             public bool IsInProgress { get; init; }
-            public double DurationMinutes => Math.Max(0, (End - Start).TotalMinutes);
+            public double DurationMinutes => Math.Max(0, ((IsInProgress ? DateTime.Now : End) - Start).TotalMinutes);
         }
 
         private async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
@@ -229,6 +229,15 @@ namespace EquipmentFailureAnalysis.Views
             public bool ReportIncludeEmployee { get; set; } = true;
             public bool ReportOpenAfterGenerate { get; set; } = true;
             public bool ReportOnlyInProgress { get; set; }
+            public bool ReportFilterByDuration { get; set; }
+            public int ReportMinDurationMinutes { get; set; } = 60;
+            public bool ReportFieldStart { get; set; } = true;
+            public bool ReportFieldEnd { get; set; } = true;
+            public bool ReportFieldEquipment { get; set; } = true;
+            public bool ReportFieldSubdivision { get; set; } = true;
+            public bool ReportFieldType { get; set; } = true;
+            public bool ReportFieldResponsible { get; set; } = true;
+            public bool ReportFieldDescription { get; set; } = true;
         }
 
         private string GetJiraSettingsFile()
@@ -261,7 +270,16 @@ namespace EquipmentFailureAnalysis.Views
                     ReportIncludeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true,
                     ReportIncludeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true,
                     ReportOpenAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true,
-                    ReportOnlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true
+                    ReportOnlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true,
+                    ReportFilterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true,
+                    ReportMinDurationMinutes = (int)(this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m),
+                    ReportFieldStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false,
+                    ReportFieldEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false,
+                    ReportFieldEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false,
+                    ReportFieldSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false,
+                    ReportFieldType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false,
+                    ReportFieldResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false,
+                    ReportFieldDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false
                 };
 
                 var json = JsonSerializer.Serialize(settings);
@@ -366,6 +384,42 @@ namespace EquipmentFailureAnalysis.Views
                 var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox");
                 if (onlyInProgress != null)
                     onlyInProgress.IsChecked = settings.ReportOnlyInProgress;
+
+                var filterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox");
+                if (filterByDuration != null)
+                    filterByDuration.IsChecked = settings.ReportFilterByDuration;
+
+                var minDurationControl = this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
+                if (minDurationControl != null)
+                    minDurationControl.Value = Math.Max(0, settings.ReportMinDurationMinutes);
+
+                var fieldStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox");
+                if (fieldStart != null)
+                    fieldStart.IsChecked = settings.ReportFieldStart;
+
+                var fieldEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox");
+                if (fieldEnd != null)
+                    fieldEnd.IsChecked = settings.ReportFieldEnd;
+
+                var fieldEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox");
+                if (fieldEquipment != null)
+                    fieldEquipment.IsChecked = settings.ReportFieldEquipment;
+
+                var fieldSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox");
+                if (fieldSubdivision != null)
+                    fieldSubdivision.IsChecked = settings.ReportFieldSubdivision;
+
+                var fieldType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox");
+                if (fieldType != null)
+                    fieldType.IsChecked = settings.ReportFieldType;
+
+                var fieldResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox");
+                if (fieldResponsible != null)
+                    fieldResponsible.IsChecked = settings.ReportFieldResponsible;
+
+                var fieldDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox");
+                if (fieldDescription != null)
+                    fieldDescription.IsChecked = settings.ReportFieldDescription;
             }
             catch
             {
@@ -458,6 +512,15 @@ namespace EquipmentFailureAnalysis.Views
             var includeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true;
             var openAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true;
             var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
+            var filterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true;
+            var minDurationMinutes = (double)(this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m);
+            var showStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false;
+            var showEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false;
+            var showEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false;
+            var showSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false;
+            var showType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false;
+            var showResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false;
+            var showDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false;
             var outputPathBox = this.FindControl<TextBox>("ReportLastFilePathBox");
 
             SaveJiraSettingsFromUi();
@@ -495,6 +558,13 @@ namespace EquipmentFailureAnalysis.Views
                     .ToList();
             }
 
+            if (filterByDuration)
+            {
+                reportRows = reportRows
+                    .Where(r => r.DurationMinutes >= minDurationMinutes)
+                    .ToList();
+            }
+
             string groupBy = "По дням";
             if (groupByCombo?.SelectedItem is ComboBoxItem selectedGroup)
                 groupBy = selectedGroup.Content?.ToString() ?? groupBy;
@@ -522,6 +592,39 @@ namespace EquipmentFailureAnalysis.Views
                 .ToList();
 
             string H(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
+            var detailsColumns = new List<(string Header, Func<ReportIssueRow, string> Value)>
+            {
+                ("Начало", x => x.Start.ToString("dd.MM.yyyy HH:mm")),
+                ("Окончание / длительность", x => x.IsInProgress
+                    ? TimeSpan.FromMinutes(Math.Max(0, (DateTime.Now - x.Start).TotalMinutes)).ToString(@"hh\:mm")
+                    : x.End.ToString("dd.MM.yyyy HH:mm")),
+                ("Оборудование", x => string.IsNullOrWhiteSpace(x.InventoryNumber) ? x.EquipmentTitle : $"{x.EquipmentTitle} ({x.InventoryNumber})"),
+                ("Группа", x => string.IsNullOrWhiteSpace(x.Subdivision) ? "-" : x.Subdivision),
+                ("Тип", x => x.Type.ToString()),
+                ("Ответственный", x => x.Responsible),
+                ("Описание", x => x.Description)
+            };
+
+            detailsColumns = detailsColumns
+                .Where((x, index) => index switch
+                {
+                    0 => showStart,
+                    1 => showEnd,
+                    2 => showEquipment,
+                    3 => showSubdivision,
+                    4 => showType,
+                    5 => showResponsible,
+                    6 => showDescription,
+                    _ => true
+                })
+                .ToList();
+
+            if (detailsColumns.Count == 0)
+            {
+                await ShowMessageAsync("Отчеты", "Выберите хотя бы одно поле в блоке «Поля детализации отчета». ");
+                return;
+            }
+
             var html = new StringBuilder();
             html.AppendLine("<!doctype html>");
             html.AppendLine("<html lang=\"ru\"><head><meta charset=\"utf-8\" />");
@@ -531,6 +634,8 @@ namespace EquipmentFailureAnalysis.Views
             html.AppendLine($"<h1>Отчет по метрикам оборудования</h1><div class=\"muted\">Период: {startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}. Сформирован: {DateTime.Now:dd.MM.yyyy HH:mm}</div>");
             if (onlyInProgress)
                 html.AppendLine("<div class=\"muted\">Режим отчета: только задачи в процессе на момент формирования.</div>");
+            if (filterByDuration)
+                html.AppendLine($"<div class=\"muted\">Режим отчета: длительность задач от {minDurationMinutes:0} мин.</div>");
 
             if (includeDashboard)
             {
@@ -569,22 +674,14 @@ namespace EquipmentFailureAnalysis.Views
                 html.AppendLine("<tr><td colspan=\"6\">Нет данных за выбранный период.</td></tr>");
             html.AppendLine("</tbody></table></section>");
 
-            html.AppendLine("<section><h2>Детализация событий</h2><table><thead><tr><th>Начало</th><th>Окончание / длительность</th><th>Оборудование</th><th>Группа</th><th>Тип</th><th>Ответственный</th><th>Описание</th></tr></thead><tbody>");
+            html.AppendLine($"<section><h2>Детализация событий</h2><table><thead><tr>{string.Join(string.Empty, detailsColumns.Select(c => $"<th>{H(c.Header)}</th>"))}</tr></thead><tbody>");
             foreach (var item in reportRows.OrderByDescending(x => x.Start).Take(300))
             {
-                var equipment = string.IsNullOrWhiteSpace(item.InventoryNumber)
-                    ? item.EquipmentTitle
-                    : $"{item.EquipmentTitle} ({item.InventoryNumber})";
-
-                var endOrDurationText = item.IsInProgress
-                    ? TimeSpan.FromMinutes(Math.Max(0, (DateTime.Now - item.Start).TotalMinutes)).ToString(@"hh\:mm")
-                    : item.End.ToString("dd.MM.yyyy HH:mm");
-
-                var subdivisionText = string.IsNullOrWhiteSpace(item.Subdivision) ? "-" : item.Subdivision;
-                html.AppendLine($"<tr><td>{item.Start:dd.MM.yyyy HH:mm}</td><td>{H(endOrDurationText)}</td><td>{H(equipment)}</td><td>{H(subdivisionText)}</td><td>{H(item.Type.ToString())}</td><td>{H(item.Responsible)}</td><td>{H(item.Description)}</td></tr>");
+                var rowCells = string.Join(string.Empty, detailsColumns.Select(c => $"<td>{H(c.Value(item))}</td>"));
+                html.AppendLine($"<tr>{rowCells}</tr>");
             }
             if (reportRows.Count == 0)
-                html.AppendLine("<tr><td colspan=\"7\">Нет событий в выбранном периоде.</td></tr>");
+                html.AppendLine($"<tr><td colspan=\"{detailsColumns.Count}\">Нет событий в выбранном периоде.</td></tr>");
             html.AppendLine("</tbody></table></section>");
 
             html.AppendLine("</body></html>");
