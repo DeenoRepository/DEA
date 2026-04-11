@@ -221,6 +221,14 @@ namespace EquipmentFailureAnalysis.Views
             public int FailureHeatmapMax { get; set; } = 10;
             public int DowntimeHeatmapMin { get; set; } = 0;
             public int DowntimeHeatmapMax { get; set; } = 10;
+            public DateTime? ReportStartDate { get; set; }
+            public DateTime? ReportEndDate { get; set; }
+            public string ReportGroupBy { get; set; } = string.Empty;
+            public bool ReportIncludeDashboard { get; set; } = true;
+            public bool ReportIncludeDowntime { get; set; } = true;
+            public bool ReportIncludeEmployee { get; set; } = true;
+            public bool ReportOpenAfterGenerate { get; set; } = true;
+            public bool ReportOnlyInProgress { get; set; }
         }
 
         private string GetJiraSettingsFile()
@@ -245,7 +253,15 @@ namespace EquipmentFailureAnalysis.Views
                     FailureHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Min,
                     FailureHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Max,
                     DowntimeHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Min,
-                    DowntimeHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Max
+                    DowntimeHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Max,
+                    ReportStartDate = this.FindControl<CalendarDatePicker>("ReportStartDatePicker")?.SelectedDate?.Date,
+                    ReportEndDate = this.FindControl<CalendarDatePicker>("ReportEndDatePicker")?.SelectedDate?.Date,
+                    ReportGroupBy = (this.FindControl<ComboBox>("ReportGroupByCombo")?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty,
+                    ReportIncludeDashboard = this.FindControl<CheckBox>("ReportIncludeDashboardCheckBox")?.IsChecked == true,
+                    ReportIncludeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true,
+                    ReportIncludeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true,
+                    ReportOpenAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true,
+                    ReportOnlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true
                 };
 
                 var json = JsonSerializer.Serialize(settings);
@@ -312,6 +328,44 @@ namespace EquipmentFailureAnalysis.Views
                     if (!string.IsNullOrWhiteSpace(selected))
                         vm.SelectedHeatmapSetting = selected;
                 }
+
+                var reportStartPicker = this.FindControl<CalendarDatePicker>("ReportStartDatePicker");
+                if (reportStartPicker != null && settings.ReportStartDate.HasValue)
+                    reportStartPicker.SelectedDate = settings.ReportStartDate.Value.Date;
+
+                var reportEndPicker = this.FindControl<CalendarDatePicker>("ReportEndDatePicker");
+                if (reportEndPicker != null && settings.ReportEndDate.HasValue)
+                    reportEndPicker.SelectedDate = settings.ReportEndDate.Value.Date;
+
+                var reportGroupByCombo = this.FindControl<ComboBox>("ReportGroupByCombo");
+                if (reportGroupByCombo != null && !string.IsNullOrWhiteSpace(settings.ReportGroupBy))
+                {
+                    var item = reportGroupByCombo.Items
+                        .OfType<ComboBoxItem>()
+                        .FirstOrDefault(x => string.Equals(x.Content?.ToString(), settings.ReportGroupBy, StringComparison.CurrentCulture));
+                    if (item != null)
+                        reportGroupByCombo.SelectedItem = item;
+                }
+
+                var includeDashboard = this.FindControl<CheckBox>("ReportIncludeDashboardCheckBox");
+                if (includeDashboard != null)
+                    includeDashboard.IsChecked = settings.ReportIncludeDashboard;
+
+                var includeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox");
+                if (includeDowntime != null)
+                    includeDowntime.IsChecked = settings.ReportIncludeDowntime;
+
+                var includeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox");
+                if (includeEmployee != null)
+                    includeEmployee.IsChecked = settings.ReportIncludeEmployee;
+
+                var openAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox");
+                if (openAfterGenerate != null)
+                    openAfterGenerate.IsChecked = settings.ReportOpenAfterGenerate;
+
+                var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox");
+                if (onlyInProgress != null)
+                    onlyInProgress.IsChecked = settings.ReportOnlyInProgress;
             }
             catch
             {
@@ -406,6 +460,8 @@ namespace EquipmentFailureAnalysis.Views
             var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
             var outputPathBox = this.FindControl<TextBox>("ReportLastFilePathBox");
 
+            SaveJiraSettingsFromUi();
+
             var startDate = startPicker?.SelectedDate?.Date ?? DateTime.Now.Date.AddDays(-30);
             var endDate = endPicker?.SelectedDate?.Date ?? DateTime.Now.Date;
             if (endDate < startDate)
@@ -470,7 +526,7 @@ namespace EquipmentFailureAnalysis.Views
             html.AppendLine("<!doctype html>");
             html.AppendLine("<html lang=\"ru\"><head><meta charset=\"utf-8\" />");
             html.AppendLine("<title>Отчет DEA</title>");
-            html.AppendLine("<style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:24px}h1,h2{margin:0 0 10px}section{background:#fff;border:1px solid #e5eaf0;padding:14px;margin:0 0 12px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #edf1f5;padding:6px 8px;text-align:left}th{background:#f8fafc} .muted{color:#6b7280;font-size:12px}</style>");
+            html.AppendLine("<style>@page{size:A4;margin:10mm}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:12px;font-size:12px;line-height:1.2}h1{font-size:18px;margin:0 0 8px}h2{font-size:14px;margin:0 0 8px}section{background:#fff;border:1px solid #e5eaf0;padding:10px;margin:0 0 10px;break-inside:avoid-page}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #edf1f5;padding:4px 6px;text-align:left;vertical-align:top}th{background:#f8fafc} .muted{color:#6b7280;font-size:11px}@media print{body{margin:0;zoom:0.86;background:#fff}section{border-color:#d9dee5}}</style>");
             html.AppendLine("</head><body>");
             html.AppendLine($"<h1>Отчет по метрикам оборудования</h1><div class=\"muted\">Период: {startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}. Сформирован: {DateTime.Now:dd.MM.yyyy HH:mm}</div>");
             if (onlyInProgress)
@@ -557,7 +613,6 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
 
-            await ShowMessageAsync("Отчеты", $"HTML-отчет сформирован: {reportPath}");
         }
 
         private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)
