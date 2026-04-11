@@ -639,6 +639,24 @@ namespace EquipmentFailureAnalysis.Views
             vm.EmployeeTimelineDate = current.AddDays(1);
         }
 
+        private void EmployeeAnalysisRow_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (sender is not Control control)
+                return;
+
+            if (control.DataContext is not EquipmentFailureAnalysis.Models.EmployeeAnalysisRow row)
+                return;
+
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(row.Name))
+                vm.SelectedEmployeeTimelineEmployee = row.Name;
+
+            if (row.LastIssueDate != DateTime.MinValue)
+                vm.EmployeeTimelineDate = row.LastIssueDate.Date;
+        }
+
         private void DowntimeEquipmentButton_Click(object? sender, RoutedEventArgs e)
         {
             if (sender is not Control control)

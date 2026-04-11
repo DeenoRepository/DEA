@@ -1251,8 +1251,8 @@
 										</ItemsPanelTemplate>
 									</ItemsControl.ItemsPanel>
 									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-                                       <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,3">
+                                      <DataTemplate>
+									   <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,3" PointerPressed="EmployeeAnalysisRow_PointerPressed">
 												<TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="#1F2937" TextTrimming="CharacterEllipsis" MaxLines="1" />
                                           <TextBlock Grid.Column="1" Text="{Binding Subdivision}" FontSize="12" Foreground="#4B5563" TextTrimming="CharacterEllipsis" MaxLines="1" Margin="6,0,8,0" />
 											<TextBlock Grid.Column="2" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="#2563EB" HorizontalAlignment="Right" />
