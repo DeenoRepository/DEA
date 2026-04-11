@@ -95,28 +95,32 @@
 			<Setter Property="CornerRadius" Value="6" />
 		</Style>
 
-		<!-- Legend brushes for heatmap (brighter stops) -->
+        <!-- Legend brushes for heatmap (brighter stops) -->
 		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
 		<SolidColorBrush x:Key="HeatmapYellow" Color="#FFEE58" />
 		<SolidColorBrush x:Key="HeatmapOrange" Color="#FFB74D" />
 		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
 
         <!-- Palette -->
-	   <SolidColorBrush x:Key="PrimaryBackground" Color="#F1F4F8" />
-		<SolidColorBrush x:Key="HeaderBackground" Color="#234465" />
+       <SolidColorBrush x:Key="PrimaryBackground" Color="#EEF2F7" />
+		<SolidColorBrush x:Key="HeaderBackground" Color="#1F3652" />
 		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="AccentBrush" Color="#1976D2" />
+     <SolidColorBrush x:Key="AccentBrush" Color="#2563EB" />
 		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-     <SolidColorBrush x:Key="TextPrimary" Color="#1F2937" />
+		<SolidColorBrush x:Key="SurfaceAlt" Color="#F8FAFC" />
+		<SolidColorBrush x:Key="ControlBorderBrush" Color="#D4DCE6" />
+		<SolidColorBrush x:Key="TextSecondary" Color="#6B7280" />
+	 <SolidColorBrush x:Key="TextPrimary" Color="#111827" />
 
 		<!-- Styles -->
-        <Style x:Key="SidebarButtonStyle" Selector="Button">
+        <Style x:Key="SidebarButtonStyle" Selector="Button.navItem">
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="#E0E0E0" />
+           <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Padding" Value="8" />
+         <Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="HorizontalContentAlignment" Value="Center" />
+         <Setter Property="HorizontalContentAlignment" Value="Left" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
 			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
 		</Style>
@@ -134,6 +138,57 @@
     </Window.Resources>
 
 	<Window.Styles>
+       <Style Selector="TextBlock">
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+
+		<Style Selector="Button">
+			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,7" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Button:pointerover">
+			<Setter Property="Background" Value="#F5F8FC" />
+			<Setter Property="BorderBrush" Value="#C7D2E2" />
+		</Style>
+       <Style Selector="Button.navItem:pointerover">
+			<Setter Property="Background" Value="#EEF3FB" />
+			<Setter Property="BorderBrush" Value="#C6D4EA" />
+		</Style>
+		<Style Selector="Button:pressed">
+			<Setter Property="Background" Value="#E9EEF6" />
+		</Style>
+
+		<Style Selector="TextBox, ComboBox, CalendarDatePicker, NumericUpDown, ListBox">
+			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
+
+		<Style Selector="ProgressBar">
+			<Setter Property="Height" Value="8" />
+			<Setter Property="Background" Value="#E6ECF3" />
+		</Style>
+
+		<Style Selector="CheckBox">
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+		</Style>
+
+		<Style Selector="ToolTip">
+			<Setter Property="Background" Value="#111827" />
+			<Setter Property="Foreground" Value="#F9FAFB" />
+			<Setter Property="BorderBrush" Value="#374151" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Padding" Value="8,6" />
+		</Style>
+
 		<!-- Implicit style to completely hide ScrollBar visuals while keeping scrolling behavior -->
 		<Style Selector="ScrollBar">
 			<Setter Property="Template">
@@ -177,13 +232,13 @@
 	</Border>
 
     <Grid Grid.Column="0" Grid.Row="1" Margin="0,0,12,0" MinWidth="140" MaxWidth="260" HorizontalAlignment="Stretch">
-           <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="12">
+		   <Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12">
                 <StackPanel Spacing="10">
 					<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 					<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="#6B7280" Margin="0,-2,0,2" TextWrapping="Wrap" />
 
-					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-						<Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DashboardButton_Click">
+                    <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
+						<Button Classes="navItem" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DashboardButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                                <TextBlock Text="Панель управления" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Общие тренды по работам, простоям и эффективности сотрудников" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -191,8 +246,8 @@
 						</Button>
 					</Border>
 
-					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DowntimeAnalysisButton_Click">
+                    <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
+					 <Button Classes="navItem" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="DowntimeAnalysisButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                              <TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Карта тепла, перечень оборудования с фиксацей простоев за день" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -200,8 +255,8 @@
 						</Button>
 					</Border>
 
-                    <Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-                     <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="EmployeeAnalysisButton_Click">
+                    <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
+					 <Button Classes="navItem" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="EmployeeAnalysisButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                                 <TextBlock Text="Анализ сотрудников" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Эффективность, длительность работ и активность ответственных" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -209,8 +264,8 @@
 						</Button>
 					</Border>
 
-					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-                        <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="ReportsButton_Click">
+                    <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
+						<Button Classes="navItem" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="ReportsButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
 								<TextBlock Text="Отчеты" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Сводные отчеты по ключевым метрикам и качеству выполнения" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -218,8 +273,8 @@
 						</Button>
 					</Border>
 
-					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="4">
-                        <Button HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="SettingsButton_Click">
+                    <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
+						<Button Classes="navItem" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="8" Click="SettingsButton_Click">
 							<StackPanel Spacing="2" HorizontalAlignment="Left">
                                 <TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="#111827" />
 								<TextBlock Text="Параметры отображения и конфигурация приложения" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
@@ -302,37 +357,17 @@
 							</Grid>
 
 							<Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-								<Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
+                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
 									<StackPanel Spacing="4">
 										<TextBlock Text="События" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-										<ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-                                                  <Grid ColumnDefinitions="1.2*,3*,56" ColumnSpacing="6" Margin="0,1">
-														<TextBlock Grid.Column="0" Text="{Binding PeriodLabel}" FontSize="11" Foreground="#4B5563" VerticalAlignment="Center" />
-														<ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding DataContext.DashboardMaxIssuesInMonth, RelativeSource={RelativeSource AncestorType=Window}}" Value="{Binding IssuesCount}" Height="7" VerticalAlignment="Center" />
-                                                      <TextBlock Grid.Column="2" Text="{Binding IssuesCount}" FontSize="11" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" />
-													</Grid>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
+										<views:MonthlyTrendsChartControl Items="{Binding DashboardMonthlyTrends}" Height="190" />
 									</StackPanel>
 								</Border>
 
 								<Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="8">
 									<StackPanel Spacing="4">
 										<TextBlock Text="SLA" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-										<ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-                                                  <Grid ColumnDefinitions="1.2*,3*,68" ColumnSpacing="6" Margin="0,1">
-														<TextBlock Grid.Column="0" Text="{Binding PeriodLabel}" FontSize="11" Foreground="#4B5563" VerticalAlignment="Center" />
-														<ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding SlaCompliancePercent}" Height="7" VerticalAlignment="Center" />
-                                                      <TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="11" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" />
-													</Grid>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
+										<views:MonthlyTrendsChartControl Items="{Binding DashboardMonthlyTrends}" IsSlaChart="True" Height="190" />
 									</StackPanel>
 								</Border>
 							</Grid>
@@ -1056,55 +1091,64 @@
 		</Grid.ColumnDefinitions>
 
 		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-			<StackPanel Spacing="10">
-			  <Grid MaxWidth="700" HorizontalAlignment="Left">
-					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
-				   <Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
-						<StackPanel Spacing="8">
-                           <TextBlock Text="Настройки импорта Jira API" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-							<TextBlock Text="Укажите параметры подключения к Jira REST API и нажмите «Импорт из Jira»." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+			<StackPanel Spacing="12">
+				<Border Background="{StaticResource CardBackground}" BorderBrush="#DCE4EE" BorderThickness="1" CornerRadius="0" Padding="16" MaxWidth="760" HorizontalAlignment="Left">
+					<StackPanel Spacing="12">
+						<StackPanel Spacing="3">
+							<TextBlock Text="Параметры интеграции Jira" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+						</StackPanel>
 
-							<StackPanel Spacing="4">
-                              <TextBlock Text="URL Jira API (search)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-							  <TextBox x:Name="JiraResourceUrlBox" Watermark="https://your-jira/rest/api/2/search" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+						<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+								<StackPanel Spacing="4">
+									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="#374151" />
+									<TextBox x:Name="JiraResourceUrlBox" Watermark="https://your-jira/rest/api/2/search" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+								</StackPanel>
+								<StackPanel Spacing="4">
+									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="#374151" />
+									<TextBox x:Name="JiraJqlBox" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+								</StackPanel>
 							</StackPanel>
+						</Border>
 
-							<StackPanel Spacing="4">
-								<TextBlock Text="JQL (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-								<TextBox x:Name="JiraJqlBox" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
-							</StackPanel>
-
-							<StackPanel Spacing="6">
-                                <TextBlock Text="ID фильтров Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+						<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
 								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                   <TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Watermark="10422" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
-									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
+									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Watermark="10422" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
+									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="#EEF4FF" Foreground="#1D4ED8" BorderBrush="#C7D7F7" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
 								</Grid>
-                                <ListBox x:Name="JiraFilterIdsList" MinHeight="90" MaxHeight="170" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
+								<ListBox x:Name="JiraFilterIdsList" MinHeight="90" MaxHeight="170" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
 								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
 							</StackPanel>
+						</Border>
 
-							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-								<StackPanel Grid.Column="0" Spacing="4">
-									<TextBlock Text="Логин Jira (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-									<TextBox x:Name="JiraUsernameBox" Watermark="user@company.com" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
-								</StackPanel>
-								<StackPanel Grid.Column="1" Spacing="4">
-									<TextBlock Text="API Token / пароль (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
-									<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
-								</StackPanel>
-							</Grid>
-						</StackPanel>
-					</Border>
-				</Grid>
+						<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<StackPanel Grid.Column="0" Spacing="4">
+										<TextBlock Text="Логин Jira" FontSize="12" Foreground="#374151" />
+										<TextBox x:Name="JiraUsernameBox" Watermark="user@company.com" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+									</StackPanel>
+									<StackPanel Grid.Column="1" Spacing="4">
+										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="#374151" />
+										<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" />
+									</StackPanel>
+								</Grid>
+							</StackPanel>
+						</Border>
+					</StackPanel>
+				</Border>
 
-				<Grid MaxWidth="700" HorizontalAlignment="Left">
-					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
-					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
-						<StackPanel Spacing="8">
-							<TextBlock Text="Настройки карты тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-							<TextBlock Text="Цвет ячеек изменяется от зелёного до красного в пределах заданного диапазона." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
-                           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
+				<Border Background="{StaticResource CardBackground}" BorderBrush="#DCE4EE" BorderThickness="1" CornerRadius="0" Padding="16" MaxWidth="760" HorizontalAlignment="Left">
+					<StackPanel Spacing="10">
+						<TextBlock Text="Настройки карты тепла" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+						<TextBlock Text="Управляйте диапазоном интенсивности для корректного отображения цветовых уровней." FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+						<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
 								<TextBlock Grid.Column="0" Text="Карта:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
 								<ComboBox Grid.Column="1"
 									ItemsSource="{Binding HeatmapSettingOptions}"
@@ -1113,25 +1157,40 @@
 									BorderBrush="#D1D5DB"
 									BorderThickness="1" />
 							</Grid>
+						</Border>
+						<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
 							<Grid ColumnDefinitions="Auto,130,Auto,130" ColumnSpacing="8" VerticalAlignment="Center">
 								<TextBlock Grid.Column="0" Text="Минимум:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
 								<NumericUpDown Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" />
 								<TextBlock Grid.Column="2" Text="Максимум:" FontSize="12" Foreground="#374151" VerticalAlignment="Center" />
 								<NumericUpDown Grid.Column="3" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" />
 							</Grid>
-						</StackPanel>
-					</Border>
-				</Grid>
+						</Border>
+					</StackPanel>
+				</Border>
 			</StackPanel>
 		</ScrollViewer>
 
 	   <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-			<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+			<Border Background="{StaticResource CardBackground}" BorderBrush="#DCE4EE" BorderThickness="1" CornerRadius="0" Padding="14">
 				<StackPanel Spacing="10">
-					<TextBlock Text="Действия" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-                    <TextBlock Text="Импортирует данные из Jira REST API и обновляет данные оборудования в приложении." FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
-                    <Button Content="Импорт из XML" MinWidth="140" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="ImportButton_Click" />
-					<Button Content="Импорт из Jira" MinWidth="140" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="ImportFromJiraButton_Click" />
+					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel Spacing="8">
+							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="#FFFFFF" Foreground="#111827" BorderBrush="#D1D5DB" BorderThickness="1" Click="ImportButton_Click" />
+							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="#1D4ED8" Foreground="#FFFFFF" BorderBrush="#1E40AF" BorderThickness="1" Click="ImportFromJiraButton_Click" />
+						</StackPanel>
+					</Border>
+
+					<Border Background="#F8FAFC" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="10">
+						<StackPanel Spacing="4">
+							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="#374151" />
+							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+							<TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа." FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+						</StackPanel>
+					</Border>
 				</StackPanel>
 			</Border>
 		</Grid>
