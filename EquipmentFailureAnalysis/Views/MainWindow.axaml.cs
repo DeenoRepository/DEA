@@ -718,6 +718,30 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
+        private void FailureHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var failureOption = vm.HeatmapSettingOptions
+                .FirstOrDefault(v => v.Contains("неисправ", StringComparison.CurrentCultureIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(failureOption))
+                vm.SelectedHeatmapSetting = failureOption;
+        }
+
+        private void DowntimeHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var downtimeOption = vm.HeatmapSettingOptions
+                .FirstOrDefault(v => v.Contains("просто", StringComparison.CurrentCultureIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(downtimeOption))
+                vm.SelectedHeatmapSetting = downtimeOption;
+        }
+
         private void EmployeeTimelinePrevDate_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)

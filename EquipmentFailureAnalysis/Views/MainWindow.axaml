@@ -30,6 +30,8 @@
 		<utility:StatusToBrushConverter x:Key="StatusToBrush" />
 		<utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
 		<utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
+		<utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
+		<utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
 
         <!-- Typography / card styles using class selectors -->
 		<FontFamily x:Key="AppFont">Segoe UI</FontFamily>
@@ -499,7 +501,27 @@
                  <Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
 						<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
                   <StackPanel HorizontalAlignment="Stretch">
-						<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+                     <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
+							<TextBlock Grid.Column="0" Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+							<Button Grid.Column="1" Classes="smallIcon" Content="⚙" FontSize="14" ToolTip.Tip="Настройки градации" Click="FailureHeatmapSettingsButton_Click">
+								<Button.Flyout>
+									<Flyout Placement="BottomEdgeAlignedRight">
+										<Border Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" Padding="10">
+                                            <StackPanel Spacing="8" MinWidth="320" MaxWidth="360">
+												<TextBlock Text="Настройки градации карты" FontSize="12" FontWeight="SemiBold" />
+												<TextBlock Text="Диапазон значений для карты неисправностей" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+                                               <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+													<TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум:" FontSize="12" VerticalAlignment="Center" />
+													<NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+													<TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум:" FontSize="12" VerticalAlignment="Center" />
+													<NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+												</Grid>
+											</StackPanel>
+										</Border>
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+						</Grid>
 						<TextBlock Text="Ежедневная интенсивность неисправностей по месяцам" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
 						<Grid>
 							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
@@ -546,7 +568,7 @@
                                                                 <Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
 																		Command="{Binding DataContext.ShowDayTimelineCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 																		CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                            <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=FailureAnalysis}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=FailureAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
 																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
 																	</Border>
                                                                 <ToolTip.Tip>
@@ -776,7 +798,27 @@
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
 					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
 						<StackPanel HorizontalAlignment="Stretch">
-							<TextBlock Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+                         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
+								<TextBlock Grid.Column="0" Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+								<Button Grid.Column="1" Classes="smallIcon" Content="⚙" FontSize="14" ToolTip.Tip="Настройки градации" Click="DowntimeHeatmapSettingsButton_Click">
+									<Button.Flyout>
+										<Flyout Placement="BottomEdgeAlignedRight">
+											<Border Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" Padding="10">
+                                                <StackPanel Spacing="8" MinWidth="320" MaxWidth="360">
+													<TextBlock Text="Настройки градации карты" FontSize="12" FontWeight="SemiBold" />
+													<TextBlock Text="Диапазон значений для карты простоев" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap" />
+                                                   <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+														<TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум:" FontSize="12" VerticalAlignment="Center" />
+														<NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+														<TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум:" FontSize="12" VerticalAlignment="Center" />
+														<NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+													</Grid>
+												</StackPanel>
+											</Border>
+										</Flyout>
+									</Button.Flyout>
+								</Button>
+							</Grid>
 							<TextBlock Text="Значение ячейки: количество единиц оборудования с неисправностями за день" FontSize="12" Foreground="#6B7280" Margin="0,0,0,8" />
                           <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
 								<StackPanel Margin="2">
@@ -819,7 +861,7 @@
 																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
 																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                            <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                           <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
 																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
 																	</Border>
 																</Button>
