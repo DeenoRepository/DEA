@@ -9,7 +9,7 @@
 		mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
      x:Class="EquipmentFailureAnalysis.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/dea-logo.ico"
 		Title="DEA - Equipment Failure Analysis"
 		Background="{StaticResource PrimaryBackground}"
 		WindowState="Maximized">
@@ -105,7 +105,7 @@
 
         <!-- Palette -->
        <SolidColorBrush x:Key="PrimaryBackground" Color="#F6F8FC" />
-		<SolidColorBrush x:Key="HeaderBackground" Color="#0F172A" />
+		<SolidColorBrush x:Key="HeaderBackground" Color="#2B3A52" />
 		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
      <SolidColorBrush x:Key="AccentBrush" Color="#0EA5E9" />
 		<SolidColorBrush x:Key="AccentForeground" Color="#0284C7" />
@@ -344,7 +344,7 @@
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
-				<Image Source="/Assets/avalonia-logo.ico" Width="44" Height="44" />
+				<Image Source="/Assets/dea-logo.png" Width="120" Height="70" />
 				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="{StaticResource HeaderTextBrush}" />
 					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="{StaticResource HeaderTextBrush}">Мониторинг рабочих смен и простоев</TextBlock>
