@@ -22,11 +22,11 @@
         								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         								<StackPanel Spacing="4">
         									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        									<TextBox x:Name="JiraResourceUrlBox" Watermark="https://your-jira/rest/api/2/search" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+									<TextBox x:Name="JiraResourceUrlBox" Text="{Binding JiraResourceUrl, Mode=TwoWay}" Watermark="https://your-jira/rest/api/2/search" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         								</StackPanel>
         								<StackPanel Spacing="4">
         									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        									<TextBox x:Name="JiraJqlBox" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+									<TextBox x:Name="JiraJqlBox" Text="{Binding JiraJql, Mode=TwoWay}" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         								</StackPanel>
         							</StackPanel>
         						</Border>
@@ -35,10 +35,10 @@
         							<StackPanel Spacing="8">
         								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Watermark="10422" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Text="{Binding JiraFilterIdInput, Mode=TwoWay}" Watermark="10422" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="{StaticResource AccentSoftBackground}" Foreground="{StaticResource AccentForeground}" BorderBrush="{StaticResource AccentSoftBorder}" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
         								</Grid>
-        								<ListBox x:Name="JiraFilterIdsList" MinHeight="90" MaxHeight="170" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+								<ListBox x:Name="JiraFilterIdsList" ItemsSource="{Binding JiraFilterIds}" SelectedItem="{Binding JiraSelectedFilterId, Mode=TwoWay}" MinHeight="90" MaxHeight="170" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
         							</StackPanel>
         						</Border>
@@ -49,11 +49,11 @@
         								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
         									<StackPanel Grid.Column="0" Spacing="4">
         										<TextBlock Text="Логин Jira" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        										<TextBox x:Name="JiraUsernameBox" Watermark="user@company.com" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+										<TextBox x:Name="JiraUsernameBox" Text="{Binding JiraUsername, Mode=TwoWay}" Watermark="user@company.com" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         									</StackPanel>
         									<StackPanel Grid.Column="1" Spacing="4">
         										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        										<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+										<TextBox x:Name="JiraTokenBox" Text="{Binding JiraToken, Mode=TwoWay}" PasswordChar="*" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
         									</StackPanel>
         								</Grid>
         							</StackPanel>

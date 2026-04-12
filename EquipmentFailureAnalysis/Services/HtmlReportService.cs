@@ -176,10 +176,10 @@ namespace EquipmentFailureAnalysis.Services
             if (options.IncludeDashboard)
             {
                 html.AppendLine("<section><h2>Панель управления</h2><table><tbody>");
-                html.AppendLine($"<tr><th>События (30 дней)</th><td>{vm.DashboardCurrentPeriodIssues}</td></tr>");
-                html.AppendLine($"<tr><th>SLA</th><td>{vm.DashboardCurrentPeriodSlaCompliancePercent:0.#}%</td></tr>");
-                html.AppendLine($"<tr><th>Средняя длительность</th><td>{H(vm.DashboardCurrentPeriodAvgDuration)}</td></tr>");
-                html.AppendLine($"<tr><th>Зона внимания</th><td>{H(vm.DashboardRiskEquipment)} ({H(vm.DashboardRiskEquipmentValue)})</td></tr>");
+                html.AppendLine($"<tr><th>События (30 дней)</th><td>{vm.Dashboard.DashboardCurrentPeriodIssues}</td></tr>");
+                html.AppendLine($"<tr><th>SLA</th><td>{vm.Dashboard.DashboardCurrentPeriodSlaCompliancePercent:0.#}%</td></tr>");
+                html.AppendLine($"<tr><th>Средняя длительность</th><td>{H(vm.Dashboard.DashboardCurrentPeriodAvgDuration)}</td></tr>");
+                html.AppendLine($"<tr><th>Зона внимания</th><td>{H(vm.Dashboard.DashboardRiskEquipment)} ({H(vm.Dashboard.DashboardRiskEquipmentValue)})</td></tr>");
                 html.AppendLine("</tbody></table></section>");
             }
 

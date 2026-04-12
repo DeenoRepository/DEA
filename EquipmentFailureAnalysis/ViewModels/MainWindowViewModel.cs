@@ -11,6 +11,11 @@ namespace EquipmentFailureAnalysis.ViewModels
 {
     public partial class MainWindowViewModel : ViewModelBase
     {
+        public DashboardViewModel Dashboard { get; }
+        public DowntimeViewModel Downtime { get; }
+        public ReportsViewModel Reports { get; }
+        public SettingsViewModel Settings { get; }
+
         private sealed class EmployeeIssueProjection
         {
             public required EquipmentInfo Equipment { get; init; }
@@ -48,8 +53,8 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
-        public ObservableCollection<Models.MonthRow> DowntimeMonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
-        public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows { get; set; } = new ObservableCollection<Models.DowntimeEquipmentRow>();
+        public ObservableCollection<Models.MonthRow> DowntimeMonthRows => Downtime.DowntimeMonthRows;
+        public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows => Downtime.DowntimeDayEquipmentRows;
         private ObservableCollection<Models.EmployeeAnalysisRow> _employeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>();
         public ObservableCollection<Models.EmployeeAnalysisRow> EmployeeAnalysisRows
         {
@@ -57,17 +62,20 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _employeeAnalysisRows, value);
         }
 
-        private ObservableCollection<Models.DashboardTrendPoint> _dashboardMonthlyTrends = new ObservableCollection<Models.DashboardTrendPoint>();
         public ObservableCollection<Models.DashboardTrendPoint> DashboardMonthlyTrends
         {
-            get => _dashboardMonthlyTrends;
-            set => this.RaiseAndSetIfChanged(ref _dashboardMonthlyTrends, value);
+            get => Dashboard.DashboardMonthlyTrends;
+            set
+            {
+                Dashboard.DashboardMonthlyTrends = value;
+                this.RaisePropertyChanged(nameof(DashboardMonthlyTrends));
+            }
         }
         public ReactiveCommand<EquipmentInfo, Unit> LoadEquipmentCommand { get; }
-        public ReactiveCommand<Unit, Unit> ResetUniversalFiltersCommand { get; }
+        public ReactiveCommand<Unit, Unit> ResetUniversalFiltersCommand => Downtime.ResetUniversalFiltersCommand;
         public ObservableCollection<int> DayHeaders { get; set; } = new ObservableCollection<int>();
         public ObservableCollection<int> DayHours { get; set; } = new ObservableCollection<int>();
-        public ReactiveCommand<DateTime, Unit> ShowDowntimeDayCommand { get; }
+        public ReactiveCommand<DateTime, Unit> ShowDowntimeDayCommand => Downtime.ShowDowntimeDayCommand;
         private EquipmentInfo? _selectedEquipment;
         public EquipmentInfo? SelectedEquipment
         {
@@ -295,82 +303,26 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _analysisDate, value);
         }
 
-        private DateTime _downtimeAnalysisDate = DateTime.Now.Date;
         public DateTime DowntimeAnalysisDate
         {
-            get => _downtimeAnalysisDate;
-            set => this.RaiseAndSetIfChanged(ref _downtimeAnalysisDate, value);
+            get => Downtime.DowntimeAnalysisDate;
+            set
+            {
+                Downtime.DowntimeAnalysisDate = value;
+                this.RaisePropertyChanged(nameof(DowntimeAnalysisDate));
+            }
         }
 
-        private int _downtimeAffectedEquipmentCount;
-        public int DowntimeAffectedEquipmentCount
-        {
-            get => _downtimeAffectedEquipmentCount;
-            set => this.RaiseAndSetIfChanged(ref _downtimeAffectedEquipmentCount, value);
-        }
-
-        private int _downtimeTotalIssues;
-        public int DowntimeTotalIssues
-        {
-            get => _downtimeTotalIssues;
-            set => this.RaiseAndSetIfChanged(ref _downtimeTotalIssues, value);
-        }
-
-        private int _downtimeRepairsCount;
-        public int DowntimeRepairsCount
-        {
-            get => _downtimeRepairsCount;
-            set => this.RaiseAndSetIfChanged(ref _downtimeRepairsCount, value);
-        }
-
-        private int _downtimeSetupsCount;
-        public int DowntimeSetupsCount
-        {
-            get => _downtimeSetupsCount;
-            set => this.RaiseAndSetIfChanged(ref _downtimeSetupsCount, value);
-        }
-
-        private double _downtimeAffectedSharePercent;
-        public double DowntimeAffectedSharePercent
-        {
-            get => _downtimeAffectedSharePercent;
-            set => this.RaiseAndSetIfChanged(ref _downtimeAffectedSharePercent, value);
-        }
-
-        private string _downtimeTotalDuration = "00:00";
-        public string DowntimeTotalDuration
-        {
-            get => _downtimeTotalDuration;
-            set => this.RaiseAndSetIfChanged(ref _downtimeTotalDuration, value);
-        }
-
-        private string _downtimeAvgIssuesPerEquipment = "0.0";
-        public string DowntimeAvgIssuesPerEquipment
-        {
-            get => _downtimeAvgIssuesPerEquipment;
-            set => this.RaiseAndSetIfChanged(ref _downtimeAvgIssuesPerEquipment, value);
-        }
-
-        private string _downtimePeakHour = "-";
-        public string DowntimePeakHour
-        {
-            get => _downtimePeakHour;
-            set => this.RaiseAndSetIfChanged(ref _downtimePeakHour, value);
-        }
-
-        private string _downtimeTopEquipment = "-";
-        public string DowntimeTopEquipment
-        {
-            get => _downtimeTopEquipment;
-            set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipment, value);
-        }
-
-        private int _downtimeTopEquipmentIssues;
-        public int DowntimeTopEquipmentIssues
-        {
-            get => _downtimeTopEquipmentIssues;
-            set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipmentIssues, value);
-        }
+        public int DowntimeAffectedEquipmentCount => Downtime.DowntimeAffectedEquipmentCount;
+        public int DowntimeTotalIssues => Downtime.DowntimeTotalIssues;
+        public int DowntimeRepairsCount => Downtime.DowntimeRepairsCount;
+        public int DowntimeSetupsCount => Downtime.DowntimeSetupsCount;
+        public double DowntimeAffectedSharePercent => Downtime.DowntimeAffectedSharePercent;
+        public string DowntimeTotalDuration => Downtime.DowntimeTotalDuration;
+        public string DowntimeAvgIssuesPerEquipment => Downtime.DowntimeAvgIssuesPerEquipment;
+        public string DowntimePeakHour => Downtime.DowntimePeakHour;
+        public string DowntimeTopEquipment => Downtime.DowntimeTopEquipment;
+        public int DowntimeTopEquipmentIssues => Downtime.DowntimeTopEquipmentIssues;
 
         private int _employeeTotalCount;
         public int EmployeeTotalCount
@@ -483,32 +435,44 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _employeeSlaBreaches, value);
         }
 
-        private int _dashboardCurrentPeriodIssues;
         public int DashboardCurrentPeriodIssues
         {
-            get => _dashboardCurrentPeriodIssues;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodIssues, value);
+            get => Dashboard.DashboardCurrentPeriodIssues;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodIssues = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodIssues));
+            }
         }
 
-        private int _dashboardPreviousPeriodIssues;
         public int DashboardPreviousPeriodIssues
         {
-            get => _dashboardPreviousPeriodIssues;
-            set => this.RaiseAndSetIfChanged(ref _dashboardPreviousPeriodIssues, value);
+            get => Dashboard.DashboardPreviousPeriodIssues;
+            set
+            {
+                Dashboard.DashboardPreviousPeriodIssues = value;
+                this.RaisePropertyChanged(nameof(DashboardPreviousPeriodIssues));
+            }
         }
 
-        private double _dashboardIssuesTrendPercent;
         public double DashboardIssuesTrendPercent
         {
-            get => _dashboardIssuesTrendPercent;
-            set => this.RaiseAndSetIfChanged(ref _dashboardIssuesTrendPercent, value);
+            get => Dashboard.DashboardIssuesTrendPercent;
+            set
+            {
+                Dashboard.DashboardIssuesTrendPercent = value;
+                this.RaisePropertyChanged(nameof(DashboardIssuesTrendPercent));
+            }
         }
 
-        private string _dashboardIssuesTrendText = "Стабильно";
         public string DashboardIssuesTrendText
         {
-            get => _dashboardIssuesTrendText;
-            set => this.RaiseAndSetIfChanged(ref _dashboardIssuesTrendText, value);
+            get => Dashboard.DashboardIssuesTrendText;
+            set
+            {
+                Dashboard.DashboardIssuesTrendText = value;
+                this.RaisePropertyChanged(nameof(DashboardIssuesTrendText));
+            }
         }
 
         private int _dashboardCurrentPeriodRepairs;
@@ -525,74 +489,104 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSetups, value);
         }
 
-        private string _dashboardCurrentPeriodAvgDuration = "00:00";
         public string DashboardCurrentPeriodAvgDuration
         {
-            get => _dashboardCurrentPeriodAvgDuration;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodAvgDuration, value);
+            get => Dashboard.DashboardCurrentPeriodAvgDuration;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodAvgDuration = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodAvgDuration));
+            }
         }
 
-        private int _dashboardCurrentPeriodAffectedEquipment;
         public int DashboardCurrentPeriodAffectedEquipment
         {
-            get => _dashboardCurrentPeriodAffectedEquipment;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodAffectedEquipment, value);
+            get => Dashboard.DashboardCurrentPeriodAffectedEquipment;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodAffectedEquipment = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodAffectedEquipment));
+            }
         }
 
-        private int _dashboardCurrentPeriodActiveEmployees;
         public int DashboardCurrentPeriodActiveEmployees
         {
-            get => _dashboardCurrentPeriodActiveEmployees;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodActiveEmployees, value);
+            get => Dashboard.DashboardCurrentPeriodActiveEmployees;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodActiveEmployees = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodActiveEmployees));
+            }
         }
 
-        private double _dashboardCurrentPeriodSlaCompliancePercent;
         public double DashboardCurrentPeriodSlaCompliancePercent
         {
-            get => _dashboardCurrentPeriodSlaCompliancePercent;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSlaCompliancePercent, value);
+            get => Dashboard.DashboardCurrentPeriodSlaCompliancePercent;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodSlaCompliancePercent = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodSlaCompliancePercent));
+            }
         }
 
-        private int _dashboardCurrentPeriodSlaBreaches;
         public int DashboardCurrentPeriodSlaBreaches
         {
-            get => _dashboardCurrentPeriodSlaBreaches;
-            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodSlaBreaches, value);
+            get => Dashboard.DashboardCurrentPeriodSlaBreaches;
+            set
+            {
+                Dashboard.DashboardCurrentPeriodSlaBreaches = value;
+                this.RaisePropertyChanged(nameof(DashboardCurrentPeriodSlaBreaches));
+            }
         }
 
-        private int _dashboardMaxIssuesInMonth;
         public int DashboardMaxIssuesInMonth
         {
-            get => _dashboardMaxIssuesInMonth;
-            set => this.RaiseAndSetIfChanged(ref _dashboardMaxIssuesInMonth, value);
+            get => Dashboard.DashboardMaxIssuesInMonth;
+            set
+            {
+                Dashboard.DashboardMaxIssuesInMonth = value;
+                this.RaisePropertyChanged(nameof(DashboardMaxIssuesInMonth));
+            }
         }
 
-        private string _dashboardTopPerformer = "-";
         public string DashboardTopPerformer
         {
-            get => _dashboardTopPerformer;
-            set => this.RaiseAndSetIfChanged(ref _dashboardTopPerformer, value);
+            get => Dashboard.DashboardTopPerformer;
+            set
+            {
+                Dashboard.DashboardTopPerformer = value;
+                this.RaisePropertyChanged(nameof(DashboardTopPerformer));
+            }
         }
 
-        private string _dashboardTopPerformerValue = "-";
         public string DashboardTopPerformerValue
         {
-            get => _dashboardTopPerformerValue;
-            set => this.RaiseAndSetIfChanged(ref _dashboardTopPerformerValue, value);
+            get => Dashboard.DashboardTopPerformerValue;
+            set
+            {
+                Dashboard.DashboardTopPerformerValue = value;
+                this.RaisePropertyChanged(nameof(DashboardTopPerformerValue));
+            }
         }
 
-        private string _dashboardRiskEquipment = "-";
         public string DashboardRiskEquipment
         {
-            get => _dashboardRiskEquipment;
-            set => this.RaiseAndSetIfChanged(ref _dashboardRiskEquipment, value);
+            get => Dashboard.DashboardRiskEquipment;
+            set
+            {
+                Dashboard.DashboardRiskEquipment = value;
+                this.RaisePropertyChanged(nameof(DashboardRiskEquipment));
+            }
         }
 
-        private string _dashboardRiskEquipmentValue = "0 событий";
         public string DashboardRiskEquipmentValue
         {
-            get => _dashboardRiskEquipmentValue;
-            set => this.RaiseAndSetIfChanged(ref _dashboardRiskEquipmentValue, value);
+            get => Dashboard.DashboardRiskEquipmentValue;
+            set
+            {
+                Dashboard.DashboardRiskEquipmentValue = value;
+                this.RaisePropertyChanged(nameof(DashboardRiskEquipmentValue));
+            }
         }
 
         public ObservableCollection<string> EmployeeAnalysisMonthOptions { get; } = new ObservableCollection<string>();
@@ -751,61 +745,47 @@ namespace EquipmentFailureAnalysis.ViewModels
             "Настройки"
         };
 
-        public ObservableCollection<string> DowntimeIssueTypeFilters { get; } = new ObservableCollection<string>
-        {
-            "Все типы",
-            "Ремонты",
-            "Настройки"
-        };
+        public ObservableCollection<string> DowntimeIssueTypeFilters => Downtime.DowntimeIssueTypeFilters;
+        public ObservableCollection<string> DowntimeResponsibleFilters => Downtime.DowntimeResponsibleFilters;
+        public ObservableCollection<string> DowntimeSubdivisionFilters => Downtime.DowntimeSubdivisionFilters;
 
-        public ObservableCollection<string> DowntimeResponsibleFilters { get; } = new ObservableCollection<string>();
-        public ObservableCollection<string> DowntimeSubdivisionFilters { get; } = new ObservableCollection<string>();
-
-        private string _selectedDowntimeIssueTypeFilter = "Все типы";
         public string SelectedDowntimeIssueTypeFilter
         {
-            get => _selectedDowntimeIssueTypeFilter;
+            get => Downtime.SelectedDowntimeIssueTypeFilter;
             set
             {
-                this.RaiseAndSetIfChanged(ref _selectedDowntimeIssueTypeFilter, value);
-                RefreshDowntimeAnalysis();
-                RefreshFailureAnalysis();
+                Downtime.SelectedDowntimeIssueTypeFilter = value;
+                this.RaisePropertyChanged(nameof(SelectedDowntimeIssueTypeFilter));
             }
         }
 
-        private string _selectedDowntimeSubdivisionFilter = "Все группы";
         public string SelectedDowntimeSubdivisionFilter
         {
-            get => _selectedDowntimeSubdivisionFilter;
+            get => Downtime.SelectedDowntimeSubdivisionFilter;
             set
             {
-                this.RaiseAndSetIfChanged(ref _selectedDowntimeSubdivisionFilter, value);
-                RefreshDowntimeAnalysis();
-                RefreshFailureAnalysis();
+                Downtime.SelectedDowntimeSubdivisionFilter = value;
+                this.RaisePropertyChanged(nameof(SelectedDowntimeSubdivisionFilter));
             }
         }
 
-        private string _selectedDowntimeResponsibleFilter = "Все ответственные";
         public string SelectedDowntimeResponsibleFilter
         {
-            get => _selectedDowntimeResponsibleFilter;
+            get => Downtime.SelectedDowntimeResponsibleFilter;
             set
             {
-                this.RaiseAndSetIfChanged(ref _selectedDowntimeResponsibleFilter, value);
-                RefreshDowntimeAnalysis();
-                RefreshFailureAnalysis();
+                Downtime.SelectedDowntimeResponsibleFilter = value;
+                this.RaisePropertyChanged(nameof(SelectedDowntimeResponsibleFilter));
             }
         }
 
-        private string _downtimeEquipmentSearchQuery = string.Empty;
         public string DowntimeEquipmentSearchQuery
         {
-            get => _downtimeEquipmentSearchQuery;
+            get => Downtime.DowntimeEquipmentSearchQuery;
             set
             {
-                this.RaiseAndSetIfChanged(ref _downtimeEquipmentSearchQuery, value);
-                RefreshDowntimeAnalysis();
-                RefreshFailureAnalysis();
+                Downtime.DowntimeEquipmentSearchQuery = value;
+                this.RaisePropertyChanged(nameof(DowntimeEquipmentSearchQuery));
             }
         }
 
@@ -877,6 +857,11 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         public MainWindowViewModel()
         {
+            Dashboard = new DashboardViewModel(this);
+            Downtime = new DowntimeViewModel(this);
+            Reports = new ReportsViewModel(this);
+            Settings = new SettingsViewModel(this);
+
             HeatmapSettingOptions.Add(FailureHeatmapOption);
             HeatmapSettingOptions.Add(DowntimeHeatmapOption);
             SelectedHeatmapSetting = FailureHeatmapOption;
@@ -925,13 +910,6 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             // start with empty daily index collection; it will be populated when the user clicks an equipment button
             DailyDowntimeIndexCollection = new ObservableCollection<DailyDowntimeIndex>();
-
-            ShowDowntimeDayCommand = ReactiveCommand.Create<DateTime>(date =>
-            {
-                BuildDowntimeDayEquipmentRows(date);
-            });
-
-            ResetUniversalFiltersCommand = ReactiveCommand.Create(ResetUniversalFilters);
 
             // Command that fills DailyDowntimeIndexCollection for the selected equipment
             LoadEquipmentCommand = ReactiveCommand.Create<EquipmentInfo>(equipment =>

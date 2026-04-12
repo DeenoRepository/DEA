@@ -25,10 +25,20 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (_trackedSettingsVm != null)
                 _trackedSettingsVm.PropertyChanged -= OnViewModelPropertyChanged;
+            if (_trackedSettingsVm is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel prevVm)
+            {
+                prevVm.Reports.PropertyChanged -= OnReportsViewModelPropertyChanged;
+                prevVm.Settings.PropertyChanged -= OnSettingsViewModelPropertyChanged;
+            }
 
             _trackedSettingsVm = DataContext as INotifyPropertyChanged;
             if (_trackedSettingsVm != null)
                 _trackedSettingsVm.PropertyChanged += OnViewModelPropertyChanged;
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                vm.Reports.PropertyChanged += OnReportsViewModelPropertyChanged;
+                vm.Settings.PropertyChanged += OnSettingsViewModelPropertyChanged;
+            }
         }
 
         private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -42,6 +52,30 @@ namespace EquipmentFailureAnalysis.Views
             {
                 SaveJiraSettingsFromUi();
             }
+        }
+
+        private void OnReportsViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_suppressSettingsSave)
+                return;
+
+            if (string.IsNullOrWhiteSpace(e.PropertyName))
+                return;
+
+            if (e.PropertyName.StartsWith("Report", StringComparison.Ordinal))
+                SaveJiraSettingsFromUi();
+        }
+
+        private void OnSettingsViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_suppressSettingsSave)
+                return;
+
+            if (string.IsNullOrWhiteSpace(e.PropertyName))
+                return;
+
+            if (e.PropertyName.StartsWith("Jira", StringComparison.Ordinal))
+                SaveJiraSettingsFromUi();
         }
 
     }

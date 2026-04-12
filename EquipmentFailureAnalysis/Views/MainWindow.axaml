@@ -419,11 +419,11 @@
 				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 			</Button>
 		</Grid>
-  <views:DashboardView x:Name="DashboardPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
   <views:FailureAnalysisView x:Name="FailureAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="True" />
-  <views:DowntimeView x:Name="DowntimeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:ReportsView x:Name="ReportsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:SettingsView x:Name="SettingsPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:DowntimeView x:Name="DowntimeAnalysisPage" DataContext="{Binding Downtime}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:ReportsView x:Name="ReportsPage" DataContext="{Binding Reports}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:SettingsView x:Name="SettingsPage" DataContext="{Binding Settings}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
   <views:EmployeeAnalysisView x:Name="EmployeeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
 		<Border Grid.ColumnSpan="3"
 		        Grid.Row="2"

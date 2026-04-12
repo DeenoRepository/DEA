@@ -4,7 +4,6 @@ using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.Utility;
@@ -27,8 +26,6 @@ namespace EquipmentFailureAnalysis.Views
         private bool _isNavigationCollapsed;
         private const double ExpandedNavigationWidth = 320d;
         private const double CollapsedNavigationWidth = 70d;
-        private bool _reportSettingsWatchersAttached;
-        private bool _reportToolsInitScheduled;
 
         private void ToggleNavigationButton_Click(object? sender, RoutedEventArgs e)
         {
@@ -142,7 +139,7 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
             {
-                vm.ShowDowntimeDayCommand.Execute(vm.DowntimeAnalysisDate).Subscribe();
+                vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
             }
 
             _currentPage = AppPage.DowntimeAnalysis;
@@ -164,142 +161,10 @@ namespace EquipmentFailureAnalysis.Views
 
         private void InitializeReportTools()
         {
-            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
-            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
-            if (startPicker == null || endPicker == null)
-            {
-                ScheduleReportToolsInitialization();
-                return;
-            }
-
-            if (startPicker != null && startPicker.SelectedDate == null)
-                startPicker.SelectedDate = DateTime.Now.Date;
-
-            if (endPicker != null && endPicker.SelectedDate == null)
-                endPicker.SelectedDate = DateTime.Now.Date;
-
-            AttachReportSettingsWatchers();
-        }
-
-        private void ScheduleReportToolsInitialization()
-        {
-            if (_reportToolsInitScheduled)
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
 
-            _reportToolsInitScheduled = true;
-            Dispatcher.UIThread.Post(() =>
-            {
-                _reportToolsInitScheduled = false;
-                InitializeReportTools();
-            }, DispatcherPriority.Loaded);
-        }
-
-        private void AttachReportSettingsWatchers()
-        {
-            if (_reportSettingsWatchersAttached)
-                return;
-
-            var attachedAny = false;
-            var allCriticalFound = true;
-
-            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
-            if (startPicker != null)
-            {
-                startPicker.PropertyChanged += (_, e) =>
-                {
-                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
-                        SaveJiraSettingsFromUi();
-                };
-                attachedAny = true;
-            }
-            else
-            {
-                allCriticalFound = false;
-            }
-
-            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
-            if (endPicker != null)
-            {
-                endPicker.PropertyChanged += (_, e) =>
-                {
-                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
-                        SaveJiraSettingsFromUi();
-                };
-                attachedAny = true;
-            }
-            else
-            {
-                allCriticalFound = false;
-            }
-
-            var groupByCombo = FindNestedControl<ComboBox>("ReportGroupByCombo");
-            if (groupByCombo != null)
-            {
-                groupByCombo.PropertyChanged += (_, e) =>
-                {
-                    if (e.Property == ComboBox.SelectedItemProperty)
-                        SaveJiraSettingsFromUi();
-                };
-                attachedAny = true;
-            }
-            else
-            {
-                allCriticalFound = false;
-            }
-
-            var checkBoxes = new[]
-            {
-                "ReportIncludeDashboardCheckBox",
-                "ReportIncludeDowntimeCheckBox",
-                "ReportIncludeEmployeeCheckBox",
-                "ReportOpenAfterGenerateCheckBox",
-                "ReportOnlyInProgressCheckBox",
-                "ReportFilterByDurationCheckBox",
-                "ReportFieldStartCheckBox",
-                "ReportFieldEndCheckBox",
-                "ReportFieldEquipmentCheckBox",
-                "ReportFieldSubdivisionCheckBox",
-                "ReportFieldTypeCheckBox",
-                "ReportFieldResponsibleCheckBox",
-                "ReportFieldDescriptionCheckBox"
-            };
-
-            foreach (var name in checkBoxes)
-            {
-                var checkBox = FindNestedControl<CheckBox>(name);
-                if (checkBox == null)
-                    continue;
-
-                checkBox.PropertyChanged += (_, e) =>
-                {
-                    if (e.Property == CheckBox.IsCheckedProperty)
-                        SaveJiraSettingsFromUi();
-                };
-                attachedAny = true;
-            }
-
-            var minDuration = FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
-            if (minDuration != null)
-            {
-                minDuration.PropertyChanged += (_, e) =>
-                {
-                    if (e.Property == NumericUpDown.ValueProperty)
-                        SaveJiraSettingsFromUi();
-                };
-                attachedAny = true;
-            }
-            else
-            {
-                allCriticalFound = false;
-            }
-
-            if (attachedAny && allCriticalFound)
-            {
-                _reportSettingsWatchersAttached = true;
-                return;
-            }
-
-            ScheduleReportToolsInitialization();
+            vm.Reports.EnsureDefaultPeriod(DateTime.Now);
         }
 
         internal async void GenerateHtmlReportButton_Click(object? sender, RoutedEventArgs e)
@@ -307,49 +172,14 @@ namespace EquipmentFailureAnalysis.Views
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
 
-            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
-            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
-            var includeDashboard = FindNestedControl<CheckBox>("ReportIncludeDashboardCheckBox")?.IsChecked == true;
-            var includeDowntime = FindNestedControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true;
-            var includeEmployee = FindNestedControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true;
-            var openAfterGenerate = FindNestedControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true;
-            var onlyInProgress = FindNestedControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
-            var filterByDuration = FindNestedControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true;
-            var minDurationMinutes = (double)(FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m);
-            var showStart = FindNestedControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false;
-            var showEnd = FindNestedControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false;
-            var showEquipment = FindNestedControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false;
-            var showSubdivision = FindNestedControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false;
-            var showType = FindNestedControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false;
-            var showResponsible = FindNestedControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false;
-            var showDescription = FindNestedControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false;
-            var outputPathBox = FindNestedControl<TextBox>("ReportLastFilePathBox");
-
-            SaveJiraSettingsFromUi();
-
-            var startDate = startPicker?.SelectedDate?.Date ?? DateTime.Now.Date.AddDays(-30);
-            var endDate = endPicker?.SelectedDate?.Date ?? DateTime.Now.Date;
-            var groupBy = GetReportGroupByKeyFromUi();
-
-            var options = new HtmlReportOptions
+            var reports = vm.Reports;
+            if (!reports.TryBuildHtmlReportOptions(DateTime.Now, out var options, out var validationError))
             {
-                StartDate = startDate,
-                EndDate = endDate,
-                GroupBy = groupBy,
-                IncludeDashboard = includeDashboard,
-                IncludeDowntime = includeDowntime,
-                IncludeEmployee = includeEmployee,
-                OnlyInProgress = onlyInProgress,
-                FilterByDuration = filterByDuration,
-                MinDurationMinutes = minDurationMinutes,
-                ShowStart = showStart,
-                ShowEnd = showEnd,
-                ShowEquipment = showEquipment,
-                ShowSubdivision = showSubdivision,
-                ShowType = showType,
-                ShowResponsible = showResponsible,
-                ShowDescription = showDescription
-            };
+                var message = validationError ?? "Параметры отчета заполнены некорректно.";
+                await ShowMessageAsync("Отчеты", message);
+                PublishStatus($"Ошибка формирования отчета: {message}");
+                return;
+            }
 
             var generation = _htmlReportService.GenerateHtmlReport(vm, options);
             if (!generation.Success)
@@ -361,14 +191,13 @@ namespace EquipmentFailureAnalysis.Views
 
             var reportPath = generation.ReportPath;
 
-            if (outputPathBox != null)
-                outputPathBox.Text = reportPath;
+            reports.ReportLastFilePath = reportPath;
 
             SaveJiraSettingsFromUi();
 
             PublishStatus($"Отчет сформирован: {reportPath}");
 
-            if (openAfterGenerate)
+            if (reports.ReportOpenAfterGenerate)
             {
                 try
                 {
@@ -456,7 +285,7 @@ namespace EquipmentFailureAnalysis.Views
                 return;
 
             vm.LoadEquipmentCommand.Execute(row.Equipment).Subscribe();
-            vm.ShowDayTimelineCommand?.Execute(vm.DowntimeAnalysisDate).Subscribe();
+            vm.ShowDayTimelineCommand?.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
             vm.SearchQuery = row.Equipment.Title ?? string.Empty;
 
             _currentPage = AppPage.FailureAnalysis;

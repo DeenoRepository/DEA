@@ -178,157 +178,12 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         private void BuildDowntimeHeatmap()
         {
-            DowntimeMonthRows.Clear();
-            var year = DateTime.Now.Year;
-            var filteredEquipment = FilterDowntimeEquipmentByQuery(_masterEquipment);
-
-            for (int month = 1; month <= 12; month++)
-            {
-                var monthDate = new DateTime(year, month, 1);
-                var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
-                var monthRow = new Models.MonthRow
-                {
-                    Month = monthDate.Month,
-                    Year = monthDate.Year,
-                    MonthName = monthDate.ToString("MMM")
-                };
-
-                for (int d = 1; d <= 31; d++)
-                {
-                    var isValid = d <= daysInMonth;
-                    var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = isValid };
-
-                    if (isValid)
-                    {
-                        var day = new DateTime(monthDate.Year, monthDate.Month, d);
-                        var dayEnd = day.AddDays(1);
-                        cell.Date = day;
-                        cell.Index = filteredEquipment.Count(eq => GetDowntimeFilteredIssues(eq, day, dayEnd).Any());
-                    }
-
-                    monthRow.Days.Add(cell);
-                }
-
-                DowntimeMonthRows.Add(monthRow);
-            }
+            Downtime.BuildHeatmap(_masterEquipment);
         }
 
         private void BuildDowntimeDayEquipmentRows(DateTime date)
         {
-            DowntimeAnalysisDate = date.Date;
-            DowntimeDayEquipmentRows.Clear();
-
-            var dayStart = date.Date;
-            var dayEnd = dayStart.AddDays(1);
-
-            var rows = new System.Collections.Generic.List<Models.DowntimeEquipmentRow>();
-            int totalIssues = 0;
-            int totalRepairs = 0;
-            int totalSetups = 0;
-            double totalMergedDownMinutes = 0.0;
-            var affectedByHour = new int[24];
-
-            foreach (var equipment in FilterDowntimeEquipmentByQuery(_masterEquipment))
-            {
-                var issuesForDay = GetDowntimeFilteredIssues(equipment, dayStart, dayEnd).ToList();
-                if (issuesForDay.Count == 0)
-                    continue;
-
-                totalIssues += issuesForDay.Count;
-                totalRepairs += issuesForDay.Count(i => i.Type == IssueType.Ремонт);
-                totalSetups += issuesForDay.Count(i => i.Type == IssueType.Настройка);
-
-                var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
-                var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
-                var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
-
-                var rowAnnotations = new System.Collections.Generic.List<Models.Annotation>();
-
-                foreach (var issue in issuesForDay)
-                {
-                    var overlapStart = issue.Start < dayStart ? dayStart : issue.Start;
-                    var overlapEnd = issue.End > dayEnd ? dayEnd : issue.End;
-                    if (overlapEnd <= overlapStart)
-                        continue;
-
-                    int sMin = Math.Clamp((int)Math.Round((overlapStart - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
-                    int eMin = Math.Clamp((int)Math.Round((overlapEnd - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
-                    if (eMin <= sMin)
-                        eMin = Math.Min(24 * 60, sMin + 1);
-
-                    intervals.Add((sMin, eMin));
-                    if (issue.Type == IssueType.Ремонт)
-                        repairsIntervals.Add((sMin, eMin));
-                    else if (issue.Type == IssueType.Настройка)
-                        setupsIntervals.Add((sMin, eMin));
-
-                    rowAnnotations.Add(new Models.Annotation
-                    {
-                        Hour = sMin / 60.0,
-                        StartHour = sMin / 60.0,
-                        EndHour = eMin / 60.0,
-                        Description = issue.Description ?? string.Empty,
-                        Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "-" : issue.Responsible,
-                        StartDate = overlapStart,
-                        EndDate = overlapEnd,
-                        Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
-                        Type = issue.Type,
-                        IsInProgress = issue.IsInProgress
-                    });
-                }
-
-                var merged = MergeIntervals(intervals);
-                var repairsMerged = MergeIntervals(repairsIntervals);
-                var setupsMerged = MergeIntervals(setupsIntervals);
-
-                totalMergedDownMinutes += merged.Sum(m => Math.Max(0, m.eMin - m.sMin));
-                foreach (var m in merged)
-                {
-                    int startHour = Math.Clamp((int)Math.Floor(m.sMin / 60.0), 0, 23);
-                    int endHour = Math.Clamp((int)Math.Ceiling(m.eMin / 60.0), 0, 24);
-                    for (int h = startHour; h < endHour; h++)
-                        affectedByHour[h]++;
-                }
-
-                rows.Add(new Models.DowntimeEquipmentRow
-                {
-                    Equipment = equipment,
-                    Title = equipment.Title,
-                    InventoryNumber = equipment.InventoryNumber ?? "-",
-                    IssuesCount = issuesForDay.Count,
-                    TimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(merged)),
-                    RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(repairsMerged)),
-                    SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(setupsMerged)),
-                    Annotations = new ObservableCollection<Models.Annotation>(
-                        rowAnnotations.OrderBy(a => a.StartHour).ThenBy(a => a.EndHour))
-                });
-            }
-
-            foreach (var row in rows.OrderByDescending(r => r.IssuesCount))
-                DowntimeDayEquipmentRows.Add(row);
-
-            DowntimeAffectedEquipmentCount = rows.Count;
-            DowntimeTotalIssues = totalIssues;
-            DowntimeRepairsCount = totalRepairs;
-            DowntimeSetupsCount = totalSetups;
-            DowntimeAffectedSharePercent = _masterEquipment.Count == 0 ? 0.0 : rows.Count * 100.0 / _masterEquipment.Count;
-            DowntimeTotalDuration = TimeSpan.FromMinutes(totalMergedDownMinutes).ToString(@"hh\:mm");
-            DowntimeAvgIssuesPerEquipment = rows.Count == 0 ? "0.0" : (totalIssues / (double)rows.Count).ToString("0.0");
-
-            int peakCount = affectedByHour.Max();
-            if (peakCount > 0)
-            {
-                int peakHour = Array.IndexOf(affectedByHour, peakCount);
-                DowntimePeakHour = $"{peakHour:00}:00 ({peakCount})";
-            }
-            else
-            {
-                DowntimePeakHour = "-";
-            }
-
-            var top = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Title).FirstOrDefault();
-            DowntimeTopEquipment = AddSoftWrapOpportunities(top?.Title ?? "-");
-            DowntimeTopEquipmentIssues = top?.IssuesCount ?? 0;
+            Downtime.BuildDayEquipmentRows(_masterEquipment, date);
         }
 
         private void RefreshDowntimeAnalysis()
@@ -336,8 +191,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             if (_masterEquipment.Count == 0)
                 return;
 
-            BuildDowntimeHeatmap();
-            BuildDowntimeDayEquipmentRows(DowntimeAnalysisDate);
+            Downtime.Refresh(_masterEquipment, DowntimeAnalysisDate);
         }
 
         private void RefreshFailureAnalysis()
@@ -355,6 +209,11 @@ namespace EquipmentFailureAnalysis.ViewModels
                 if (ShowDayTimelineCommand != null)
                     ShowDayTimelineCommand.Execute(selectedDate).Subscribe();
             });
+        }
+
+        internal void HandleDowntimeFilterChanged()
+        {
+            RefreshFailureAnalysis();
         }
 
         private void ApplyHeatmapColorRange()
@@ -376,44 +235,12 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         private void RebuildDowntimeResponsibleFilters()
         {
-            var previous = SelectedDowntimeResponsibleFilter;
-            DowntimeResponsibleFilters.Clear();
-            DowntimeResponsibleFilters.Add("Все ответственные");
-            DowntimeResponsibleFilters.Add("Без ответственного");
-
-            foreach (var responsible in _masterEquipment
-                .SelectMany(eq => eq.Issues)
-                .Select(i => i.Responsible?.Trim())
-                .Where(r => !string.IsNullOrWhiteSpace(r) && !IsUnassignedResponsible(r))
-                .Distinct(StringComparer.CurrentCultureIgnoreCase)
-                .OrderBy(r => r, StringComparer.CurrentCultureIgnoreCase))
-            {
-                DowntimeResponsibleFilters.Add(responsible!);
-            }
-
-            SelectedDowntimeResponsibleFilter = DowntimeResponsibleFilters.Contains(previous)
-                ? previous
-                : "Все ответственные";
+            Downtime.RebuildResponsibleFilters(_masterEquipment);
         }
 
         private void RebuildDowntimeSubdivisionFilters()
         {
-            var previous = SelectedDowntimeSubdivisionFilter;
-            DowntimeSubdivisionFilters.Clear();
-            DowntimeSubdivisionFilters.Add("Все группы");
-
-            foreach (var subdivision in _masterEquipment
-                .Select(eq => eq.Subdivision?.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Distinct(StringComparer.CurrentCultureIgnoreCase)
-                .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
-            {
-                DowntimeSubdivisionFilters.Add(subdivision!);
-            }
-
-            SelectedDowntimeSubdivisionFilter = DowntimeSubdivisionFilters.Contains(previous)
-                ? previous
-                : "Все группы";
+            Downtime.RebuildSubdivisionFilters(_masterEquipment);
         }
 
         private bool MatchesDowntimeSubdivision(EquipmentInfo equipment)

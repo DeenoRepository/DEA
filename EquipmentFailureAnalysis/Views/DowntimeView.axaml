@@ -92,7 +92,7 @@
         											</ItemsControl.ItemsPanel>
         											<ItemsControl.ItemTemplate>
         												<DataTemplate>
-        													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Margin="2" Background="Transparent">
+        													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Margin="2" Background="Transparent">
         														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
         													</Border>
         												</DataTemplate>
@@ -119,9 +119,9 @@
         														<ItemsControl.ItemTemplate>
         															<DataTemplate>
         																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
-        																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+        																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}"
         																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
         																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
         																	</Border>
         																</Button>
