@@ -127,6 +127,7 @@ namespace EquipmentFailureAnalysis.Views
         public MainWindow()
         {
             InitializeComponent();
+            ApplyNavigationPanelState();
             InitializeReportTools();
             var list = this.FindControl<ListBox>("JiraFilterIdsList");
             if (list != null)

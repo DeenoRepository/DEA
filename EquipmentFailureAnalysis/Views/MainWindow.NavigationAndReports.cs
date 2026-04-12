@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Services;
@@ -22,6 +23,106 @@ namespace EquipmentFailureAnalysis.Views
 {
     public partial class MainWindow
     {
+        private bool _isNavigationCollapsed;
+        private const double ExpandedNavigationWidth = 320d;
+        private const double CollapsedNavigationWidth = 70d;
+
+        private void ToggleNavigationButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _isNavigationCollapsed = !_isNavigationCollapsed;
+            ApplyNavigationPanelState();
+        }
+
+        private void ApplyNavigationPanelState()
+        {
+            var navigationHost = this.FindControl<Grid>("NavigationHostGrid");
+            if (navigationHost != null)
+                navigationHost.Width = _isNavigationCollapsed ? CollapsedNavigationWidth : ExpandedNavigationWidth;
+
+            var isExpanded = !_isNavigationCollapsed;
+
+            SetControlVisibility("NavigationHeaderPanel", isExpanded);
+            SetControlVisibility("DashboardNavTextPanel", isExpanded);
+            SetControlVisibility("DowntimeNavTextPanel", isExpanded);
+            SetControlVisibility("EmployeeNavTextPanel", isExpanded);
+            SetControlVisibility("ReportsNavTextPanel", isExpanded);
+            SetControlVisibility("SettingsNavTextPanel", isExpanded);
+
+            UpdateNavigationButtonLayout("DashboardNavButton", isExpanded);
+            UpdateNavigationButtonLayout("DowntimeNavButton", isExpanded);
+            UpdateNavigationButtonLayout("EmployeeNavButton", isExpanded);
+            UpdateNavigationButtonLayout("ReportsNavButton", isExpanded);
+            UpdateNavigationButtonLayout("SettingsNavButton", isExpanded);
+
+            var toggleGlyph = this.FindControl<TextBlock>("NavigationToggleGlyph");
+            if (toggleGlyph != null)
+                toggleGlyph.Text = _isNavigationCollapsed ? "\uE76C" : "\uE76B";
+
+            UpdateNavigationToggleLayout(isExpanded);
+        }
+
+        private void UpdateNavigationButtonLayout(string buttonName, bool isExpanded)
+        {
+            var button = this.FindControl<Button>(buttonName);
+            if (button == null)
+                return;
+
+            button.HorizontalContentAlignment = isExpanded ? HorizontalAlignment.Left : HorizontalAlignment.Center;
+            button.Padding = isExpanded ? new Thickness(10, 8) : new Thickness(0);
+            button.Width = isExpanded ? double.NaN : 48;
+            button.Height = isExpanded ? double.NaN : 48;
+            button.Margin = isExpanded ? new Thickness(0) : new Thickness(0, 2, 0, 2);
+
+            if (isExpanded)
+            {
+                button.Classes.Remove("navCompact");
+            }
+            else if (!button.Classes.Contains("navCompact"))
+            {
+                button.Classes.Add("navCompact");
+            }
+
+            if (button.Content is Grid contentGrid)
+            {
+                contentGrid.Width = isExpanded ? double.NaN : 28d;
+                contentGrid.HorizontalAlignment = isExpanded ? HorizontalAlignment.Left : HorizontalAlignment.Center;
+            }
+        }
+
+        private void SetControlVisibility(string controlName, bool isVisible)
+        {
+            var control = this.FindControl<Control>(controlName);
+            if (control != null)
+                control.IsVisible = isVisible;
+        }
+
+        private void UpdateNavigationToggleLayout(bool isExpanded)
+        {
+            var toggleButton = this.FindControl<Button>("NavigationToggleButton");
+            if (toggleButton == null)
+                return;
+
+            toggleButton.HorizontalAlignment = HorizontalAlignment.Right;
+            toggleButton.VerticalAlignment = VerticalAlignment.Center;
+        }
+
+        private void SetNavigationButtonSelected(string buttonName, bool isSelected)
+        {
+            var button = this.FindControl<Button>(buttonName);
+            if (button == null)
+                return;
+
+            if (isSelected)
+            {
+                if (!button.Classes.Contains("selected"))
+                    button.Classes.Add("selected");
+            }
+            else
+            {
+                button.Classes.Remove("selected");
+            }
+        }
+
         private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
             _currentPage = AppPage.FailureAnalysis;
@@ -273,6 +374,12 @@ namespace EquipmentFailureAnalysis.Views
             var employeeAnalysisPage = this.FindControl<Control>("EmployeeAnalysisPage");
             if (employeeAnalysisPage != null)
                 employeeAnalysisPage.IsVisible = isEmployeeAnalysisPage;
+
+            SetNavigationButtonSelected("DashboardNavButton", isDashboardPage);
+            SetNavigationButtonSelected("DowntimeNavButton", isDowntimeAnalysisPage || isFailureAnalysisPage);
+            SetNavigationButtonSelected("EmployeeNavButton", isEmployeeAnalysisPage);
+            SetNavigationButtonSelected("ReportsNavButton", isReportsPage);
+            SetNavigationButtonSelected("SettingsNavButton", isSettingsPage);
         }
 
     }
