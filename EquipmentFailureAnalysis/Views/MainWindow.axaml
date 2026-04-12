@@ -251,6 +251,32 @@
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
 			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
 		</Style>
+		<Style Selector="Border.downtimeEquipmentRow">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="6" />
+		</Style>
+		<Style Selector="Border.downtimeEquipmentRow:pointerover">
+			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+		</Style>
+		<Style Selector="Button.downtimeRowLink">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="0" />
+		</Style>
+		<Style Selector="Button.downtimeRowLink:pointerover">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
+		<Style Selector="Button.downtimeRowLink:pressed">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
 		<Style Selector="Button:pressed">
 			<Setter Property="Background" Value="{StaticResource PressedSurfaceBrush}" />
 		</Style>
@@ -1003,18 +1029,20 @@
 								</ItemsControl.ItemsPanel>
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
-										<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,4">
-											   <Button Grid.Column="0" Margin="0,0,8,0" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Click="DowntimeEquipmentButton_Click">
-												<StackPanel Spacing="2">
-													<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-													<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
-													<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
-												</StackPanel>
-											</Button>
-											<Border Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="6" Background="{StaticResource SurfaceBrush}">
-												   <views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
-											</Border>
-										</Grid>
+										<Border Classes="downtimeEquipmentRow" Margin="4,3" Padding="2">
+											<Grid ColumnDefinitions="2.2*,2.8*" Margin="2,1">
+												<Border Grid.Column="0" Margin="0,0,8,0" Background="Transparent" PointerPressed="DowntimeEquipmentButton_Click">
+													<StackPanel Spacing="2">
+														<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+														<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
+														<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
+													</StackPanel>
+												</Border>
+												<Border Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="6" Background="{StaticResource SurfaceBrush}">
+													<views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
+												</Border>
+											</Grid>
+										</Border>
 									</DataTemplate>
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>

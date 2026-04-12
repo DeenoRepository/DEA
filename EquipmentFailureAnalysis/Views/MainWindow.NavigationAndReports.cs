@@ -311,7 +311,7 @@ namespace EquipmentFailureAnalysis.Views
                 vm.EmployeeTimelineDate = row.LastIssueDate.Date;
         }
 
-        private void DowntimeEquipmentButton_Click(object? sender, RoutedEventArgs e)
+        private void DowntimeEquipmentButton_Click(object? sender, PointerPressedEventArgs e)
         {
             if (sender is not Control control)
                 return;
