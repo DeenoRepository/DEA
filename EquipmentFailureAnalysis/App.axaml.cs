@@ -1,10 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.ViewModels;
 using EquipmentFailureAnalysis.Views;
 using EquipmentFailureAnalysis.Utility;
-using System.IO;
 using System;
 
 namespace EquipmentFailureAnalysis
@@ -44,17 +44,10 @@ namespace EquipmentFailureAnalysis
                 {
                     if (!restored)
                     {
-                        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EquipmentFailureAnalysis");
-                        var file = Path.Combine(dir, "last_imported_xml.txt");
-                        if (File.Exists(file))
+                        var xmlImportService = new XmlImportService();
+                        if (xmlImportService.TryLoadLastImportedEquipment(out var items) && items.Count > 0)
                         {
-                            var p = File.ReadAllText(file).Trim();
-                            if (!string.IsNullOrEmpty(p) && File.Exists(p))
-                            {
-                                var decoder = new XmlDataDecoder(p);
-                                var items = decoder.DecodeEquipment();
-                                vm.ImportEquipment(items);
-                            }
+                            vm.ImportEquipment(items);
                         }
                     }
                 }
