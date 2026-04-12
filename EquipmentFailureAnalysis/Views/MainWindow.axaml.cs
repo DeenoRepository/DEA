@@ -276,22 +276,13 @@ namespace EquipmentFailureAnalysis.Views
 
                 if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
-                    var failureOption = vm.HeatmapSettingOptions.FirstOrDefault(v => v.Contains("РЅРµРёСЃРїСЂР°РІ", StringComparison.CurrentCultureIgnoreCase));
-                    var downtimeOption = vm.HeatmapSettingOptions.FirstOrDefault(v => v.Contains("РїСЂРѕСЃС‚Рѕ", StringComparison.CurrentCultureIgnoreCase));
+                    vm.SelectFailureHeatmapSettings();
+                    vm.HeatmapColorMin = Math.Max(0, settings.FailureHeatmapMin);
+                    vm.HeatmapColorMax = Math.Max(settings.FailureHeatmapMax, settings.FailureHeatmapMin + 1);
 
-                    if (!string.IsNullOrWhiteSpace(failureOption))
-                    {
-                        vm.SelectedHeatmapSetting = failureOption;
-                        vm.HeatmapColorMin = Math.Max(0, settings.FailureHeatmapMin);
-                        vm.HeatmapColorMax = Math.Max(settings.FailureHeatmapMax, settings.FailureHeatmapMin + 1);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(downtimeOption))
-                    {
-                        vm.SelectedHeatmapSetting = downtimeOption;
-                        vm.HeatmapColorMin = Math.Max(0, settings.DowntimeHeatmapMin);
-                        vm.HeatmapColorMax = Math.Max(settings.DowntimeHeatmapMax, settings.DowntimeHeatmapMin + 1);
-                    }
+                    vm.SelectDowntimeHeatmapSettings();
+                    vm.HeatmapColorMin = Math.Max(0, settings.DowntimeHeatmapMin);
+                    vm.HeatmapColorMax = Math.Max(settings.DowntimeHeatmapMax, settings.DowntimeHeatmapMin + 1);
 
                     var selected = vm.HeatmapSettingOptions.FirstOrDefault(v => string.Equals(v, settings.HeatmapSelectedSetting, StringComparison.CurrentCultureIgnoreCase));
                     if (!string.IsNullOrWhiteSpace(selected))

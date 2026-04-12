@@ -188,6 +188,16 @@ namespace EquipmentFailureAnalysis.ViewModels
         private bool IsDowntimeHeatmapSelected =>
             string.Equals(SelectedHeatmapSetting, DowntimeHeatmapOption, StringComparison.CurrentCultureIgnoreCase);
 
+        public void SelectFailureHeatmapSettings()
+        {
+            SelectedHeatmapSetting = FailureHeatmapOption;
+        }
+
+        public void SelectDowntimeHeatmapSettings()
+        {
+            SelectedHeatmapSetting = DowntimeHeatmapOption;
+        }
+
         // Monthly stats for selected equipment
         private int _repairsLastMonth;
         public int RepairsLastMonth

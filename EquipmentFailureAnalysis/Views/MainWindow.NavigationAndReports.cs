@@ -264,11 +264,7 @@ namespace EquipmentFailureAnalysis.Views
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
 
-            var failureOption = vm.HeatmapSettingOptions
-                .FirstOrDefault(v => v.Contains("РЅРµРёСЃРїСЂР°РІ", StringComparison.CurrentCultureIgnoreCase));
-
-            if (!string.IsNullOrWhiteSpace(failureOption))
-                vm.SelectedHeatmapSetting = failureOption;
+            vm.SelectFailureHeatmapSettings();
         }
 
         private void DowntimeHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
@@ -276,11 +272,7 @@ namespace EquipmentFailureAnalysis.Views
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
 
-            var downtimeOption = vm.HeatmapSettingOptions
-                .FirstOrDefault(v => v.Contains("РїСЂРѕСЃС‚Рѕ", StringComparison.CurrentCultureIgnoreCase));
-
-            if (!string.IsNullOrWhiteSpace(downtimeOption))
-                vm.SelectedHeatmapSetting = downtimeOption;
+            vm.SelectDowntimeHeatmapSettings();
         }
 
         private void EmployeeTimelinePrevDate_Click(object? sender, RoutedEventArgs e)

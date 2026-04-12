@@ -597,7 +597,7 @@
                   <StackPanel HorizontalAlignment="Stretch">
                      <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
 							<TextBlock Grid.Column="0" Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-							<Button Grid.Column="1" Classes="smallIcon" Content="⚙" FontSize="14" ToolTip.Tip="Настройки градации" Click="FailureHeatmapSettingsButton_Click">
+							<Button Grid.Column="1" Classes="smallIcon" Content="..." FontSize="14" ToolTip.Tip="Настройки градации" Click="FailureHeatmapSettingsButton_Click">
 								<Button.Flyout>
 									<Flyout Placement="BottomEdgeAlignedRight">
 										<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="10">
@@ -894,7 +894,7 @@
 						<StackPanel HorizontalAlignment="Stretch">
                          <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
 								<TextBlock Grid.Column="0" Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<Button Grid.Column="1" Classes="smallIcon" Content="⚙" FontSize="14" ToolTip.Tip="Настройки градации" Click="DowntimeHeatmapSettingsButton_Click">
+							<Button Grid.Column="1" Classes="smallIcon" Content="..." FontSize="14" ToolTip.Tip="Настройки градации" Click="DowntimeHeatmapSettingsButton_Click">
 									<Button.Flyout>
 										<Flyout Placement="BottomEdgeAlignedRight">
 											<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="10">
@@ -1279,31 +1279,6 @@
 					</StackPanel>
 				</Border>
 
-				<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14" HorizontalAlignment="Stretch">
-					<StackPanel Spacing="10">
-						<TextBlock Text="Настройки карты тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-						<TextBlock Text="Управляйте диапазоном интенсивности для корректного отображения цветовых уровней." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
-						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
-							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-								<TextBlock Grid.Column="0" Text="Карта:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
-								<ComboBox Grid.Column="1"
-									ItemsSource="{Binding HeatmapSettingOptions}"
-									SelectedItem="{Binding SelectedHeatmapSetting, Mode=TwoWay}"
-									Background="{StaticResource SurfaceBrush}"
-									BorderBrush="{StaticResource ControlBorderBrush}"
-									BorderThickness="1" />
-							</Grid>
-						</Border>
-						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
-							<Grid ColumnDefinitions="Auto,130,Auto,130" ColumnSpacing="8" VerticalAlignment="Center">
-								<TextBlock Grid.Column="0" Text="Минимум:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
-								<NumericUpDown Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" />
-								<TextBlock Grid.Column="2" Text="Максимум:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
-								<NumericUpDown Grid.Column="3" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" />
-							</Grid>
-						</Border>
-					</StackPanel>
-				</Border>
 			</StackPanel>
 		</ScrollViewer>
 
