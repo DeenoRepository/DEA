@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -211,6 +211,7 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
  <!-- Top header -->
@@ -1457,7 +1458,32 @@
 				</StackPanel>
 			</Border>
 		</Grid>
+
 	</Grid>
+
+		<Border Grid.ColumnSpan="3"
+		        Grid.Row="2"
+		        Background="#FFFFFF"
+		        BorderBrush="#DCE4EE"
+		        BorderThickness="1,1,1,0"
+		        Padding="10,6">
+			<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+				<TextBlock Grid.Column="0"
+				           Text="Статус:"
+				           FontSize="12"
+				           FontWeight="SemiBold"
+				           Foreground="#374151"
+				           VerticalAlignment="Center" />
+				<TextBlock Grid.Column="1"
+				           Text="{Binding StatusMessage}"
+				           FontSize="12"
+				           Foreground="#4B5563"
+				           TextTrimming="CharacterEllipsis"
+				           VerticalAlignment="Center" />
+			</Grid>
+		</Border>
 	</Grid>
 </Window>
+
+
 

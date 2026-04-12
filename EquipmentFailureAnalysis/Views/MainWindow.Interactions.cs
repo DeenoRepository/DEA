@@ -58,9 +58,9 @@ namespace EquipmentFailureAnalysis.Views
             {
                 ItemsSource = new object[]
                 {
-                    CreateFilterItem("Р’СЃРµ РїРѕР·РёС†РёРё"),
-                    CreateFilterItem("Р РµРјРѕРЅС‚С‹"),
-                    CreateFilterItem("РќР°СЃС‚СЂРѕР№РєРё")
+                    CreateFilterItem("Все позиции"),
+                    CreateFilterItem("Ремонты"),
+                    CreateFilterItem("Настройки")
                 }
             };
 
@@ -120,7 +120,7 @@ namespace EquipmentFailureAnalysis.Views
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "РРјРїРѕСЂС‚ XML",
+                Title = "Импорт XML",
                 AllowMultiple = true,
                 FileTypeFilter = new List<FilePickerFileType>
                 {
@@ -152,11 +152,14 @@ namespace EquipmentFailureAnalysis.Views
                     Content = tb
                 };
                 await wnd.ShowDialog(this);
+                PublishStatus($"Ошибка импорта XML: {result.ErrorMessage}");
                 return;
             }
 
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 vm.ImportEquipment(result.Items);
+
+            PublishStatus($"Импорт XML завершен: {result.Items.Count} ед. оборудования.");
         }
 
         private void OnWindowResized()
@@ -185,3 +188,4 @@ namespace EquipmentFailureAnalysis.Views
         }
     }
 }
+

@@ -59,11 +59,13 @@ namespace EquipmentFailureAnalysis.Views
             {
                 var title = string.IsNullOrWhiteSpace(url) ? "Ошибка" : "Ошибка импорта Jira";
                 await ShowMessageAsync(title, result.ErrorMessage);
+                PublishStatus($"Ошибка импорта Jira: {result.ErrorMessage}");
                 return;
             }
 
             ApplyParsedResults(result.Items);
             await ShowMessageAsync("Импорт из Jira", result.BuildSummaryMessage());
+            PublishStatus($"Импорт Jira завершен: {result.Items.Count} ед. оборудования, {result.IssuesCount} событий.");
         }
 
         private void ApplyParsedResults(ObservableCollection<EquipmentFailureAnalysis.Models.EquipmentInfo> items)
@@ -116,6 +118,12 @@ namespace EquipmentFailureAnalysis.Views
             await wnd.ShowDialog(this);
         }
 
+        private void PublishStatus(string message)
+        {
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                vm.AddStatusEvent(message);
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -126,6 +134,7 @@ namespace EquipmentFailureAnalysis.Views
             LoadJiraSettingsToUi();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
             UpdatePageVisibility();
+            PublishStatus("Приложение готово к работе.");
         }
 
         protected override void OnDataContextChanged(EventArgs e)

@@ -123,6 +123,7 @@ namespace EquipmentFailureAnalysis.Views
             if (!generation.Success)
             {
                 await ShowMessageAsync("Отчеты", generation.ErrorMessage);
+                PublishStatus($"Ошибка формирования отчета: {generation.ErrorMessage}");
                 return;
             }
 
@@ -130,6 +131,8 @@ namespace EquipmentFailureAnalysis.Views
 
             if (outputPathBox != null)
                 outputPathBox.Text = reportPath;
+
+            PublishStatus($"Отчет сформирован: {reportPath}");
 
             if (openAfterGenerate)
             {

@@ -34,6 +34,7 @@ namespace EquipmentFailureAnalysis
                     if (PersistedDataStore.TryLoadJiraImportedEquipment(out var jiraItems) && jiraItems.Count > 0)
                     {
                         vm.ImportEquipment(jiraItems);
+                        vm.AddStatusEvent($"Восстановлены данные Jira: {jiraItems.Count} ед. оборудования.");
                         restored = true;
                     }
                 }
@@ -48,10 +49,15 @@ namespace EquipmentFailureAnalysis
                         if (xmlImportService.TryLoadLastImportedEquipment(out var items) && items.Count > 0)
                         {
                             vm.ImportEquipment(items);
+                            vm.AddStatusEvent($"Восстановлены данные XML: {items.Count} ед. оборудования.");
+                            restored = true;
                         }
                     }
                 }
                 catch { }
+
+                if (!restored)
+                    vm.AddStatusEvent("Сохраненные данные не найдены. Ожидается импорт XML или Jira.");
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -32,6 +32,21 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<DailyDowntimeIndex> DailyDowntimeIndexCollection { get; set; }
+        private string _statusMessage = "Готово.";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
+        }
+
+        public void AddStatusEvent(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            StatusMessage = $"[{DateTime.Now:HH:mm:ss}] {message.Trim()}";
+        }
+
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.MonthRow> DowntimeMonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows { get; set; } = new ObservableCollection<Models.DowntimeEquipmentRow>();
