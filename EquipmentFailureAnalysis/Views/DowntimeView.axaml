@@ -11,7 +11,7 @@
                <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                    <StackPanel Spacing="10">
                     <Grid>
-        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
         					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel Spacing="8">
         							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
@@ -55,7 +55,7 @@
         				</Grid>
         
                      <Grid>
-        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
         					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel HorizontalAlignment="Stretch">
                                  <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
@@ -121,7 +121,7 @@
         																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
         																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}"
         																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" CornerRadius="8" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
         																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
         																	</Border>
         																</Button>
@@ -139,7 +139,7 @@
         				</Grid>
         
         				<Grid>
-        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
         					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel>
         							<TextBlock Text="Оборудование с неисправностями за выбранный день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
@@ -168,7 +168,7 @@
         														<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
         													</StackPanel>
         												</Border>
-        												<Border Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="6" Background="{StaticResource SurfaceBrush}">
+        												<Border Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="6" Background="{StaticResource SurfaceBrush}">
         													<views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
         												</Border>
         											</Grid>
@@ -183,19 +183,19 @@
         		</ScrollViewer>
         
                <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="14">
+        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
         					<TextBlock Grid.Row="0" Text="Статистика" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         					<TextBlock Grid.Row="0" Text="Сводка по выбранному дню простоев" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,22,0,0" />
         
         					<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-        						<Border Grid.Column="0" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+        						<Border Grid.Column="0" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
         							<StackPanel>
         								<TextBlock Text="Дата" FontSize="12" Foreground="{StaticResource AccentForeground}" />
         								<TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
         							</StackPanel>
         						</Border>
-                              <Border Grid.Column="1" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="12" Width="120" Margin="8,0,0,0">
+                              <Border Grid.Column="1" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Width="120" Margin="8,0,0,0">
         							<StackPanel>
         								<TextBlock Text="Охват" FontSize="12" Foreground="{StaticResource AccentForeground}" />
         								<TextBlock Text="{Binding DowntimeAffectedSharePercent, StringFormat='{}{0:0.0}%'}" FontWeight="Bold" />
@@ -203,40 +203,40 @@
         						</Border>
         					</Grid>
         
-        					<Border Grid.Row="2" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Grid.Row="2" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="8">
         							<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="6">
-        								<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="Оборудование" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeAffectedEquipmentCount, StringFormat='{}{0} ед.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         									</StackPanel>
         								</Border>
-        								<Border Grid.Row="0" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="0" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="События" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeTotalIssues, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         									</StackPanel>
         								</Border>
-        								<Border Grid.Row="1" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="1" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="Ремонты" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeRepairsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         									</StackPanel>
         								</Border>
-        								<Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="Настройки" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeSetupsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         									</StackPanel>
         								</Border>
-        								<Border Grid.Row="2" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="2" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="Суммарный простой" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeTotalDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         									</StackPanel>
         								</Border>
-        								<Border Grid.Row="2" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<Border Grid.Row="2" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         									<StackPanel>
         										<TextBlock Text="Ср. событий / ед." FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DowntimeAvgIssuesPerEquipment}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
@@ -246,16 +246,16 @@
         						</StackPanel>
         					</Border>
         
-        					<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="0" Padding="10" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
+        					<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="10" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
         						<StackPanel Spacing="8">
         							<TextBlock Text="Ключевые показатели дня" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         								<StackPanel>
         									<TextBlock Text="Пиковый час по количеству оборудования" FontSize="11" Foreground="{StaticResource TextMuted}" />
         									<TextBlock Text="{Binding DowntimePeakHour}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         								</StackPanel>
         							</Border>
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
         								<StackPanel>
         									<TextBlock Text="Оборудование с максимальным числом событий" FontSize="11" Foreground="{StaticResource TextMuted}" />
                                           <TextBlock Text="{Binding DowntimeTopEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Stretch" />

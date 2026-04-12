@@ -11,7 +11,7 @@
         		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         			<StackPanel Spacing="10">
                       <Grid>
-        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
                            <Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel Spacing="10">
         							<StackPanel Spacing="3">
@@ -19,7 +19,7 @@
         								<TextBlock Text="Выберите период, параметры отбора и состав отчета, затем сформируйте HTML-файл" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
         							</StackPanel>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
         									<TextBlock Text="Параметры периода и группировки" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         									<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
@@ -50,7 +50,7 @@
         								</StackPanel>
         							</Border>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
         									<TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         									<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
@@ -68,7 +68,7 @@
         								</StackPanel>
         							</Border>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
         									<TextBlock Text="Поля детализации отчета" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         									<Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
@@ -94,26 +94,26 @@
         		</ScrollViewer>
         
         		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="14">
+        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
         					<TextBlock Text="Итоги отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         					<TextBlock Text="Ключевые значения по надежности оборудования и эффективности команды" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
         							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="{StaticResource TextMuted}" />
         							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
         							<TextBlock Text="Средняя длительность" FontSize="11" Foreground="{StaticResource TextMuted}" />
         							<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
         							<TextBlock Text="Оборудование риска" FontSize="11" Foreground="{StaticResource TextMuted}" />
         							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" />
@@ -121,7 +121,7 @@
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
         							<TextBlock Text="Лидер по эффективности" FontSize="11" Foreground="{StaticResource TextMuted}" />
         							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" />

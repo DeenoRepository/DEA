@@ -17,7 +17,7 @@
         							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
         						</StackPanel>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
         								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         								<StackPanel Spacing="4">
@@ -31,7 +31,7 @@
         							</StackPanel>
         						</Border>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
         								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
@@ -43,7 +43,7 @@
         							</StackPanel>
         						</Border>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
         								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
@@ -65,19 +65,19 @@
         		</ScrollViewer>
         
         	   <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="14">
+        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
         					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="8">
         							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="ImportButton_Click" />
         							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="{StaticResource AccentBrush}" Foreground="{StaticResource InverseTextBrush}" BorderBrush="{StaticResource AccentForeground}" BorderThickness="1" Click="ImportFromJiraButton_Click" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="4">
         							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
         							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />

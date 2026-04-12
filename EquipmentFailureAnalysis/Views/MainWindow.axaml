@@ -104,21 +104,21 @@
 		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
 
         <!-- Palette -->
-       <SolidColorBrush x:Key="PrimaryBackground" Color="#F6F8FC" />
-		<SolidColorBrush x:Key="HeaderBackground" Color="#2B3A52" />
+       <SolidColorBrush x:Key="PrimaryBackground" Color="#F3F3F3" />
+		<SolidColorBrush x:Key="HeaderBackground" Color="#364F73" />
 		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
-     <SolidColorBrush x:Key="AccentBrush" Color="#0EA5E9" />
-		<SolidColorBrush x:Key="AccentForeground" Color="#0284C7" />
-		<SolidColorBrush x:Key="AccentSoftBackground" Color="#E0F2FE" />
-		<SolidColorBrush x:Key="AccentSoftBorder" Color="#BAE6FD" />
+     <SolidColorBrush x:Key="AccentBrush" Color="#0F6CBD" />
+		<SolidColorBrush x:Key="AccentForeground" Color="#0F6CBD" />
+		<SolidColorBrush x:Key="AccentSoftBackground" Color="#E8F3FF" />
+		<SolidColorBrush x:Key="AccentSoftBorder" Color="#C7E0F4" />
 		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="SurfaceAlt" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="ControlBorderBrush" Color="#D5DEE8" />
-		<SolidColorBrush x:Key="BorderSubtleBrush" Color="#E2E8F0" />
-		<SolidColorBrush x:Key="RowDividerBrush" Color="#E9EEF5" />
-		<SolidColorBrush x:Key="TextSecondary" Color="#334155" />
-		<SolidColorBrush x:Key="TextMuted" Color="#64748B" />
-		<SolidColorBrush x:Key="HeaderTextBrush" Color="#E2E8F0" />
+		<SolidColorBrush x:Key="SurfaceAlt" Color="#F7F7F7" />
+		<SolidColorBrush x:Key="ControlBorderBrush" Color="#D0D0D0" />
+		<SolidColorBrush x:Key="BorderSubtleBrush" Color="#E1E1E1" />
+		<SolidColorBrush x:Key="RowDividerBrush" Color="#E7E7E7" />
+		<SolidColorBrush x:Key="TextSecondary" Color="#323130" />
+		<SolidColorBrush x:Key="TextMuted" Color="#605E5C" />
+		<SolidColorBrush x:Key="HeaderTextBrush" Color="#F3F6FB" />
 		<SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
 		<SolidColorBrush x:Key="SuccessBrush" Color="#059669" />
 		<SolidColorBrush x:Key="SuccessStrongBrush" Color="#047857" />
@@ -135,14 +135,14 @@
 		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#FFFFFF" />
 		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#0F172A" />
 		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#CBD5E1" />
-	 <SolidColorBrush x:Key="TextPrimary" Color="#0F172A" />
+	 <SolidColorBrush x:Key="TextPrimary" Color="#201F1E" />
 
 		<!-- Styles -->
         <Style x:Key="SidebarButtonStyle" Selector="Button.navEntry">
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="CornerRadius" Value="8" />
 			<Setter Property="Padding" Value="10,8" />
 			<Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -171,7 +171,7 @@
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
 			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="CornerRadius" Value="8" />
 			<Setter Property="Padding" Value="10,7" />
 			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
 			<Setter Property="FontWeight" Value="SemiBold" />
@@ -192,7 +192,7 @@
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="CornerRadius" Value="8" />
 		</Style>
 		<Style Selector="Button.navEntry.navCompact:pointerover">
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
@@ -356,7 +356,7 @@
 	</Border>
 
     <Grid x:Name="NavigationHostGrid" Grid.Column="0" Grid.Row="1" Width="320" Margin="0,0,12,0" MinWidth="72" MaxWidth="340" HorizontalAlignment="Stretch">
-		   <Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+		   <Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
                 <StackPanel Spacing="8">
 					<StackPanel x:Name="NavigationHeaderPanel" Spacing="1" Margin="0,0,0,2">
 						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
