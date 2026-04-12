@@ -241,6 +241,16 @@
 			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
 			<Setter Property="Opacity" Value="1" />
 		</Style>
+		<Style Selector="Border.employeeAnalysisRow">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="6" />
+		</Style>
+		<Style Selector="Border.employeeAnalysisRow:pointerover">
+			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+		</Style>
 		<Style Selector="Button:pressed">
 			<Setter Property="Background" Value="{StaticResource PressedSurfaceBrush}" />
 		</Style>
@@ -1445,33 +1455,33 @@
 								<TextBlock Grid.Column="11" Text="Последнее" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" />
 							</Grid>
 							<Border Height="1" Background="{StaticResource RowDividerBrush}" Margin="0,0,0,4" />
-                          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" MaxHeight="560">
-								<ItemsControl ItemsSource="{Binding EmployeeAnalysisRows}">
-									<ItemsControl.ItemsPanel>
-										<ItemsPanelTemplate>
-											<StackPanel />
-										</ItemsPanelTemplate>
-									</ItemsControl.ItemsPanel>
-									<ItemsControl.ItemTemplate>
-                                      <DataTemplate>
-									   <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,3" PointerPressed="EmployeeAnalysisRow_PointerPressed">
-												<TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis" MaxLines="1" />
-                                          <TextBlock Grid.Column="1" Text="{Binding Subdivision}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis" MaxLines="1" Margin="6,0,8,0" />
-											<TextBlock Grid.Column="2" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="3" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="4" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="5" Text="{Binding IssuesCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="6" Text="{Binding RepairsCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="7" Text="{Binding SetupsCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="8" Text="{Binding AvgDurationText}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="9" Text="{Binding TotalDurationText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="10" Text="{Binding EquipmentCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
-											<TextBlock Grid.Column="11" Text="{Binding LastIssueDateText}" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" />
-											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</ScrollViewer>
+							<ItemsControl ItemsSource="{Binding EmployeeAnalysisRows}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+                                  <DataTemplate>
+								   <Border Classes="employeeAnalysisRow" Margin="4,2" Padding="2" PointerPressed="EmployeeAnalysisRow_PointerPressed">
+									   <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="2,1">
+											<TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                      <TextBlock Grid.Column="1" Text="{Binding Subdivision}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis" MaxLines="1" Margin="6,0,8,0" />
+										<TextBlock Grid.Column="2" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="3" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="4" Text="{Binding PerformanceSummary}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="5" Text="{Binding IssuesCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="6" Text="{Binding RepairsCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="7" Text="{Binding SetupsCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="8" Text="{Binding AvgDurationText}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="9" Text="{Binding TotalDurationText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="10" Text="{Binding EquipmentCount}" FontSize="12" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" />
+										<TextBlock Grid.Column="11" Text="{Binding LastIssueDateText}" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" />
+										</Grid>
+								   </Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
 						</StackPanel>
 					</Border>
 				</Grid>
