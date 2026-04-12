@@ -12,7 +12,7 @@
         			<StackPanel Spacing="10">
         				<Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-        					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel>
                                   <TextBlock Text="Состояние работ" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         							<TextBlock Text="Показывает текущую интенсивность работ и ключевые изменения относительно предыдущего периода" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,2,0,10" TextWrapping="Wrap" />
@@ -54,7 +54,7 @@
         
                       <Grid Margin="0,0,0,8">
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-        					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel Spacing="8">
         							<TextBlock Text="Тренды по месяцам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         							<TextBlock Text="Динамика нагрузки и качества выполнения по последним месяцам" FontSize="12" Foreground="{StaticResource TextMuted}" />
@@ -131,7 +131,7 @@
         		</ScrollViewer>
         
         		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
+        			<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
         					<TextBlock Text="Качество команды" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         					<TextBlock Text="Индикаторы SLA и персональной эффективности за последние 30 дней" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
@@ -213,3 +213,6 @@
         		</Grid>
     </Grid>
 </UserControl>
+
+
+

@@ -140,8 +140,8 @@
 		<!-- Styles -->
         <Style x:Key="SidebarButtonStyle" Selector="Button.navEntry">
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
 			<Setter Property="Padding" Value="10,8" />
 			<Setter Property="FontWeight" Value="SemiBold" />
@@ -176,17 +176,30 @@
 			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
 			<Setter Property="FontWeight" Value="SemiBold" />
 		</Style>
+		<Style Selector="Button.navEntry">
+			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="10,8" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="HorizontalContentAlignment" Value="Left" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+		</Style>
 		<Style Selector="Button:pointerover">
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
 			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
 		</Style>
        <Style Selector="Button.navEntry:pointerover">
 			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button.navEntry:selected">
 			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentForeground}" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button.navEntry.navCompact">
 			<Setter Property="Background" Value="Transparent" />
@@ -200,8 +213,8 @@
 		</Style>
 		<Style Selector="Button.navEntry.navCompact:selected">
 			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
-			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="TextBlock.navIcon">
 			<Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
@@ -356,7 +369,7 @@
 	</Border>
 
     <Grid x:Name="NavigationHostGrid" Grid.Column="0" Grid.Row="1" Width="320" Margin="0,0,12,0" MinWidth="72" MaxWidth="340" HorizontalAlignment="Stretch">
-		   <Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
+		   <Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
                 <StackPanel Spacing="8">
 					<StackPanel x:Name="NavigationHeaderPanel" Spacing="1" Margin="0,0,0,2">
 						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
@@ -448,6 +461,10 @@
 		</Border>
 	</Grid>
 </Window>
+
+
+
+
 
 
 
