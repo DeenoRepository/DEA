@@ -132,9 +132,9 @@
 		<SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#CCFFFFFF" />
 		<SolidColorBrush x:Key="OverlayBorderBrush" Color="#CBD5E1" />
 		<SolidColorBrush x:Key="PressedSurfaceBrush" Color="#EDF2F7" />
-		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#0B1220" />
-		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#1E293B" />
+		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#FFFFFF" />
+		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#0F172A" />
+		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#CBD5E1" />
 	 <SolidColorBrush x:Key="TextPrimary" Color="#0F172A" />
 
 		<!-- Styles -->

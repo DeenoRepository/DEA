@@ -279,7 +279,7 @@ namespace EquipmentFailureAnalysis.Views
         private static void AppendTooltipBlockGap(StringBuilder builder)
         {
             builder.AppendLine();
-            builder.AppendLine("────────────");
+            builder.AppendLine("--------------------");
             builder.AppendLine();
         }
 
