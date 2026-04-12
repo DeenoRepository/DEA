@@ -262,6 +262,7 @@ namespace EquipmentFailureAnalysis.Utility
             var normalized = (equipmentFieldIds ?? DefaultEquipmentFieldIds)
                 .Select(v => v?.Trim())
                 .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(v => v!)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 

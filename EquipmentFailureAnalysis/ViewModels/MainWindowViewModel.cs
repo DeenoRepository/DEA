@@ -229,7 +229,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _annotations;
             set => this.RaiseAndSetIfChanged(ref _annotations, value);
         }
-        public ReactiveCommand<DateTime, Unit> ShowDayTimelineCommand { get; set; }
+        public ReactiveCommand<DateTime, Unit>? ShowDayTimelineCommand { get; set; }
 
         private bool _showRepairs = true;
         public bool ShowRepairs
@@ -966,7 +966,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 double downPercent = Math.Min(100.0, (totalDownMinutes / (24.0 * 60.0)) * 100.0);
                 double workPercent = 100.0 - downPercent;
                 WorkPercent = workPercent;
-                DowntimePercent = workPercent.ToString("0.0") + "%"; // label for 'Работа'
+                DowntimePercent = downPercent.ToString("0.0") + "%"; // label for 'Простой'
                 DownPercent = downPercent.ToString("0.0") + "%"; // label for 'Простой'
 
                 // average repair time across filtered issues
@@ -1026,7 +1026,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                     double downPercent = Math.Min(100.0, (totalDownMinutes / (24.0 * 60.0)) * 100.0);
                     double workPercent = 100.0 - downPercent;
                     WorkPercent = workPercent;
-                    DowntimePercent = workPercent.ToString("0.0") + "%";
+                    DowntimePercent = downPercent.ToString("0.0") + "%";
                     DownPercent = downPercent.ToString("0.0") + "%";
                     // average repair time for issues on this day
                     string avgRepair = "0 мин";
@@ -1872,7 +1872,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 FaultsForDay = faultsToday;
                 WorkPercent = workPercent;
-                DowntimePercent = workPercent.ToString("0.0") + "%";
+                DowntimePercent = downPercent.ToString("0.0") + "%";
                 DownPercent = downPercent.ToString("0.0") + "%";
                 AvgRepairTime = avgRepair;
 

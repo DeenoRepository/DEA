@@ -353,7 +353,7 @@ namespace EquipmentFailureAnalysis.Utility
                 {
                     equipment = new EquipmentInfo
                     {
-                        Title = title,
+                        Title = title ?? string.Empty,
                         Uid = uid,
                         InventoryNumber = inventoryNumber,
                         Subdivision = subdivision

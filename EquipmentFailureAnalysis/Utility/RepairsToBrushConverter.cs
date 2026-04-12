@@ -8,7 +8,7 @@ namespace EquipmentFailureAnalysis.Utility
     public class RepairsToBrushConverter : IValueConverter
     {
         // returns brush based on number of repairs: 0 -> green, 1 -> yellow, >=3 -> red, else neutral
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             int cnt = 0;
             if (value is int i) cnt = i;
@@ -28,7 +28,7 @@ namespace EquipmentFailureAnalysis.Utility
             return new SolidColorBrush(Color.Parse("#FFFFFF"));
         }
 
-        public object ConvertStatus(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertStatus(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             int cnt = 0;
             if (value is int i) cnt = i;
@@ -47,7 +47,7 @@ namespace EquipmentFailureAnalysis.Utility
             return "Unknown Status";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

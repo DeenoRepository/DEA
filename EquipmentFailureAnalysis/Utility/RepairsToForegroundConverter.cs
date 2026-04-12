@@ -7,7 +7,7 @@ namespace EquipmentFailureAnalysis.Utility
 {
     public class RepairsToForegroundConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             int cnt = 0;
             if (value is int i) cnt = i;
@@ -25,7 +25,7 @@ namespace EquipmentFailureAnalysis.Utility
             return new SolidColorBrush(Color.Parse("#222222"));
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Utility;
 using System.Linq;
@@ -135,6 +136,7 @@ namespace EquipmentFailureAnalysis.Views
             var list = _jiraFilterIds
                 .Select(v => v?.Trim())
                 .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(v => v!)
                 .Where(v => v.All(char.IsDigit))
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
@@ -932,11 +934,26 @@ namespace EquipmentFailureAnalysis.Views
 
         private async void ImportButton_Click(object? sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog();
-            dlg.Filters.Add(new FileDialogFilter { Name = "XML files", Extensions = { "xml" } });
-            dlg.AllowMultiple = true;
-            var res = await dlg.ShowAsync(this);
-            if (res == null || res.Length == 0)
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Импорт XML",
+                AllowMultiple = true,
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new("XML files")
+                    {
+                        Patterns = new List<string> { "*.xml" }
+                    }
+                }
+            });
+
+            var res = (files ?? new List<IStorageFile>())
+                .Select(file => file.TryGetLocalPath())
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .Select(path => path!)
+                .ToArray();
+
+            if (res.Length == 0)
                 return;
             try
             {

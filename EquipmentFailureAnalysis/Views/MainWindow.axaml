@@ -296,7 +296,7 @@
 			<StackPanel Spacing="10">
 				<Grid>
 					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
-					<Border Background="{StaticResource CardxmlBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
+					<Border Background="{StaticResource CardBackground}" BorderBrush="#E5EAF0" BorderThickness="1" CornerRadius="0" Padding="14">
 						<StackPanel>
                           <TextBlock Text="Состояние работ" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
 							<TextBlock Text="Показывает текущую интенсивность работ и ключевые изменения относительно предыдущего периода" FontSize="12" Foreground="#6B7280" Margin="0,2,0,10" TextWrapping="Wrap" />

@@ -9,7 +9,7 @@ namespace EquipmentFailureAnalysis.Utility
     {
         private readonly ValueToColorConverter _valueConv = new ValueToColorConverter();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is Models.DayCell cell)
             {
@@ -40,6 +40,6 @@ namespace EquipmentFailureAnalysis.Utility
             return Brushes.Transparent;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 }

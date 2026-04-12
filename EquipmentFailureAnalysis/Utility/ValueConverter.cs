@@ -47,7 +47,7 @@ namespace EquipmentFailureAnalysis.Utility
             HeatmapRanges[effectiveKey] = (normalizedMin, normalizedMax);
         }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             int v = 0;
             if (value is int iv)
@@ -105,6 +105,6 @@ namespace EquipmentFailureAnalysis.Utility
             return new SolidColorBrush(c);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 }
