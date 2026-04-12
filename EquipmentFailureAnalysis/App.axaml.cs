@@ -34,7 +34,7 @@ namespace EquipmentFailureAnalysis
                     if (PersistedDataStore.TryLoadJiraImportedEquipment(out var jiraItems) && jiraItems.Count > 0)
                     {
                         vm.ImportEquipment(jiraItems);
-                        vm.AddStatusEvent($"Восстановлены данные Jira: {jiraItems.Count} ед. оборудования.");
+                        vm.AddStatusEvent($"Восстановлены сохраненные данные импорта: {jiraItems.Count} ед. оборудования.");
                         restored = true;
                     }
                 }

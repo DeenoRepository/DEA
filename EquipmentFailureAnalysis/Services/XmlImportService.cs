@@ -52,6 +52,16 @@ namespace EquipmentFailureAnalysis.Services
                 if (persistFirstPath)
                     TrySaveLastImportedPath(normalized[0]);
 
+                try
+                {
+                    // Persist a full snapshot so the latest XML import is restored on next app start.
+                    PersistedDataStore.SaveJiraImportedEquipment(items);
+                }
+                catch
+                {
+                    // ignore cache persistence errors
+                }
+
                 return new XmlImportResult
                 {
                     Success = true,
