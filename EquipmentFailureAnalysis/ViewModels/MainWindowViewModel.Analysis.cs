@@ -420,6 +420,58 @@ namespace EquipmentFailureAnalysis.ViewModels
             var recurringEquipmentCount = recurringByEquipment.Count;
             var recurringEventsCount = recurringByEquipment.Sum(x => x.Count);
             Dashboard.DashboardRecurringFailuresValue = $"{recurringEquipmentCount} ед. / {recurringEventsCount} событий";
+            var subdivisionRatings = currentIssues
+                .GroupBy(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision) ? "Без группы" : i.Equipment.Subdivision!.Trim(), StringComparer.CurrentCultureIgnoreCase)
+                .Select(g =>
+                {
+                    var groupIssues = g.ToList();
+                    var groupAssigned = groupIssues.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
+                    var groupSlaMet = groupAssigned.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var groupSlaPercent = groupAssigned.Count == 0
+                        ? 0.0
+                        : groupSlaMet * 100.0 / groupAssigned.Count;
+                    var groupAvgMinutes = groupIssues.Count == 0
+                        ? 0.0
+                        : groupIssues.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+
+                    return new Models.SubdivisionRatingRow
+                    {
+                        Subdivision = g.Key,
+                        IssuesCount = groupIssues.Count,
+                        ActiveEmployees = groupAssigned
+                            .Select(x => x.Issue.Responsible!.Trim())
+                            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                            .Count(),
+                        SlaCompliancePercent = groupSlaPercent,
+                        MttrMinutes = groupAvgMinutes,
+                        MttrText = FormatDuration(TimeSpan.FromMinutes(groupAvgMinutes))
+                    };
+                })
+                .ToList();
+
+            if (subdivisionRatings.Count > 0)
+            {
+                var maxIssuesInSubdivision = Math.Max(1, subdivisionRatings.Max(r => r.IssuesCount));
+                var maxMttrInSubdivision = Math.Max(1.0, subdivisionRatings.Max(r => r.MttrMinutes));
+
+                foreach (var row in subdivisionRatings)
+                {
+                    var incidentScore = 100.0 - (row.IssuesCount * 100.0 / maxIssuesInSubdivision);
+                    var mttrScore = 100.0 - (row.MttrMinutes * 100.0 / maxMttrInSubdivision);
+                    row.PerformanceScore = Math.Round(
+                        row.SlaCompliancePercent * 0.50
+                        + incidentScore * 0.30
+                        + mttrScore * 0.20,
+                        1);
+                }
+            }
+
+            Dashboard.DashboardSubdivisionRatings = new ObservableCollection<Models.SubdivisionRatingRow>(
+                subdivisionRatings
+                    .OrderByDescending(r => r.PerformanceScore)
+                    .ThenBy(r => r.IssuesCount)
+                    .ThenBy(r => r.Subdivision)
+                    .Take(5));
 
             BuildDashboardMonthlyTrends(now);
         }
@@ -459,6 +511,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         IssuesCount = monthIssues.Count,
                         RepairsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Ремонт),
                         SetupsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Настройка),
+                        AvgDurationMinutes = avgMinutes,
                         AvgDurationText = FormatDuration(TimeSpan.FromMinutes(avgMinutes)),
                         SlaCompliancePercent = monthSlaPercent
                     };

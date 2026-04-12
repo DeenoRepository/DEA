@@ -25,6 +25,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _dashboardCurrentPeriodMttr = "00:00";
         private double _dashboardCurrentPeriodUnassignedSharePercent;
         private string _dashboardRecurringFailuresValue = "0 ед. / 0 событий";
+        private ObservableCollection<SubdivisionRatingRow> _dashboardSubdivisionRatings = new();
         private ObservableCollection<DashboardTrendPoint> _dashboardMonthlyTrends = new();
 
         public DashboardViewModel(MainWindowViewModel shell)
@@ -140,6 +141,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardRecurringFailuresValue;
             set => this.RaiseAndSetIfChanged(ref _dashboardRecurringFailuresValue, value);
+        }
+
+        public ObservableCollection<SubdivisionRatingRow> DashboardSubdivisionRatings
+        {
+            get => _dashboardSubdivisionRatings;
+            set => this.RaiseAndSetIfChanged(ref _dashboardSubdivisionRatings, value);
         }
     }
 }

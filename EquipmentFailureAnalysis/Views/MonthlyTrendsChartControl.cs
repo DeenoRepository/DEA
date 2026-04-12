@@ -32,10 +32,20 @@ namespace EquipmentFailureAnalysis.Views
             set => SetValue(IsSlaChartProperty, value);
         }
 
+        public static readonly StyledProperty<bool> IsMttrChartProperty =
+            AvaloniaProperty.Register<MonthlyTrendsChartControl, bool>(nameof(IsMttrChart));
+
+        public bool IsMttrChart
+        {
+            get => GetValue(IsMttrChartProperty);
+            set => SetValue(IsMttrChartProperty, value);
+        }
+
         public MonthlyTrendsChartControl()
         {
             this.GetObservable(ItemsProperty).Subscribe(_ => InvalidateVisual());
             this.GetObservable(IsSlaChartProperty).Subscribe(_ => InvalidateVisual());
+            this.GetObservable(IsMttrChartProperty).Subscribe(_ => InvalidateVisual());
         }
 
         public override void Render(DrawingContext context)
@@ -72,14 +82,15 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             var values = source
-                .Select(x => IsSlaChart ? x.SlaCompliancePercent : x.IssuesCount)
+                .Select(x => IsSlaChart ? x.SlaCompliancePercent : (IsMttrChart ? x.AvgDurationMinutes : x.IssuesCount))
                 .Select(v => Math.Max(0, v))
                 .ToArray();
 
             var maxValue = IsSlaChart ? 100.0 : Math.Max(1.0, values.Max());
             var axisBrush = new SolidColorBrush(Color.Parse("#6B7280"));
 
-            var topAxisText = new FormattedText($"{maxValue:0.#}", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, UiTypeface, 10, axisBrush);
+            var topAxisValueText = IsMttrChart ? FormatDuration(maxValue) : $"{maxValue:0.#}";
+            var topAxisText = new FormattedText(topAxisValueText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, UiTypeface, 10, axisBrush);
             var bottomAxisText = new FormattedText("0", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, UiTypeface, 10, axisBrush);
             context.DrawText(topAxisText, new Point(2, top - 5));
             context.DrawText(bottomAxisText, new Point(8, plotBottom - 8));
@@ -95,8 +106,12 @@ namespace EquipmentFailureAnalysis.Views
                 points.Add(new Point(x, y));
             }
 
-            var lineColor = IsSlaChart ? Color.Parse("#0F766E") : Color.Parse("#1D4ED8");
-            var fillColor = IsSlaChart ? Color.FromArgb(56, 15, 118, 110) : Color.FromArgb(56, 29, 78, 216);
+            var lineColor = IsSlaChart
+                ? Color.Parse("#0F766E")
+                : (IsMttrChart ? Color.Parse("#B45309") : Color.Parse("#1D4ED8"));
+            var fillColor = IsSlaChart
+                ? Color.FromArgb(56, 15, 118, 110)
+                : (IsMttrChart ? Color.FromArgb(56, 180, 83, 9) : Color.FromArgb(56, 29, 78, 216));
 
             var areaGeometry = new StreamGeometry();
             using (var g = areaGeometry.Open())
@@ -126,7 +141,9 @@ namespace EquipmentFailureAnalysis.Views
                 var p = points[i];
                 context.DrawGeometry(Brushes.White, new Pen(new SolidColorBrush(lineColor), 2), new EllipseGeometry(new Rect(p.X - 3.5, p.Y - 3.5, 7, 7)));
 
-                var valueText = IsSlaChart ? $"{values[i]:0.#}%" : $"{values[i]:0}";
+                var valueText = IsSlaChart
+                    ? $"{values[i]:0.#}%"
+                    : (IsMttrChart ? FormatDuration(values[i]) : $"{values[i]:0}");
                 var valueLayout = new FormattedText(valueText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, UiTypeface, 10, new SolidColorBrush(lineColor));
                 context.DrawText(valueLayout, new Point(p.X - valueText.Length * 3, p.Y - 16));
 
@@ -136,6 +153,14 @@ namespace EquipmentFailureAnalysis.Views
                 var labelLayout = new FormattedText(label, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, UiTypeface, 10, axisBrush);
                 context.DrawText(labelLayout, new Point(p.X - Math.Min(20, label.Length * 3), plotBottom + 8));
             }
+        }
+
+        private static string FormatDuration(double totalMinutes)
+        {
+            var safeMinutes = Math.Max(0, (int)Math.Round(totalMinutes));
+            var hours = safeMinutes / 60;
+            var minutes = safeMinutes % 60;
+            return $"{hours:00}:{minutes:00}";
         }
     }
 }
