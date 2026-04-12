@@ -368,6 +368,13 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? 0.0
                 : currentIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
             DashboardCurrentPeriodAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
+            var repairIssues = currentIssues
+                .Where(i => i.Issue.Type == IssueType.Ремонт)
+                .ToList();
+            var mttrMinutes = repairIssues.Count == 0
+                ? 0.0
+                : repairIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+            Dashboard.DashboardCurrentPeriodMttr = FormatDuration(TimeSpan.FromMinutes(mttrMinutes));
 
             DashboardCurrentPeriodAffectedEquipment = currentIssues
                 .Select(i => i.Equipment.Title)
@@ -375,6 +382,10 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .Count();
 
             var assignedCurrentIssues = currentIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
+            var unassignedCurrentIssues = Math.Max(0, currentIssues.Count - assignedCurrentIssues.Count);
+            Dashboard.DashboardCurrentPeriodUnassignedSharePercent = currentIssues.Count == 0
+                ? 0.0
+                : unassignedCurrentIssues * 100.0 / currentIssues.Count;
             DashboardCurrentPeriodActiveEmployees = assignedCurrentIssues
                 .Select(i => i.Issue.Responsible!.Trim())
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
@@ -400,6 +411,15 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .FirstOrDefault();
             DashboardRiskEquipment = AddSoftWrapOpportunities(topRiskEquipment?.Name ?? "-");
             DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 событий" : $"{topRiskEquipment.Count} событий за 30 дней";
+
+            var recurringByEquipment = currentIssues
+                .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .Where(x => x.Count >= 2)
+                .ToList();
+            var recurringEquipmentCount = recurringByEquipment.Count;
+            var recurringEventsCount = recurringByEquipment.Sum(x => x.Count);
+            Dashboard.DashboardRecurringFailuresValue = $"{recurringEquipmentCount} ед. / {recurringEventsCount} событий";
 
             BuildDashboardMonthlyTrends(now);
         }

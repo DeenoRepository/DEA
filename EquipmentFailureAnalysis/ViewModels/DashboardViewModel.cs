@@ -22,6 +22,9 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _dashboardTopPerformerValue = "-";
         private string _dashboardRiskEquipment = "-";
         private string _dashboardRiskEquipmentValue = "0 событий";
+        private string _dashboardCurrentPeriodMttr = "00:00";
+        private double _dashboardCurrentPeriodUnassignedSharePercent;
+        private string _dashboardRecurringFailuresValue = "0 ед. / 0 событий";
         private ObservableCollection<DashboardTrendPoint> _dashboardMonthlyTrends = new();
 
         public DashboardViewModel(MainWindowViewModel shell)
@@ -119,6 +122,24 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardRiskEquipmentValue;
             set => this.RaiseAndSetIfChanged(ref _dashboardRiskEquipmentValue, value);
+        }
+
+        public string DashboardCurrentPeriodMttr
+        {
+            get => _dashboardCurrentPeriodMttr;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodMttr, value);
+        }
+
+        public double DashboardCurrentPeriodUnassignedSharePercent
+        {
+            get => _dashboardCurrentPeriodUnassignedSharePercent;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodUnassignedSharePercent, value);
+        }
+
+        public string DashboardRecurringFailuresValue
+        {
+            get => _dashboardRecurringFailuresValue;
+            set => this.RaiseAndSetIfChanged(ref _dashboardRecurringFailuresValue, value);
         }
     }
 }

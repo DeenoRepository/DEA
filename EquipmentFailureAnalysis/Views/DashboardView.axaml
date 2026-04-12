@@ -144,7 +144,23 @@
         							<ProgressBar Minimum="0" Maximum="100" Value="{Binding DashboardCurrentPeriodSlaCompliancePercent}" Height="7" Margin="0,6,0,0" />
         						</StackPanel>
         					</Border>
-        
+
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<StackPanel>
+        							<TextBlock Text="MTTR за период" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardCurrentPeriodMttr}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="среднее время ремонта" FontSize="12" Foreground="{StaticResource TextMuted}" />
+        						</StackPanel>
+        					</Border>
+
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<StackPanel>
+        							<TextBlock Text="Качество учета" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardCurrentPeriodUnassignedSharePercent, StringFormat='Без ответственного: {0:0.#}%'}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource WarningBrush}" />
+        							<TextBlock Text="{Binding DashboardRecurringFailuresValue, StringFormat='Повторные отказы: {0}'}" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        						</StackPanel>
+        					</Border>
+
         					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
         						<StackPanel>
         							<TextBlock Text="Лучший исполнитель" FontSize="11" Foreground="{StaticResource TextMuted}" />
