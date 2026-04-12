@@ -1,0 +1,271 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:EquipmentFailureAnalysis.Views"
+             x:Class="EquipmentFailureAnalysis.Views.DowntimeView">
+    <Grid>
+        		<Grid.ColumnDefinitions>
+        			<ColumnDefinition Width="7*" />
+        			<ColumnDefinition Width="1.9*" />
+        		</Grid.ColumnDefinitions>
+        
+               <ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                   <StackPanel Spacing="10">
+                    <Grid>
+        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        						<StackPanel Spacing="8">
+        							<TextBlock Text="Универсальный фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="Фильтрация по типу неисправности, ответственному и оборудованию" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                    <Grid ColumnDefinitions="Auto,170,Auto,220,Auto,220,Auto,*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+        								<TextBlock Grid.Column="0" Text="Тип:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        								<ComboBox Grid.Column="1"
+        									ItemsSource="{Binding DowntimeIssueTypeFilters}"
+        									SelectedItem="{Binding SelectedDowntimeIssueTypeFilter, Mode=TwoWay}"
+        									Background="{StaticResource SurfaceBrush}"
+        									BorderBrush="{StaticResource ControlBorderBrush}"
+        									BorderThickness="1" />
+        								<TextBlock Grid.Column="2" Text="Ответственный:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        								<ComboBox Grid.Column="3"
+        									ItemsSource="{Binding DowntimeResponsibleFilters}"
+        									SelectedItem="{Binding SelectedDowntimeResponsibleFilter, Mode=TwoWay}"
+        									Background="{StaticResource SurfaceBrush}"
+        									BorderBrush="{StaticResource ControlBorderBrush}"
+        									BorderThickness="1" />
+                                        <TextBlock Grid.Column="4" Text="Группа:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        								<ComboBox Grid.Column="5"
+        									ItemsSource="{Binding DowntimeSubdivisionFilters}"
+        									SelectedItem="{Binding SelectedDowntimeSubdivisionFilter, Mode=TwoWay}"
+        									Background="{StaticResource SurfaceBrush}"
+        									BorderBrush="{StaticResource ControlBorderBrush}"
+        									BorderThickness="1" />
+        								<TextBlock Grid.Column="6" Text="Оборудование:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        								<TextBox Grid.Column="7"
+        									Watermark="Поиск по названию или инв. номеру"
+        									Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        									Background="{StaticResource SurfaceBrush}"
+        									BorderBrush="{StaticResource ControlBorderBrush}"
+        									BorderThickness="1" />
+                                     <Button Grid.Column="8"
+                                         Classes="resetFilter"
+        									Content="Сброс"
+        									Command="{Binding ResetUniversalFiltersCommand}" />
+        							</Grid>
+        						</StackPanel>
+        					</Border>
+        				</Grid>
+        
+                     <Grid>
+        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        						<StackPanel HorizontalAlignment="Stretch">
+                                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
+        								<TextBlock Grid.Column="0" Text="Карта тепла" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<Button Grid.Column="1" Classes="smallIcon" Content="..." FontSize="14" ToolTip.Tip="Настройки градации" Click="DowntimeHeatmapSettingsButton_Click">
+        									<Button.Flyout>
+        										<Flyout Placement="BottomEdgeAlignedRight">
+        											<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="10">
+                                                        <StackPanel Spacing="8" MinWidth="320" MaxWidth="360">
+        													<TextBlock Text="Настройки градации карты" FontSize="12" FontWeight="SemiBold" />
+        													<TextBlock Text="Диапазон значений для карты простоев" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+                                                           <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+        														<TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум:" FontSize="12" VerticalAlignment="Center" />
+        														<NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMin, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+        														<TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум:" FontSize="12" VerticalAlignment="Center" />
+        														<NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000" Increment="1" FormatString="F0" Value="{Binding HeatmapColorMax, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+        													</Grid>
+        												</StackPanel>
+        											</Border>
+        										</Flyout>
+        									</Button.Flyout>
+        								</Button>
+        							</Grid>
+        							<TextBlock Text="Значение ячейки: количество единиц оборудования с неисправностями за день" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
+                                  <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+        								<StackPanel Margin="2">
+        									<StackPanel Orientation="Horizontal" Margin="0,6,0,6">
+        										<TextBlock Width="72" />
+        										<ItemsControl ItemsSource="{Binding DayHeaders}">
+        											<ItemsControl.ItemsPanel>
+        												<ItemsPanelTemplate>
+        													<StackPanel Orientation="Horizontal" />
+        												</ItemsPanelTemplate>
+        											</ItemsControl.ItemsPanel>
+        											<ItemsControl.ItemTemplate>
+        												<DataTemplate>
+        													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Margin="2" Background="Transparent">
+        														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
+        													</Border>
+        												</DataTemplate>
+        											</ItemsControl.ItemTemplate>
+        										</ItemsControl>
+        									</StackPanel>
+        
+        									<ItemsControl ItemsSource="{Binding DowntimeMonthRows}">
+        										<ItemsControl.ItemsPanel>
+        											<ItemsPanelTemplate>
+        												<StackPanel Orientation="Vertical" />
+        											</ItemsPanelTemplate>
+        										</ItemsControl.ItemsPanel>
+        										<ItemsControl.ItemTemplate>
+        											<DataTemplate>
+        												<StackPanel Orientation="Horizontal" Margin="2">
+        													<TextBlock Text="{Binding MonthName}" Width="72" VerticalAlignment="Center" Margin="2" />
+        													<ItemsControl ItemsSource="{Binding Days}">
+        														<ItemsControl.ItemsPanel>
+        															<ItemsPanelTemplate>
+        																<StackPanel Orientation="Horizontal" />
+        															</ItemsPanelTemplate>
+        														</ItemsControl.ItemsPanel>
+        														<ItemsControl.ItemTemplate>
+        															<DataTemplate>
+        																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
+        																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+        																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
+                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="0" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
+        																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
+        																	</Border>
+        																</Button>
+        															</DataTemplate>
+        														</ItemsControl.ItemTemplate>
+        													</ItemsControl>
+        												</StackPanel>
+        											</DataTemplate>
+        										</ItemsControl.ItemTemplate>
+        									</ItemsControl>
+        								</StackPanel>
+        							</ScrollViewer>
+        						</StackPanel>
+        					</Border>
+        				</Grid>
+        
+        				<Grid>
+        					<Border Background="Transparent" CornerRadius="0" Margin="0,6,0,0" />
+        					<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        						<StackPanel>
+        							<TextBlock Text="Оборудование с неисправностями за выбранный день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
+        							<TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='Дата: {0:dd.MM.yyyy}'}" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
+        
+        							<Grid ColumnDefinitions="2.2*,2.8*" Margin="4,2,4,6">
+        								<TextBlock Grid.Column="0" Text="Оборудование" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Grid.Column="1" Text="График" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        							</Grid>
+        							<Border Height="1" Background="{StaticResource RowDividerBrush}" Margin="0,0,0,4" />
+        
+                                  <ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
+        								<ItemsControl.ItemsPanel>
+        									<ItemsPanelTemplate>
+        										<StackPanel />
+        									</ItemsPanelTemplate>
+        								</ItemsControl.ItemsPanel>
+        								<ItemsControl.ItemTemplate>
+        									<DataTemplate>
+        										<Border Classes="downtimeEquipmentRow" Margin="4,3" Padding="2">
+        											<Grid ColumnDefinitions="2.2*,2.8*" Margin="2,1">
+        												<Border Grid.Column="0" Margin="0,0,8,0" Background="Transparent" PointerPressed="DowntimeEquipmentButton_Click">
+        													<StackPanel Spacing="2">
+        														<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
+        														<TextBlock Text="{Binding InventoryNumber, StringFormat='Инв: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        														<TextBlock Text="{Binding IssuesCount, StringFormat='Неисправностей: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        													</StackPanel>
+        												</Border>
+        												<Border Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="6" Background="{StaticResource SurfaceBrush}">
+        													<views:TimelineControl Items="{Binding TimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="56" ShowHourLabels="False" />
+        												</Border>
+        											</Grid>
+        										</Border>
+        									</DataTemplate>
+        								</ItemsControl.ItemTemplate>
+        							</ItemsControl>
+        						</StackPanel>
+        					</Border>
+        				</Grid>
+        			</StackPanel>
+        		</ScrollViewer>
+        
+               <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="14">
+        				<Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+        					<TextBlock Grid.Row="0" Text="Статистика" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        					<TextBlock Grid.Row="0" Text="Сводка по выбранному дню простоев" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,22,0,0" />
+        
+        					<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+        						<Border Grid.Column="0" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="12" HorizontalAlignment="Stretch" MinWidth="120">
+        							<StackPanel>
+        								<TextBlock Text="Дата" FontSize="12" Foreground="{StaticResource AccentForeground}" />
+        								<TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontWeight="Bold" />
+        							</StackPanel>
+        						</Border>
+                              <Border Grid.Column="1" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="12" Width="120" Margin="8,0,0,0">
+        							<StackPanel>
+        								<TextBlock Text="Охват" FontSize="12" Foreground="{StaticResource AccentForeground}" />
+        								<TextBlock Text="{Binding DowntimeAffectedSharePercent, StringFormat='{}{0:0.0}%'}" FontWeight="Bold" />
+        							</StackPanel>
+        						</Border>
+        					</Grid>
+        
+        					<Border Grid.Row="2" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<StackPanel Spacing="8">
+        							<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="6">
+        								<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="Оборудование" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeAffectedEquipmentCount, StringFormat='{}{0} ед.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        								<Border Grid.Row="0" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="События" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeTotalIssues, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        								<Border Grid.Row="1" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="Ремонты" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeRepairsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        								<Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="Настройки" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeSetupsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        								<Border Grid.Row="2" Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="Суммарный простой" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeTotalDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        								<Border Grid.Row="2" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        									<StackPanel>
+        										<TextBlock Text="Ср. событий / ед." FontSize="11" Foreground="{StaticResource TextMuted}" />
+        										<TextBlock Text="{Binding DowntimeAvgIssuesPerEquipment}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        									</StackPanel>
+        								</Border>
+        							</Grid>
+        						</StackPanel>
+        					</Border>
+        
+        					<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="0" Padding="10" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
+        						<StackPanel Spacing="8">
+        							<TextBlock Text="Ключевые показатели дня" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<StackPanel>
+        									<TextBlock Text="Пиковый час по количеству оборудования" FontSize="11" Foreground="{StaticResource TextMuted}" />
+        									<TextBlock Text="{Binding DowntimePeakHour}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        								</StackPanel>
+        							</Border>
+        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="8">
+        								<StackPanel>
+        									<TextBlock Text="Оборудование с максимальным числом событий" FontSize="11" Foreground="{StaticResource TextMuted}" />
+                                          <TextBlock Text="{Binding DowntimeTopEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Stretch" />
+        									<TextBlock Text="{Binding DowntimeTopEquipmentIssues, StringFormat='{}{0} событий'}" FontSize="12" Foreground="{StaticResource TextMuted}" />
+        								</StackPanel>
+        							</Border>
+        						</StackPanel>
+        					</Border>
+        				</Grid>
+        			</Border>
+        		</Grid>
+    </Grid>
+</UserControl>

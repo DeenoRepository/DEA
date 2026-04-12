@@ -116,7 +116,7 @@ namespace EquipmentFailureAnalysis.Views
             menu.Open(target);
         }
 
-        private async void ImportButton_Click(object? sender, RoutedEventArgs e)
+        internal async void ImportButton_Click(object? sender, RoutedEventArgs e)
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -170,7 +170,7 @@ namespace EquipmentFailureAnalysis.Views
                 if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
                     // find the heatmap scroller control
-                    var scroller = this.FindControl<ScrollViewer>("HeatmapScroller");
+                    var scroller = FindNestedControl<ScrollViewer>("HeatmapScroller");
                     if (scroller != null)
                     {
                         // leave a larger margin so day cells don't overflow the visible area

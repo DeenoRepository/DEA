@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Services;
@@ -43,7 +44,7 @@ namespace EquipmentFailureAnalysis.Views
             EmployeeAnalysis
         }
 
-        private async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
+        internal async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
         {
             var (url, username, token, jql, filterIds) = GetJiraApiSettingsFromUi();
             var result = await _jiraImportService.ImportAsync(new JiraImportRequest
@@ -80,10 +81,10 @@ namespace EquipmentFailureAnalysis.Views
 
         private (string Url, string Username, string Token, string Jql, IReadOnlyCollection<string> FilterIds) GetJiraApiSettingsFromUi()
         {
-            var url = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty;
-            var username = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty;
-            var token = this.FindControl<TextBox>("JiraTokenBox")?.Text ?? string.Empty;
-            var jql = this.FindControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty;
+            var url = FindNestedControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty;
+            var username = FindNestedControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty;
+            var token = FindNestedControl<TextBox>("JiraTokenBox")?.Text ?? string.Empty;
+            var jql = FindNestedControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty;
             return (url, username, token, jql, GetFilterIdsFromUi());
         }
 
@@ -124,12 +125,33 @@ namespace EquipmentFailureAnalysis.Views
                 vm.AddStatusEvent(message);
         }
 
+        private T? FindNestedControl<T>(string name) where T : Control
+        {
+            var direct = this.FindControl<T>(name);
+            if (direct != null)
+                return direct;
+
+            var visual = this.GetVisualDescendants()
+                .OfType<T>()
+                .FirstOrDefault(control =>
+                    control is StyledElement styled &&
+                    string.Equals(styled.Name, name, StringComparison.Ordinal));
+            if (visual != null)
+                return visual;
+
+            return this.GetLogicalDescendants()
+                .OfType<T>()
+                .FirstOrDefault(control =>
+                    control is StyledElement styled &&
+                    string.Equals(styled.Name, name, StringComparison.Ordinal));
+        }
+
         public MainWindow()
         {
             InitializeComponent();
             ApplyNavigationPanelState();
             InitializeReportTools();
-            var list = this.FindControl<ListBox>("JiraFilterIdsList");
+            var list = FindNestedControl<ListBox>("JiraFilterIdsList");
             if (list != null)
                 list.ItemsSource = _jiraFilterIds;
             LoadJiraSettingsToUi();
@@ -145,9 +167,9 @@ namespace EquipmentFailureAnalysis.Views
             LoadJiraSettingsToUi();
         }
 
-        private void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)
+        internal void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)
         {
-            var box = this.FindControl<TextBox>("JiraFilterIdBox");
+            var box = FindNestedControl<TextBox>("JiraFilterIdBox");
             var filterId = box?.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(filterId) || !filterId.All(char.IsDigit))
                 return;
@@ -161,9 +183,9 @@ namespace EquipmentFailureAnalysis.Views
             SaveJiraSettingsFromUi();
         }
 
-        private void JiraFilterIdRemoveButton_Click(object? sender, RoutedEventArgs e)
+        internal void JiraFilterIdRemoveButton_Click(object? sender, RoutedEventArgs e)
         {
-            var list = this.FindControl<ListBox>("JiraFilterIdsList");
+            var list = FindNestedControl<ListBox>("JiraFilterIdsList");
             if (list?.SelectedItem is not string selected || string.IsNullOrWhiteSpace(selected))
                 return;
 
@@ -171,7 +193,12 @@ namespace EquipmentFailureAnalysis.Views
             SaveJiraSettingsFromUi();
         }
 
-        private void JiraSettingsField_TextChanged(object? sender, TextChangedEventArgs e)
+        internal void JiraSettingsField_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            SaveJiraSettingsFromUi();
+        }
+
+        internal void ReportSettingsChanged()
         {
             SaveJiraSettingsFromUi();
         }
@@ -204,40 +231,113 @@ namespace EquipmentFailureAnalysis.Views
             public bool ReportFieldType { get; set; } = true;
             public bool ReportFieldResponsible { get; set; } = true;
             public bool ReportFieldDescription { get; set; } = true;
+            public string ReportLastFilePath { get; set; } = string.Empty;
+        }
+
+        private static string NormalizeReportGroupByKey(string? value)
+        {
+            var normalized = value?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(normalized))
+                return "day";
+
+            if (string.Equals(normalized, "day", StringComparison.OrdinalIgnoreCase))
+                return "day";
+            if (string.Equals(normalized, "month", StringComparison.OrdinalIgnoreCase))
+                return "month";
+            if (string.Equals(normalized, "employee", StringComparison.OrdinalIgnoreCase))
+                return "employee";
+            if (string.Equals(normalized, "equipment", StringComparison.OrdinalIgnoreCase))
+                return "equipment";
+
+            if (normalized.Contains("меся", StringComparison.CurrentCultureIgnoreCase))
+                return "month";
+            if (normalized.Contains("сотруд", StringComparison.CurrentCultureIgnoreCase))
+                return "employee";
+            if (normalized.Contains("оборуд", StringComparison.CurrentCultureIgnoreCase))
+                return "equipment";
+
+            return "day";
+        }
+
+        private string GetReportGroupByKeyFromUi()
+        {
+            var combo = FindNestedControl<ComboBox>("ReportGroupByCombo");
+            if (combo?.SelectedItem is ComboBoxItem selected)
+            {
+                var tagKey = selected.Tag?.ToString();
+                if (!string.IsNullOrWhiteSpace(tagKey))
+                    return NormalizeReportGroupByKey(tagKey);
+
+                return NormalizeReportGroupByKey(selected.Content?.ToString());
+            }
+
+            return "day";
         }
 
         private void SaveJiraSettingsFromUi()
         {
+            if (_suppressSettingsSave)
+                return;
+
             try
             {
+                var existing = _jiraSettingsStore.TryLoad("jira_import_settings.json", out JiraImportSettings? loaded) && loaded != null
+                    ? loaded
+                    : new JiraImportSettings();
+
+                var jiraUrlBox = FindNestedControl<TextBox>("JiraResourceUrlBox");
+                var jiraUsernameBox = FindNestedControl<TextBox>("JiraUsernameBox");
+                var jiraJqlBox = FindNestedControl<TextBox>("JiraJqlBox");
+                var jiraFilterIdsList = FindNestedControl<ListBox>("JiraFilterIdsList");
+
+                var reportStartPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
+                var reportEndPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
+                var reportGroupByCombo = FindNestedControl<ComboBox>("ReportGroupByCombo");
+                var reportIncludeDashboard = FindNestedControl<CheckBox>("ReportIncludeDashboardCheckBox");
+                var reportIncludeDowntime = FindNestedControl<CheckBox>("ReportIncludeDowntimeCheckBox");
+                var reportIncludeEmployee = FindNestedControl<CheckBox>("ReportIncludeEmployeeCheckBox");
+                var reportOpenAfterGenerate = FindNestedControl<CheckBox>("ReportOpenAfterGenerateCheckBox");
+                var reportOnlyInProgress = FindNestedControl<CheckBox>("ReportOnlyInProgressCheckBox");
+                var reportFilterByDuration = FindNestedControl<CheckBox>("ReportFilterByDurationCheckBox");
+                var reportMinDuration = FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
+                var reportFieldStart = FindNestedControl<CheckBox>("ReportFieldStartCheckBox");
+                var reportFieldEnd = FindNestedControl<CheckBox>("ReportFieldEndCheckBox");
+                var reportFieldEquipment = FindNestedControl<CheckBox>("ReportFieldEquipmentCheckBox");
+                var reportFieldSubdivision = FindNestedControl<CheckBox>("ReportFieldSubdivisionCheckBox");
+                var reportFieldType = FindNestedControl<CheckBox>("ReportFieldTypeCheckBox");
+                var reportFieldResponsible = FindNestedControl<CheckBox>("ReportFieldResponsibleCheckBox");
+                var reportFieldDescription = FindNestedControl<CheckBox>("ReportFieldDescriptionCheckBox");
+                var reportLastPathBox = FindNestedControl<TextBox>("ReportLastFilePathBox");
+
                 var settings = new JiraImportSettings
                 {
-                    JiraResourceUrl = this.FindControl<TextBox>("JiraResourceUrlBox")?.Text?.Trim() ?? string.Empty,
-                    JiraUsername = this.FindControl<TextBox>("JiraUsernameBox")?.Text?.Trim() ?? string.Empty,
-                    JiraJql = this.FindControl<TextBox>("JiraJqlBox")?.Text?.Trim() ?? string.Empty,
-                    JiraFilterIds = GetFilterIdsFromUi().ToList(),
+                    JiraResourceUrl = jiraUrlBox?.Text?.Trim() ?? existing.JiraResourceUrl,
+                    JiraUsername = jiraUsernameBox?.Text?.Trim() ?? existing.JiraUsername,
+                    JiraJql = jiraJqlBox?.Text?.Trim() ?? existing.JiraJql,
+                    JiraFilterIds = jiraFilterIdsList != null ? GetFilterIdsFromUi().ToList() : (existing.JiraFilterIds ?? new List<string>()),
                     HeatmapSelectedSetting = (DataContext as EquipmentFailureAnalysis.ViewModels.MainWindowViewModel)?.SelectedHeatmapSetting ?? string.Empty,
                     FailureHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Min,
                     FailureHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.FailureHeatmapKey).Max,
                     DowntimeHeatmapMin = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Min,
                     DowntimeHeatmapMax = ValueToColorConverter.GetHeatmapRange(ValueToColorConverter.DowntimeHeatmapKey).Max,
-                    ReportStartDate = this.FindControl<CalendarDatePicker>("ReportStartDatePicker")?.SelectedDate?.Date,
-                    ReportEndDate = this.FindControl<CalendarDatePicker>("ReportEndDatePicker")?.SelectedDate?.Date,
-                    ReportGroupBy = (this.FindControl<ComboBox>("ReportGroupByCombo")?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty,
-                    ReportIncludeDashboard = this.FindControl<CheckBox>("ReportIncludeDashboardCheckBox")?.IsChecked == true,
-                    ReportIncludeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true,
-                    ReportIncludeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true,
-                    ReportOpenAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true,
-                    ReportOnlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true,
-                    ReportFilterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true,
-                    ReportMinDurationMinutes = (int)(this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m),
-                    ReportFieldStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false,
-                    ReportFieldEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false,
-                    ReportFieldEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false,
-                    ReportFieldSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false,
-                    ReportFieldType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false,
-                    ReportFieldResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false,
-                    ReportFieldDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false
+                    ReportStartDate = reportStartPicker?.SelectedDate?.Date ?? existing.ReportStartDate,
+                    ReportEndDate = reportEndPicker?.SelectedDate?.Date ?? existing.ReportEndDate,
+                    ReportGroupBy = reportGroupByCombo != null ? GetReportGroupByKeyFromUi() : NormalizeReportGroupByKey(existing.ReportGroupBy),
+                    ReportIncludeDashboard = reportIncludeDashboard != null ? reportIncludeDashboard.IsChecked == true : existing.ReportIncludeDashboard,
+                    ReportIncludeDowntime = reportIncludeDowntime != null ? reportIncludeDowntime.IsChecked == true : existing.ReportIncludeDowntime,
+                    ReportIncludeEmployee = reportIncludeEmployee != null ? reportIncludeEmployee.IsChecked == true : existing.ReportIncludeEmployee,
+                    ReportOpenAfterGenerate = reportOpenAfterGenerate != null ? reportOpenAfterGenerate.IsChecked == true : existing.ReportOpenAfterGenerate,
+                    ReportOnlyInProgress = reportOnlyInProgress != null ? reportOnlyInProgress.IsChecked == true : existing.ReportOnlyInProgress,
+                    ReportFilterByDuration = reportFilterByDuration != null ? reportFilterByDuration.IsChecked == true : existing.ReportFilterByDuration,
+                    ReportMinDurationMinutes = reportMinDuration != null ? (int)(reportMinDuration.Value ?? 60m) : existing.ReportMinDurationMinutes,
+                    ReportFieldStart = reportFieldStart != null ? reportFieldStart.IsChecked != false : existing.ReportFieldStart,
+                    ReportFieldEnd = reportFieldEnd != null ? reportFieldEnd.IsChecked != false : existing.ReportFieldEnd,
+                    ReportFieldEquipment = reportFieldEquipment != null ? reportFieldEquipment.IsChecked != false : existing.ReportFieldEquipment,
+                    ReportFieldSubdivision = reportFieldSubdivision != null ? reportFieldSubdivision.IsChecked != false : existing.ReportFieldSubdivision,
+                    ReportFieldType = reportFieldType != null ? reportFieldType.IsChecked != false : existing.ReportFieldType,
+                    ReportFieldResponsible = reportFieldResponsible != null ? reportFieldResponsible.IsChecked != false : existing.ReportFieldResponsible,
+                    ReportFieldDescription = reportFieldDescription != null ? reportFieldDescription.IsChecked != false : existing.ReportFieldDescription,
+                    ReportLastFilePath = reportLastPathBox?.Text?.Trim() ?? existing.ReportLastFilePath
                 };
 
                 _jiraSettingsStore.Save("jira_import_settings.json", settings);
@@ -257,15 +357,15 @@ namespace EquipmentFailureAnalysis.Views
                 if (!_jiraSettingsStore.TryLoad("jira_import_settings.json", out JiraImportSettings? settings) || settings == null)
                     return;
 
-                var urlBox = this.FindControl<TextBox>("JiraResourceUrlBox");
+                var urlBox = FindNestedControl<TextBox>("JiraResourceUrlBox");
                 if (urlBox != null)
                     urlBox.Text = settings.JiraResourceUrl ?? string.Empty;
 
-                var usernameBox = this.FindControl<TextBox>("JiraUsernameBox");
+                var usernameBox = FindNestedControl<TextBox>("JiraUsernameBox");
                 if (usernameBox != null)
                     usernameBox.Text = settings.JiraUsername ?? string.Empty;
 
-                var jqlBox = this.FindControl<TextBox>("JiraJqlBox");
+                var jqlBox = FindNestedControl<TextBox>("JiraJqlBox");
                 if (jqlBox != null)
                     jqlBox.Text = settings.JiraJql ?? string.Empty;
 
@@ -289,79 +389,87 @@ namespace EquipmentFailureAnalysis.Views
                         vm.SelectedHeatmapSetting = selected;
                 }
 
-                var reportStartPicker = this.FindControl<CalendarDatePicker>("ReportStartDatePicker");
+                var reportStartPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
                 if (reportStartPicker != null && settings.ReportStartDate.HasValue)
                     reportStartPicker.SelectedDate = settings.ReportStartDate.Value.Date;
 
-                var reportEndPicker = this.FindControl<CalendarDatePicker>("ReportEndDatePicker");
+                var reportEndPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
                 if (reportEndPicker != null && settings.ReportEndDate.HasValue)
                     reportEndPicker.SelectedDate = settings.ReportEndDate.Value.Date;
 
-                var reportGroupByCombo = this.FindControl<ComboBox>("ReportGroupByCombo");
+                var reportGroupByCombo = FindNestedControl<ComboBox>("ReportGroupByCombo");
                 if (reportGroupByCombo != null && !string.IsNullOrWhiteSpace(settings.ReportGroupBy))
                 {
+                    var desiredKey = NormalizeReportGroupByKey(settings.ReportGroupBy);
                     var item = reportGroupByCombo.Items
                         .OfType<ComboBoxItem>()
-                        .FirstOrDefault(x => string.Equals(x.Content?.ToString(), settings.ReportGroupBy, StringComparison.CurrentCulture));
+                        .FirstOrDefault(x => string.Equals(NormalizeReportGroupByKey(x.Tag?.ToString()), desiredKey, StringComparison.OrdinalIgnoreCase))
+                        ?? reportGroupByCombo.Items
+                            .OfType<ComboBoxItem>()
+                            .FirstOrDefault(x => string.Equals(NormalizeReportGroupByKey(x.Content?.ToString()), desiredKey, StringComparison.OrdinalIgnoreCase));
                     if (item != null)
                         reportGroupByCombo.SelectedItem = item;
                 }
 
-                var includeDashboard = this.FindControl<CheckBox>("ReportIncludeDashboardCheckBox");
+                var includeDashboard = FindNestedControl<CheckBox>("ReportIncludeDashboardCheckBox");
                 if (includeDashboard != null)
                     includeDashboard.IsChecked = settings.ReportIncludeDashboard;
 
-                var includeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox");
+                var includeDowntime = FindNestedControl<CheckBox>("ReportIncludeDowntimeCheckBox");
                 if (includeDowntime != null)
                     includeDowntime.IsChecked = settings.ReportIncludeDowntime;
 
-                var includeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox");
+                var includeEmployee = FindNestedControl<CheckBox>("ReportIncludeEmployeeCheckBox");
                 if (includeEmployee != null)
                     includeEmployee.IsChecked = settings.ReportIncludeEmployee;
 
-                var openAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox");
+                var openAfterGenerate = FindNestedControl<CheckBox>("ReportOpenAfterGenerateCheckBox");
                 if (openAfterGenerate != null)
                     openAfterGenerate.IsChecked = settings.ReportOpenAfterGenerate;
 
-                var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox");
+                var onlyInProgress = FindNestedControl<CheckBox>("ReportOnlyInProgressCheckBox");
                 if (onlyInProgress != null)
                     onlyInProgress.IsChecked = settings.ReportOnlyInProgress;
 
-                var filterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox");
+                var filterByDuration = FindNestedControl<CheckBox>("ReportFilterByDurationCheckBox");
                 if (filterByDuration != null)
                     filterByDuration.IsChecked = settings.ReportFilterByDuration;
 
-                var minDurationControl = this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
+                var minDurationControl = FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
                 if (minDurationControl != null)
                     minDurationControl.Value = Math.Max(0, settings.ReportMinDurationMinutes);
 
-                var fieldStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox");
+                var fieldStart = FindNestedControl<CheckBox>("ReportFieldStartCheckBox");
                 if (fieldStart != null)
                     fieldStart.IsChecked = settings.ReportFieldStart;
 
-                var fieldEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox");
+                var fieldEnd = FindNestedControl<CheckBox>("ReportFieldEndCheckBox");
                 if (fieldEnd != null)
                     fieldEnd.IsChecked = settings.ReportFieldEnd;
 
-                var fieldEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox");
+                var fieldEquipment = FindNestedControl<CheckBox>("ReportFieldEquipmentCheckBox");
                 if (fieldEquipment != null)
                     fieldEquipment.IsChecked = settings.ReportFieldEquipment;
 
-                var fieldSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox");
+                var fieldSubdivision = FindNestedControl<CheckBox>("ReportFieldSubdivisionCheckBox");
                 if (fieldSubdivision != null)
                     fieldSubdivision.IsChecked = settings.ReportFieldSubdivision;
 
-                var fieldType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox");
+                var fieldType = FindNestedControl<CheckBox>("ReportFieldTypeCheckBox");
                 if (fieldType != null)
                     fieldType.IsChecked = settings.ReportFieldType;
 
-                var fieldResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox");
+                var fieldResponsible = FindNestedControl<CheckBox>("ReportFieldResponsibleCheckBox");
                 if (fieldResponsible != null)
                     fieldResponsible.IsChecked = settings.ReportFieldResponsible;
 
-                var fieldDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox");
+                var fieldDescription = FindNestedControl<CheckBox>("ReportFieldDescriptionCheckBox");
                 if (fieldDescription != null)
                     fieldDescription.IsChecked = settings.ReportFieldDescription;
+
+                var reportLastPathBox = FindNestedControl<TextBox>("ReportLastFilePathBox");
+                if (reportLastPathBox != null)
+                    reportLastPathBox.Text = settings.ReportLastFilePath ?? string.Empty;
             }
             catch
             {

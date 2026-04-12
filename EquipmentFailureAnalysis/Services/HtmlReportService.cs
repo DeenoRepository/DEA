@@ -1,4 +1,4 @@
-using EquipmentFailureAnalysis.Models;
+﻿using EquipmentFailureAnalysis.Models;
 using EquipmentFailureAnalysis.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace EquipmentFailureAnalysis.Services
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public string GroupBy { get; set; } = "По дням";
+        public string GroupBy { get; set; } = "day";
         public bool IncludeDashboard { get; set; } = true;
         public bool IncludeDowntime { get; set; } = true;
         public bool IncludeEmployee { get; set; } = true;
@@ -84,34 +84,27 @@ namespace EquipmentFailureAnalysis.Services
                 .ToList();
 
             if (options.OnlyInProgress)
-            {
-                reportRows = reportRows
-                    .Where(r => r.IsInProgress)
-                    .ToList();
-            }
+                reportRows = reportRows.Where(r => r.IsInProgress).ToList();
 
             if (options.FilterByDuration)
-            {
-                reportRows = reportRows
-                    .Where(r => r.DurationMinutes >= options.MinDurationMinutes)
-                    .ToList();
-            }
+                reportRows = reportRows.Where(r => r.DurationMinutes >= options.MinDurationMinutes).ToList();
 
             var ru = new CultureInfo("ru-RU");
+            var groupByKey = NormalizeGroupByKey(options.GroupBy);
             var grouped = reportRows
-                .GroupBy(row => options.GroupBy switch
+                .GroupBy(row => groupByKey switch
                 {
-                    "По месяцам" => new DateTime(row.Start.Year, row.Start.Month, 1).ToString("MMMM yyyy", ru),
-                    "По сотрудникам" => row.Responsible,
-                    "По оборудованию" => string.IsNullOrWhiteSpace(row.InventoryNumber) ? row.EquipmentTitle : $"{row.EquipmentTitle} ({row.InventoryNumber})",
+                    "month" => new DateTime(row.Start.Year, row.Start.Month, 1).ToString("MMMM yyyy", ru),
+                    "employee" => row.Responsible,
+                    "equipment" => string.IsNullOrWhiteSpace(row.InventoryNumber) ? row.EquipmentTitle : $"{row.EquipmentTitle} ({row.InventoryNumber})",
                     _ => row.Start.Date.ToString("dd.MM.yyyy")
                 })
                 .Select(g => new
                 {
                     GroupName = g.Key,
                     Total = g.Count(),
-                    Repairs = g.Count(x => x.Type.ToString().Contains("Ремонт", StringComparison.CurrentCultureIgnoreCase)),
-                    Setups = g.Count(x => x.Type.ToString().Contains("Настрой", StringComparison.CurrentCultureIgnoreCase)),
+                    Repairs = g.Count(x => x.Type == IssueType.Ремонт),
+                    Setups = g.Count(x => x.Type == IssueType.Настройка),
                     AvgMinutes = g.Any() ? g.Average(x => x.DurationMinutes) : 0.0,
                     TotalMinutes = g.Sum(x => x.DurationMinutes)
                 })
@@ -119,7 +112,18 @@ namespace EquipmentFailureAnalysis.Services
                 .ThenBy(x => x.GroupName)
                 .ToList();
 
+            var downtimeTotalIssues = reportRows.Count;
+            var downtimeRepairs = reportRows.Count(x => x.Type == IssueType.Ремонт);
+            var downtimeSetups = reportRows.Count(x => x.Type == IssueType.Настройка);
+            var downtimeTotalMinutes = reportRows.Sum(x => x.DurationMinutes);
+            var downtimeAffectedEquipment = reportRows
+                .Select(x => x.InventoryNumber)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
             string H(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
+
             var detailsColumns = new List<(string Header, Func<ReportIssueRow, string> Value)>
             {
                 ("Начало", x => x.Start.ToString("dd.MM.yyyy HH:mm")),
@@ -160,9 +164,10 @@ namespace EquipmentFailureAnalysis.Services
             html.AppendLine("<!doctype html>");
             html.AppendLine("<html lang=\"ru\"><head><meta charset=\"utf-8\" />");
             html.AppendLine("<title>Отчет DEA</title>");
-            html.AppendLine("<style>@page{size:A4;margin:10mm}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:12px;font-size:12px;line-height:1.2}h1{font-size:18px;margin:0 0 8px}h2{font-size:14px;margin:0 0 8px}section{background:#fff;border:1px solid #e5eaf0;padding:10px;margin:0 0 10px;break-inside:avoid-page}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #edf1f5;padding:4px 6px;text-align:left;vertical-align:top}th{background:#f8fafc} .muted{color:#6b7280;font-size:11px}@media print{body{margin:0;zoom:0.86;background:#fff}section{border-color:#d9dee5}}</style>");
+            html.AppendLine("<style>@page{size:A4;margin:10mm}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:12px;font-size:12px;line-height:1.2}h1{font-size:18px;margin:0 0 8px}h2{font-size:14px;margin:0 0 8px}section{background:#fff;border:1px solid #e5eaf0;padding:10px;margin:0 0 10px;break-inside:avoid-page}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #edf1f5;padding:4px 6px;text-align:left;vertical-align:top}th{background:#f8fafc}.muted{color:#6b7280;font-size:11px}@media print{body{margin:0;zoom:0.86;background:#fff}section{border-color:#d9dee5}}</style>");
             html.AppendLine("</head><body>");
             html.AppendLine($"<h1>Отчет по метрикам оборудования</h1><div class=\"muted\">Период: {options.StartDate:dd.MM.yyyy} - {options.EndDate:dd.MM.yyyy}. Сформирован: {DateTime.Now:dd.MM.yyyy HH:mm}</div>");
+
             if (options.OnlyInProgress)
                 html.AppendLine("<div class=\"muted\">Режим отчета: только задачи в процессе на момент формирования.</div>");
             if (options.FilterByDuration)
@@ -181,10 +186,11 @@ namespace EquipmentFailureAnalysis.Services
             if (options.IncludeDowntime)
             {
                 html.AppendLine("<section><h2>Анализ простоев</h2><table><tbody>");
-                html.AppendLine($"<tr><th>События</th><td>{vm.DowntimeTotalIssues}</td></tr>");
-                html.AppendLine($"<tr><th>Ремонты</th><td>{vm.DowntimeRepairsCount}</td></tr>");
-                html.AppendLine($"<tr><th>Настройки</th><td>{vm.DowntimeSetupsCount}</td></tr>");
-                html.AppendLine($"<tr><th>Суммарный простой</th><td>{H(vm.DowntimeTotalDuration)}</td></tr>");
+                html.AppendLine($"<tr><th>События</th><td>{downtimeTotalIssues}</td></tr>");
+                html.AppendLine($"<tr><th>Ремонты</th><td>{downtimeRepairs}</td></tr>");
+                html.AppendLine($"<tr><th>Настройки</th><td>{downtimeSetups}</td></tr>");
+                html.AppendLine($"<tr><th>Задействовано единиц оборудования</th><td>{downtimeAffectedEquipment}</td></tr>");
+                html.AppendLine($"<tr><th>Суммарный простой</th><td>{FormatDuration(downtimeTotalMinutes)}</td></tr>");
                 html.AppendLine("</tbody></table></section>");
             }
 
@@ -198,7 +204,7 @@ namespace EquipmentFailureAnalysis.Services
                 html.AppendLine("</tbody></table></section>");
             }
 
-            html.AppendLine($"<section><h2>Группировка: {H(options.GroupBy)}</h2><table><thead><tr><th>Группа</th><th>События</th><th>Рем.</th><th>Наст.</th><th>Ср. длительность</th><th>Суммарно</th></tr></thead><tbody>");
+            html.AppendLine($"<section><h2>Группировка: {H(GetGroupByCaption(groupByKey))}</h2><table><thead><tr><th>Группа</th><th>События</th><th>Рем.</th><th>Наст.</th><th>Ср. длительность</th><th>Суммарно</th></tr></thead><tbody>");
             foreach (var g in grouped)
                 html.AppendLine($"<tr><td>{H(g.GroupName)}</td><td>{g.Total}</td><td>{g.Repairs}</td><td>{g.Setups}</td><td>{TimeSpan.FromMinutes(g.AvgMinutes):hh\\:mm}</td><td>{TimeSpan.FromMinutes(g.TotalMinutes):hh\\:mm}</td></tr>");
             if (grouped.Count == 0)
@@ -211,22 +217,65 @@ namespace EquipmentFailureAnalysis.Services
                 var rowCells = string.Join(string.Empty, detailsColumns.Select(c => $"<td>{H(c.Value(item))}</td>"));
                 html.AppendLine($"<tr>{rowCells}</tr>");
             }
+
             if (reportRows.Count == 0)
                 html.AppendLine($"<tr><td colspan=\"{detailsColumns.Count}\">Нет событий в выбранном периоде.</td></tr>");
-            html.AppendLine("</tbody></table></section>");
 
+            html.AppendLine("</tbody></table></section>");
             html.AppendLine("</body></html>");
 
             var outputDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EquipmentFailureAnalysis", "reports");
             Directory.CreateDirectory(outputDir);
             var reportPath = Path.Combine(outputDir, $"dea_report_{DateTime.Now:yyyyMMdd_HHmmss}.html");
-            File.WriteAllText(reportPath, html.ToString(), Encoding.UTF8);
+            File.WriteAllText(reportPath, html.ToString(), new UTF8Encoding(false));
 
             return new HtmlReportResult
             {
                 Success = true,
                 ReportPath = reportPath
             };
+        }
+
+        private static string NormalizeGroupByKey(string? value)
+        {
+            var normalized = value?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(normalized))
+                return "day";
+
+            if (string.Equals(normalized, "day", StringComparison.OrdinalIgnoreCase))
+                return "day";
+            if (string.Equals(normalized, "month", StringComparison.OrdinalIgnoreCase))
+                return "month";
+            if (string.Equals(normalized, "employee", StringComparison.OrdinalIgnoreCase))
+                return "employee";
+            if (string.Equals(normalized, "equipment", StringComparison.OrdinalIgnoreCase))
+                return "equipment";
+
+            if (normalized.Contains("меся", StringComparison.CurrentCultureIgnoreCase))
+                return "month";
+            if (normalized.Contains("сотруд", StringComparison.CurrentCultureIgnoreCase))
+                return "employee";
+            if (normalized.Contains("оборуд", StringComparison.CurrentCultureIgnoreCase))
+                return "equipment";
+
+            return "day";
+        }
+
+        private static string GetGroupByCaption(string key) => key switch
+        {
+            "month" => "По месяцам",
+            "employee" => "По сотрудникам",
+            "equipment" => "По оборудованию",
+            _ => "По дням"
+        };
+
+        private static string FormatDuration(double totalMinutes)
+        {
+            var safeMinutes = Math.Max(0, totalMinutes);
+            var wholeMinutes = (int)Math.Round(safeMinutes, MidpointRounding.AwayFromZero);
+            var hours = wholeMinutes / 60;
+            var minutes = wholeMinutes % 60;
+            return $"{hours} ч {minutes:00} мин";
         }
     }
 }

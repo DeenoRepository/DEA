@@ -1,0 +1,91 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:EquipmentFailureAnalysis.Views"
+             x:Class="EquipmentFailureAnalysis.Views.SettingsView">
+    <Grid>
+        		<Grid.ColumnDefinitions>
+        			<ColumnDefinition Width="7*" />
+        			<ColumnDefinition Width="1.9*" />
+        		</Grid.ColumnDefinitions>
+        
+        		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        			<StackPanel Spacing="10">
+        				<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14" HorizontalAlignment="Stretch">
+        					<StackPanel Spacing="10">
+        						<StackPanel Spacing="3">
+        							<TextBlock Text="Параметры интеграции Jira" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        						</StackPanel>
+        
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<StackPanel Spacing="8">
+        								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<StackPanel Spacing="4">
+        									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        									<TextBox x:Name="JiraResourceUrlBox" Watermark="https://your-jira/rest/api/2/search" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+        								</StackPanel>
+        								<StackPanel Spacing="4">
+        									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        									<TextBox x:Name="JiraJqlBox" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+        								</StackPanel>
+        							</StackPanel>
+        						</Border>
+        
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<StackPanel Spacing="8">
+        								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Watermark="10422" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="{StaticResource AccentSoftBackground}" Foreground="{StaticResource AccentForeground}" BorderBrush="{StaticResource AccentSoftBorder}" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
+        								</Grid>
+        								<ListBox x:Name="JiraFilterIdsList" MinHeight="90" MaxHeight="170" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
+        							</StackPanel>
+        						</Border>
+        
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        							<StackPanel Spacing="8">
+        								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+        									<StackPanel Grid.Column="0" Spacing="4">
+        										<TextBlock Text="Логин Jira" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        										<TextBox x:Name="JiraUsernameBox" Watermark="user@company.com" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" TextChanged="JiraSettingsField_TextChanged" />
+        									</StackPanel>
+        									<StackPanel Grid.Column="1" Spacing="4">
+        										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        										<TextBox x:Name="JiraTokenBox" PasswordChar="*" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        									</StackPanel>
+        								</Grid>
+        							</StackPanel>
+        						</Border>
+        					</StackPanel>
+        				</Border>
+        
+        			</StackPanel>
+        		</ScrollViewer>
+        
+        	   <Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+        			<Border Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="14">
+        				<StackPanel Spacing="10">
+        					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<StackPanel Spacing="8">
+        							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="ImportButton_Click" />
+        							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="{StaticResource AccentBrush}" Foreground="{StaticResource InverseTextBrush}" BorderBrush="{StaticResource AccentForeground}" BorderThickness="1" Click="ImportFromJiraButton_Click" />
+        						</StackPanel>
+        					</Border>
+        
+        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
+        						<StackPanel Spacing="4">
+        							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        							<TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        						</StackPanel>
+        					</Border>
+        				</StackPanel>
+        			</Border>
+        		</Grid>
+    </Grid>
+</UserControl>

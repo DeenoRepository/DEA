@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.Utility;
@@ -26,6 +27,8 @@ namespace EquipmentFailureAnalysis.Views
         private bool _isNavigationCollapsed;
         private const double ExpandedNavigationWidth = 320d;
         private const double CollapsedNavigationWidth = 70d;
+        private bool _reportSettingsWatchersAttached;
+        private bool _reportToolsInitScheduled;
 
         private void ToggleNavigationButton_Click(object? sender, RoutedEventArgs e)
         {
@@ -35,7 +38,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private void ApplyNavigationPanelState()
         {
-            var navigationHost = this.FindControl<Grid>("NavigationHostGrid");
+            var navigationHost = FindNestedControl<Grid>("NavigationHostGrid");
             if (navigationHost != null)
                 navigationHost.Width = _isNavigationCollapsed ? CollapsedNavigationWidth : ExpandedNavigationWidth;
 
@@ -54,7 +57,7 @@ namespace EquipmentFailureAnalysis.Views
             UpdateNavigationButtonLayout("ReportsNavButton", isExpanded);
             UpdateNavigationButtonLayout("SettingsNavButton", isExpanded);
 
-            var toggleGlyph = this.FindControl<TextBlock>("NavigationToggleGlyph");
+            var toggleGlyph = FindNestedControl<TextBlock>("NavigationToggleGlyph");
             if (toggleGlyph != null)
                 toggleGlyph.Text = _isNavigationCollapsed ? "\uE76C" : "\uE76B";
 
@@ -63,7 +66,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private void UpdateNavigationButtonLayout(string buttonName, bool isExpanded)
         {
-            var button = this.FindControl<Button>(buttonName);
+            var button = FindNestedControl<Button>(buttonName);
             if (button == null)
                 return;
 
@@ -91,14 +94,14 @@ namespace EquipmentFailureAnalysis.Views
 
         private void SetControlVisibility(string controlName, bool isVisible)
         {
-            var control = this.FindControl<Control>(controlName);
+            var control = FindNestedControl<Control>(controlName);
             if (control != null)
                 control.IsVisible = isVisible;
         }
 
         private void UpdateNavigationToggleLayout(bool isExpanded)
         {
-            var toggleButton = this.FindControl<Button>("NavigationToggleButton");
+            var toggleButton = FindNestedControl<Button>("NavigationToggleButton");
             if (toggleButton == null)
                 return;
 
@@ -108,7 +111,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private void SetNavigationButtonSelected(string buttonName, bool isSelected)
         {
-            var button = this.FindControl<Button>(buttonName);
+            var button = FindNestedControl<Button>(buttonName);
             if (button == null)
                 return;
 
@@ -156,49 +159,177 @@ namespace EquipmentFailureAnalysis.Views
         {
             _currentPage = AppPage.Reports;
             UpdatePageVisibility();
+            InitializeReportTools();
         }
 
         private void InitializeReportTools()
         {
-            var startPicker = this.FindControl<CalendarDatePicker>("ReportStartDatePicker");
-            var endPicker = this.FindControl<CalendarDatePicker>("ReportEndDatePicker");
+            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
+            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
+            if (startPicker == null || endPicker == null)
+            {
+                ScheduleReportToolsInitialization();
+                return;
+            }
+
             if (startPicker != null && startPicker.SelectedDate == null)
-                startPicker.SelectedDate = DateTime.Now.Date.AddDays(-30);
+                startPicker.SelectedDate = DateTime.Now.Date;
+
             if (endPicker != null && endPicker.SelectedDate == null)
                 endPicker.SelectedDate = DateTime.Now.Date;
+
+            AttachReportSettingsWatchers();
         }
 
-        private async void GenerateHtmlReportButton_Click(object? sender, RoutedEventArgs e)
+        private void ScheduleReportToolsInitialization()
+        {
+            if (_reportToolsInitScheduled)
+                return;
+
+            _reportToolsInitScheduled = true;
+            Dispatcher.UIThread.Post(() =>
+            {
+                _reportToolsInitScheduled = false;
+                InitializeReportTools();
+            }, DispatcherPriority.Loaded);
+        }
+
+        private void AttachReportSettingsWatchers()
+        {
+            if (_reportSettingsWatchersAttached)
+                return;
+
+            var attachedAny = false;
+            var allCriticalFound = true;
+
+            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
+            if (startPicker != null)
+            {
+                startPicker.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
+                        SaveJiraSettingsFromUi();
+                };
+                attachedAny = true;
+            }
+            else
+            {
+                allCriticalFound = false;
+            }
+
+            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
+            if (endPicker != null)
+            {
+                endPicker.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
+                        SaveJiraSettingsFromUi();
+                };
+                attachedAny = true;
+            }
+            else
+            {
+                allCriticalFound = false;
+            }
+
+            var groupByCombo = FindNestedControl<ComboBox>("ReportGroupByCombo");
+            if (groupByCombo != null)
+            {
+                groupByCombo.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == ComboBox.SelectedItemProperty)
+                        SaveJiraSettingsFromUi();
+                };
+                attachedAny = true;
+            }
+            else
+            {
+                allCriticalFound = false;
+            }
+
+            var checkBoxes = new[]
+            {
+                "ReportIncludeDashboardCheckBox",
+                "ReportIncludeDowntimeCheckBox",
+                "ReportIncludeEmployeeCheckBox",
+                "ReportOpenAfterGenerateCheckBox",
+                "ReportOnlyInProgressCheckBox",
+                "ReportFilterByDurationCheckBox",
+                "ReportFieldStartCheckBox",
+                "ReportFieldEndCheckBox",
+                "ReportFieldEquipmentCheckBox",
+                "ReportFieldSubdivisionCheckBox",
+                "ReportFieldTypeCheckBox",
+                "ReportFieldResponsibleCheckBox",
+                "ReportFieldDescriptionCheckBox"
+            };
+
+            foreach (var name in checkBoxes)
+            {
+                var checkBox = FindNestedControl<CheckBox>(name);
+                if (checkBox == null)
+                    continue;
+
+                checkBox.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == CheckBox.IsCheckedProperty)
+                        SaveJiraSettingsFromUi();
+                };
+                attachedAny = true;
+            }
+
+            var minDuration = FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown");
+            if (minDuration != null)
+            {
+                minDuration.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == NumericUpDown.ValueProperty)
+                        SaveJiraSettingsFromUi();
+                };
+                attachedAny = true;
+            }
+            else
+            {
+                allCriticalFound = false;
+            }
+
+            if (attachedAny && allCriticalFound)
+            {
+                _reportSettingsWatchersAttached = true;
+                return;
+            }
+
+            ScheduleReportToolsInitialization();
+        }
+
+        internal async void GenerateHtmlReportButton_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
 
-            var startPicker = this.FindControl<CalendarDatePicker>("ReportStartDatePicker");
-            var endPicker = this.FindControl<CalendarDatePicker>("ReportEndDatePicker");
-            var groupByCombo = this.FindControl<ComboBox>("ReportGroupByCombo");
-            var includeDashboard = this.FindControl<CheckBox>("ReportIncludeDashboardCheckBox")?.IsChecked == true;
-            var includeDowntime = this.FindControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true;
-            var includeEmployee = this.FindControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true;
-            var openAfterGenerate = this.FindControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true;
-            var onlyInProgress = this.FindControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
-            var filterByDuration = this.FindControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true;
-            var minDurationMinutes = (double)(this.FindControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m);
-            var showStart = this.FindControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false;
-            var showEnd = this.FindControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false;
-            var showEquipment = this.FindControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false;
-            var showSubdivision = this.FindControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false;
-            var showType = this.FindControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false;
-            var showResponsible = this.FindControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false;
-            var showDescription = this.FindControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false;
-            var outputPathBox = this.FindControl<TextBox>("ReportLastFilePathBox");
+            var startPicker = FindNestedControl<CalendarDatePicker>("ReportStartDatePicker");
+            var endPicker = FindNestedControl<CalendarDatePicker>("ReportEndDatePicker");
+            var includeDashboard = FindNestedControl<CheckBox>("ReportIncludeDashboardCheckBox")?.IsChecked == true;
+            var includeDowntime = FindNestedControl<CheckBox>("ReportIncludeDowntimeCheckBox")?.IsChecked == true;
+            var includeEmployee = FindNestedControl<CheckBox>("ReportIncludeEmployeeCheckBox")?.IsChecked == true;
+            var openAfterGenerate = FindNestedControl<CheckBox>("ReportOpenAfterGenerateCheckBox")?.IsChecked == true;
+            var onlyInProgress = FindNestedControl<CheckBox>("ReportOnlyInProgressCheckBox")?.IsChecked == true;
+            var filterByDuration = FindNestedControl<CheckBox>("ReportFilterByDurationCheckBox")?.IsChecked == true;
+            var minDurationMinutes = (double)(FindNestedControl<NumericUpDown>("ReportMinDurationMinutesUpDown")?.Value ?? 60m);
+            var showStart = FindNestedControl<CheckBox>("ReportFieldStartCheckBox")?.IsChecked != false;
+            var showEnd = FindNestedControl<CheckBox>("ReportFieldEndCheckBox")?.IsChecked != false;
+            var showEquipment = FindNestedControl<CheckBox>("ReportFieldEquipmentCheckBox")?.IsChecked != false;
+            var showSubdivision = FindNestedControl<CheckBox>("ReportFieldSubdivisionCheckBox")?.IsChecked != false;
+            var showType = FindNestedControl<CheckBox>("ReportFieldTypeCheckBox")?.IsChecked != false;
+            var showResponsible = FindNestedControl<CheckBox>("ReportFieldResponsibleCheckBox")?.IsChecked != false;
+            var showDescription = FindNestedControl<CheckBox>("ReportFieldDescriptionCheckBox")?.IsChecked != false;
+            var outputPathBox = FindNestedControl<TextBox>("ReportLastFilePathBox");
 
             SaveJiraSettingsFromUi();
 
             var startDate = startPicker?.SelectedDate?.Date ?? DateTime.Now.Date.AddDays(-30);
             var endDate = endPicker?.SelectedDate?.Date ?? DateTime.Now.Date;
-            string groupBy = "По дням";
-            if (groupByCombo?.SelectedItem is ComboBoxItem selectedGroup)
-                groupBy = selectedGroup.Content?.ToString() ?? groupBy;
+            var groupBy = GetReportGroupByKeyFromUi();
 
             var options = new HtmlReportOptions
             {
@@ -233,6 +364,8 @@ namespace EquipmentFailureAnalysis.Views
             if (outputPathBox != null)
                 outputPathBox.Text = reportPath;
 
+            SaveJiraSettingsFromUi();
+
             PublishStatus($"Отчет сформирован: {reportPath}");
 
             if (openAfterGenerate)
@@ -259,7 +392,7 @@ namespace EquipmentFailureAnalysis.Views
             UpdatePageVisibility();
         }
 
-        private void FailureHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
+        internal void FailureHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
@@ -267,7 +400,7 @@ namespace EquipmentFailureAnalysis.Views
             vm.SelectFailureHeatmapSettings();
         }
 
-        private void DowntimeHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
+        internal void DowntimeHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
@@ -275,7 +408,7 @@ namespace EquipmentFailureAnalysis.Views
             vm.SelectDowntimeHeatmapSettings();
         }
 
-        private void EmployeeTimelinePrevDate_Click(object? sender, RoutedEventArgs e)
+        internal void EmployeeTimelinePrevDate_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
@@ -284,7 +417,7 @@ namespace EquipmentFailureAnalysis.Views
             vm.EmployeeTimelineDate = current.AddDays(-1);
         }
 
-        private void EmployeeTimelineNextDate_Click(object? sender, RoutedEventArgs e)
+        internal void EmployeeTimelineNextDate_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 return;
@@ -293,7 +426,7 @@ namespace EquipmentFailureAnalysis.Views
             vm.EmployeeTimelineDate = current.AddDays(1);
         }
 
-        private void EmployeeAnalysisRow_PointerPressed(object? sender, PointerPressedEventArgs e)
+        internal void EmployeeAnalysisRow_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (sender is not Control control)
                 return;
@@ -311,7 +444,7 @@ namespace EquipmentFailureAnalysis.Views
                 vm.EmployeeTimelineDate = row.LastIssueDate.Date;
         }
 
-        private void DowntimeEquipmentButton_Click(object? sender, PointerPressedEventArgs e)
+        internal void DowntimeEquipmentButton_Click(object? sender, PointerPressedEventArgs e)
         {
             if (sender is not Control control)
                 return;
@@ -339,31 +472,27 @@ namespace EquipmentFailureAnalysis.Views
             var isSettingsPage = _currentPage == AppPage.Settings;
             var isEmployeeAnalysisPage = _currentPage == AppPage.EmployeeAnalysis;
 
-            var dashboardPage = this.FindControl<Control>("DashboardPage");
+            var dashboardPage = FindNestedControl<Control>("DashboardPage");
             if (dashboardPage != null)
                 dashboardPage.IsVisible = isDashboardPage;
 
-            var failureCenterColumn = this.FindControl<Control>("FailureAnalysisCenterColumn");
-            if (failureCenterColumn != null)
-                failureCenterColumn.IsVisible = isFailureAnalysisPage;
+            var failureAnalysisPage = FindNestedControl<Control>("FailureAnalysisPage");
+            if (failureAnalysisPage != null)
+                failureAnalysisPage.IsVisible = isFailureAnalysisPage;
 
-            var failureRightColumn = this.FindControl<Control>("FailureAnalysisRightColumn");
-            if (failureRightColumn != null)
-                failureRightColumn.IsVisible = isFailureAnalysisPage;
-
-            var downtimeAnalysisPage = this.FindControl<Control>("DowntimeAnalysisPage");
+            var downtimeAnalysisPage = FindNestedControl<Control>("DowntimeAnalysisPage");
             if (downtimeAnalysisPage != null)
                 downtimeAnalysisPage.IsVisible = isDowntimeAnalysisPage;
 
-            var reportsPage = this.FindControl<Control>("ReportsPage");
+            var reportsPage = FindNestedControl<Control>("ReportsPage");
             if (reportsPage != null)
                 reportsPage.IsVisible = isReportsPage;
 
-            var settingsPage = this.FindControl<Control>("SettingsPage");
+            var settingsPage = FindNestedControl<Control>("SettingsPage");
             if (settingsPage != null)
                 settingsPage.IsVisible = isSettingsPage;
 
-            var employeeAnalysisPage = this.FindControl<Control>("EmployeeAnalysisPage");
+            var employeeAnalysisPage = FindNestedControl<Control>("EmployeeAnalysisPage");
             if (employeeAnalysisPage != null)
                 employeeAnalysisPage.IsVisible = isEmployeeAnalysisPage;
 

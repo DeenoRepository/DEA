@@ -2,12 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="EquipmentFailureAnalysis.App"
              xmlns:local="using:EquipmentFailureAnalysis"
+             xmlns:utility="using:EquipmentFailureAnalysis.Utility"
              RequestedThemeVariant="Light">
              <!-- Фиксированная тема, не зависящая от системной темы Windows -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
+
+    <Application.Resources>
+        <utility:ValueToColorConverter x:Key="ColorConverter"/>
+        <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
+        <utility:RepairsToBrushConverter x:Key="RepairsToBrushConverter" />
+        <utility:RepairsToStatusConverter x:Key="RepairsToStatusConverter" />
+        <utility:RepairsToForegroundConverter x:Key="RepairsToForegroundConverter" />
+        <utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
+        <utility:StatusToBrushConverter x:Key="StatusToBrush" />
+        <utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
+        <utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
+        <utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
+        <utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
+    </Application.Resources>
   
     <Application.Styles>
         <FluentTheme />
