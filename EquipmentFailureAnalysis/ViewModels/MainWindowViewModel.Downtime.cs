@@ -401,7 +401,6 @@ namespace EquipmentFailureAnalysis.ViewModels
             var previous = SelectedDowntimeSubdivisionFilter;
             DowntimeSubdivisionFilters.Clear();
             DowntimeSubdivisionFilters.Add("Все группы");
-            DowntimeSubdivisionFilters.Add("Без группы");
 
             foreach (var subdivision in _masterEquipment
                 .Select(eq => eq.Subdivision?.Trim())
@@ -421,9 +420,6 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             if (string.Equals(SelectedDowntimeSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
                 return true;
-
-            if (string.Equals(SelectedDowntimeSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
-                return string.IsNullOrWhiteSpace(equipment.Subdivision);
 
             return string.Equals(equipment.Subdivision?.Trim(), SelectedDowntimeSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase);
         }
