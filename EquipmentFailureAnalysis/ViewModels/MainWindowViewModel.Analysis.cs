@@ -142,6 +142,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .Select(g =>
                 {
                     var issues = g.Select(x => x.Issue).ToList();
+                    var repairsCount = issues.Count(i => i.Type == IssueType.Ремонт);
+                    var setupsCount = issues.Count(i => i.Type == IssueType.Настройка);
+                    var slaMetCount = issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= SlaTargetMinutes);
                     var totalDuration = TimeSpan.FromMinutes(issues.Sum(i => Math.Max(0, (i.End - i.Start).TotalMinutes)));
                     var avgMinutes = issues.Count == 0 ? 0.0 : totalDuration.TotalMinutes / issues.Count;
                     var lastIssueDate = issues.Count == 0 ? DateTime.MinValue : issues.Max(i => i.End);
@@ -156,13 +159,13 @@ namespace EquipmentFailureAnalysis.ViewModels
                             .Distinct(StringComparer.CurrentCultureIgnoreCase)),
                         IssuesCount = issues.Count,
                         EventSharePercent = assignedIssues.Count == 0 ? 0.0 : issues.Count * 100.0 / assignedIssues.Count,
-                        RepairsCount = issues.Count(i => i.Type == IssueType.Ремонт),
-                        SetupsCount = issues.Count(i => i.Type == IssueType.Настройка),
-                        RepairsSharePercent = issues.Count == 0 ? 0.0 : issues.Count(i => i.Type == IssueType.Ремонт) * 100.0 / issues.Count,
-                        SlaMetCount = issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= SlaTargetMinutes),
+                        RepairsCount = repairsCount,
+                        SetupsCount = setupsCount,
+                        RepairsSharePercent = issues.Count == 0 ? 0.0 : repairsCount * 100.0 / issues.Count,
+                        SlaMetCount = slaMetCount,
                         SlaCompliancePercent = issues.Count == 0
                             ? 0.0
-                            : issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= SlaTargetMinutes) * 100.0 / issues.Count,
+                            : slaMetCount * 100.0 / issues.Count,
                         EquipmentCount = g.Select(x => x.Equipment.Title).Distinct(StringComparer.CurrentCultureIgnoreCase).Count(),
                         TotalDuration = totalDuration,
                         TotalDurationText = FormatDuration(totalDuration),
@@ -348,6 +351,9 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             var currentIssues = GetIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
             var previousIssues = GetIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
+            var currentRepairIssues = currentIssues
+                .Where(i => i.Issue.Type == IssueType.Ремонт)
+                .ToList();
 
             DashboardCurrentPeriodIssues = currentIssues.Count;
             DashboardPreviousPeriodIssues = previousIssues.Count;
@@ -368,12 +374,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? 0.0
                 : currentIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
             DashboardCurrentPeriodAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
-            var repairIssues = currentIssues
-                .Where(i => i.Issue.Type == IssueType.Ремонт)
-                .ToList();
-            var mttrMinutes = repairIssues.Count == 0
+            var mttrMinutes = currentRepairIssues.Count == 0
                 ? 0.0
-                : repairIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+                : currentRepairIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
             Dashboard.DashboardCurrentPeriodMttr = FormatDuration(TimeSpan.FromMinutes(mttrMinutes));
 
             DashboardCurrentPeriodAffectedEquipment = currentIssues
@@ -381,16 +384,17 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .Count();
 
-            var assignedCurrentIssues = currentIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
-            var unassignedCurrentIssues = Math.Max(0, currentIssues.Count - assignedCurrentIssues.Count);
-            Dashboard.DashboardCurrentPeriodUnassignedSharePercent = currentIssues.Count == 0
+            var assignedCurrentRepairIssues = currentRepairIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
+            var unassignedCurrentRepairIssues = Math.Max(0, currentRepairIssues.Count - assignedCurrentRepairIssues.Count);
+            Dashboard.DashboardCurrentPeriodUnassignedSharePercent = currentRepairIssues.Count == 0
                 ? 0.0
-                : unassignedCurrentIssues * 100.0 / currentIssues.Count;
-            DashboardCurrentPeriodActiveEmployees = assignedCurrentIssues
+                : unassignedCurrentRepairIssues * 100.0 / currentRepairIssues.Count;
+            DashboardCurrentPeriodActiveEmployees = assignedCurrentRepairIssues
                 .Select(i => i.Issue.Responsible!.Trim())
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .Count();
 
+            var assignedCurrentIssues = currentIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
             var slaMetCount = assignedCurrentIssues.Count(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
             DashboardCurrentPeriodSlaBreaches = Math.Max(0, assignedCurrentIssues.Count - slaMetCount);
             DashboardCurrentPeriodSlaCompliancePercent = assignedCurrentIssues.Count == 0
@@ -403,41 +407,43 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? "Нет данных"
                 : $"Оценка {topPerformer.PerformanceSummary}, SLA {topPerformer.SlaCompliancePercent:0.#}%";
 
-            var topRiskEquipment = currentIssues
+            var topRiskEquipment = currentRepairIssues
                 .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
                 .Select(g => new { Name = g.Key, Count = g.Count() })
                 .OrderByDescending(x => x.Count)
                 .ThenBy(x => x.Name)
                 .FirstOrDefault();
             DashboardRiskEquipment = AddSoftWrapOpportunities(topRiskEquipment?.Name ?? "-");
-            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 событий" : $"{topRiskEquipment.Count} событий за 30 дней";
+            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 ремонтов" : $"{topRiskEquipment.Count} ремонтов за 30 дней";
 
-            var recurringByEquipment = currentIssues
+            var recurringByEquipment = currentRepairIssues
                 .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
                 .Select(g => new { Name = g.Key, Count = g.Count() })
                 .Where(x => x.Count >= 2)
                 .ToList();
             var recurringEquipmentCount = recurringByEquipment.Count;
             var recurringEventsCount = recurringByEquipment.Sum(x => x.Count);
-            Dashboard.DashboardRecurringFailuresValue = $"{recurringEquipmentCount} ед. / {recurringEventsCount} событий";
+            Dashboard.DashboardRecurringFailuresValue = $"{recurringEquipmentCount} ед. / {recurringEventsCount} ремонтов";
             var subdivisionRatings = currentIssues
                 .GroupBy(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision) ? "Без группы" : i.Equipment.Subdivision!.Trim(), StringComparer.CurrentCultureIgnoreCase)
                 .Select(g =>
                 {
                     var groupIssues = g.ToList();
-                    var groupAssigned = groupIssues.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
-                    var groupSlaMet = groupAssigned.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
-                    var groupSlaPercent = groupAssigned.Count == 0
+                    var groupRepairs = groupIssues.Where(x => x.Issue.Type == IssueType.Ремонт).ToList();
+                    var groupAssigned = groupRepairs.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
+                    var groupAssignedAll = groupIssues.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
+                    var groupSlaMet = groupAssignedAll.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var groupSlaPercent = groupAssignedAll.Count == 0
                         ? 0.0
-                        : groupSlaMet * 100.0 / groupAssigned.Count;
-                    var groupAvgMinutes = groupIssues.Count == 0
+                        : groupSlaMet * 100.0 / groupAssignedAll.Count;
+                    var groupAvgMinutes = groupRepairs.Count == 0
                         ? 0.0
-                        : groupIssues.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+                        : groupRepairs.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
 
                     return new Models.SubdivisionRatingRow
                     {
                         Subdivision = g.Key,
-                        IssuesCount = groupIssues.Count,
+                        IssuesCount = groupRepairs.Count,
                         ActiveEmployees = groupAssigned
                             .Select(x => x.Issue.Responsible!.Trim())
                             .Distinct(StringComparer.CurrentCultureIgnoreCase)
@@ -451,13 +457,17 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             if (subdivisionRatings.Count > 0)
             {
-                var maxIssuesInSubdivision = Math.Max(1, subdivisionRatings.Max(r => r.IssuesCount));
-                var maxMttrInSubdivision = Math.Max(1.0, subdivisionRatings.Max(r => r.MttrMinutes));
+                var minIssuesInSubdivision = subdivisionRatings.Min(r => r.IssuesCount);
+                var maxIssuesInSubdivision = subdivisionRatings.Max(r => r.IssuesCount);
+                var minMttrInSubdivision = subdivisionRatings.Min(r => r.MttrMinutes);
+                var maxMttrInSubdivision = subdivisionRatings.Max(r => r.MttrMinutes);
+                var issuesSpan = Math.Max(1.0, maxIssuesInSubdivision - minIssuesInSubdivision);
+                var mttrSpan = Math.Max(1.0, maxMttrInSubdivision - minMttrInSubdivision);
 
                 foreach (var row in subdivisionRatings)
                 {
-                    var incidentScore = 100.0 - (row.IssuesCount * 100.0 / maxIssuesInSubdivision);
-                    var mttrScore = 100.0 - (row.MttrMinutes * 100.0 / maxMttrInSubdivision);
+                    var incidentScore = Math.Clamp(100.0 - ((row.IssuesCount - minIssuesInSubdivision) / issuesSpan) * 100.0, 0.0, 100.0);
+                    var mttrScore = Math.Clamp(100.0 - ((row.MttrMinutes - minMttrInSubdivision) / mttrSpan) * 100.0, 0.0, 100.0);
                     row.PerformanceScore = Math.Round(
                         row.SlaCompliancePercent * 0.50
                         + incidentScore * 0.30
@@ -492,9 +502,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .Select(m =>
                 {
                     var monthIssues = GetIssuesOverlappingPeriod(m.start, m.end).ToList();
-                    var avgMinutes = monthIssues.Count == 0
+                    var monthRepairs = monthIssues
+                        .Where(x => x.Issue.Type == IssueType.Ремонт)
+                        .ToList();
+                    var avgMinutes = monthRepairs.Count == 0
                         ? 0.0
-                        : monthIssues.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+                        : monthRepairs.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
 
                     var monthAssignedIssues = monthIssues
                         .Where(x => !IsUnassignedResponsible(x.Issue.Responsible))

@@ -197,7 +197,7 @@
         
         					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
-        							<TextBlock Text="SLA по событиям" FontSize="11" Foreground="{StaticResource TextMuted}" />
+							<TextBlock Text="SLA по событиям" FontSize="11" Foreground="{StaticResource TextMuted}" />
         							<TextBlock Text="{Binding EmployeeSlaCompliancePercent, StringFormat='Соблюдение: {0:0.0}%'}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource SuccessBrush}" />
         							<TextBlock Text="{Binding EmployeeSlaBreaches, StringFormat='Нарушено: {0}'}" FontSize="12" Foreground="{StaticResource DangerBrush}" />
         						</StackPanel>
