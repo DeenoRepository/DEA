@@ -21,7 +21,8 @@ namespace EquipmentFailureAnalysis.Utility
         private readonly string[] equipmentFieldIds = {
             "customfield_10500", // Сектор сборки (2.xml)
             "customfield_10519", // Сектор сборки (1.xml)
-            "customfield_10524"  // Сектор измерений (3.xml)
+            "customfield_10524", // Сектор измерений (3.xml)
+            "customfield_10541"  // Кристальное производство (SearchRequest-10445.xml)
         };
 
         public XmlDataDecoder()

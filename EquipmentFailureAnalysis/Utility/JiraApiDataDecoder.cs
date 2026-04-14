@@ -23,7 +23,8 @@ namespace EquipmentFailureAnalysis.Utility
         {
             "customfield_10500",
             "customfield_10519",
-            "customfield_10524"
+            "customfield_10524",
+            "customfield_10541"
         };
 
         public async Task<ObservableCollection<EquipmentInfo>> DecodeEquipmentAsync(
