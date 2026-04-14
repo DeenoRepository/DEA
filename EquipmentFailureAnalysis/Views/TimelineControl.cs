@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Windows.Input;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -48,6 +49,15 @@ namespace EquipmentFailureAnalysis.Views
             set => SetValue(AnnotationsProperty, value);
         }
 
+        public static readonly StyledProperty<ICommand?> AnnotationSelectedCommandProperty =
+            AvaloniaProperty.Register<TimelineControl, ICommand?>(nameof(AnnotationSelectedCommand));
+
+        public ICommand? AnnotationSelectedCommand
+        {
+            get => GetValue(AnnotationSelectedCommandProperty);
+            set => SetValue(AnnotationSelectedCommandProperty, value);
+        }
+
         public TimelineControl()
         {
             this.GetObservable(ItemsProperty).Subscribe(items =>
@@ -84,6 +94,7 @@ namespace EquipmentFailureAnalysis.Views
 
             PointerMoved += OnPointerMoved;
             PointerExited += OnPointerExited;
+            PointerPressed += OnPointerPressed;
         }
 
         public static readonly StyledProperty<bool> ShowHourLabelsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(ShowHourLabels), true);
@@ -179,6 +190,24 @@ namespace EquipmentFailureAnalysis.Views
             CloseTooltip();
         }
 
+        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var command = AnnotationSelectedCommand;
+            if (command == null)
+                return;
+
+            var point = e.GetPosition(this);
+            Models.Annotation? selected = null;
+            if (TryGetAnnotationAt(point, out var found))
+                selected = found;
+
+            if (command.CanExecute(selected))
+            {
+                command.Execute(selected);
+                e.Handled = true;
+            }
+        }
+
         private void CloseTooltip()
         {
             ToolTip.SetIsOpen(this, false);
@@ -258,6 +287,69 @@ namespace EquipmentFailureAnalysis.Views
 
             tooltipText = builder.ToString().TrimEnd();
             return tooltipText.Length > 0;
+        }
+
+        private bool TryGetAnnotationAt(Point point, out Models.Annotation? annotation)
+        {
+            annotation = null;
+
+            var bounds = Bounds;
+            double w = bounds.Width;
+            double h = bounds.Height;
+            if (w <= 0 || h <= 0)
+                return false;
+
+            double left = 4;
+            double right = 4;
+            double top = 4;
+            double bottom = ShowHourLabels ? 70 : 4;
+
+            double plotW = Math.Max(1, w - left - right);
+            double plotH = Math.Max(1, h - top - bottom);
+            double y1 = top + 0.1 * plotH;
+            double y0 = top + 0.9 * plotH;
+
+            if (point.X < left || point.X > left + plotW || point.Y < y1 || point.Y > y0)
+                return false;
+
+            var annSource = Annotations as IList;
+            if (annSource == null || annSource.Count == 0)
+                return false;
+
+            double hour = (point.X - left) / (plotW / 24.0);
+            hour = Math.Clamp(hour, 0.0, 24.0);
+
+            var active = annSource
+                .OfType<Models.Annotation>()
+                .Where(a => hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
+                .OrderBy(a => Math.Abs(hour - ((a.StartHour + a.EndHour) / 2.0)))
+                .ThenByDescending(a =>
+                {
+                    if (TimeSpan.TryParse(a.Duration, out var parsed))
+                        return parsed.TotalMinutes;
+                    return 0.0;
+                })
+                .FirstOrDefault();
+
+            if (active != null)
+            {
+                annotation = active;
+                return true;
+            }
+
+            var nearest = annSource
+                .OfType<Models.Annotation>()
+                .Select(a => new { Annotation = a, Dist = Math.Abs(hour - a.StartHour) })
+                .OrderBy(x => x.Dist)
+                .FirstOrDefault();
+
+            if (nearest != null && nearest.Dist <= 0.5)
+            {
+                annotation = nearest.Annotation;
+                return true;
+            }
+
+            return false;
         }
 
         private static void AppendAnnotationTooltip(StringBuilder builder, string title, Models.Annotation annotation)

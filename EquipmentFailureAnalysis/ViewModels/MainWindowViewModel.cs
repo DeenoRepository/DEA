@@ -262,7 +262,38 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _annotations;
             set => this.RaiseAndSetIfChanged(ref _annotations, value);
         }
+
+        private Models.Annotation? _selectedTimelineAnnotation;
+        public Models.Annotation? SelectedTimelineAnnotation
+        {
+            get => _selectedTimelineAnnotation;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedTimelineAnnotation, value);
+                this.RaisePropertyChanged(nameof(SelectedTimelineHasData));
+                this.RaisePropertyChanged(nameof(SelectedTimelineType));
+                this.RaisePropertyChanged(nameof(SelectedTimelineResponsible));
+                this.RaisePropertyChanged(nameof(SelectedTimelineStart));
+                this.RaisePropertyChanged(nameof(SelectedTimelineEnd));
+                this.RaisePropertyChanged(nameof(SelectedTimelineDuration));
+                this.RaisePropertyChanged(nameof(SelectedTimelineDescription));
+                this.RaisePropertyChanged(nameof(SelectedTimelineStatus));
+                this.RaisePropertyChanged(nameof(SelectedTimelineJiraKey));
+            }
+        }
+
+        public bool SelectedTimelineHasData => SelectedTimelineAnnotation != null;
+        public string SelectedTimelineType => SelectedTimelineAnnotation?.Type.ToString() ?? "-";
+        public string SelectedTimelineResponsible => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Responsible) ? "-" : SelectedTimelineAnnotation!.Responsible;
+        public string SelectedTimelineStart => SelectedTimelineAnnotation?.StartDate.ToString("dd.MM.yyyy HH:mm") ?? "-";
+        public string SelectedTimelineEnd => SelectedTimelineAnnotation?.EndDate.ToString("dd.MM.yyyy HH:mm") ?? "-";
+        public string SelectedTimelineDuration => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Duration) ? "-" : SelectedTimelineAnnotation!.Duration;
+        public string SelectedTimelineDescription => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Description) ? "Выберите задачу на графике" : SelectedTimelineAnnotation!.Description;
+        public string SelectedTimelineStatus => SelectedTimelineAnnotation == null ? "-" : (SelectedTimelineAnnotation.IsInProgress ? "В процессе" : "Завершена");
+        public string SelectedTimelineJiraKey => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.JiraIssueKey) ? "-" : SelectedTimelineAnnotation!.JiraIssueKey;
+
         public ReactiveCommand<DateTime, Unit>? ShowDayTimelineCommand { get; set; }
+        public ReactiveCommand<Models.Annotation?, Unit> SelectTimelineAnnotationCommand { get; }
 
         private bool _showRepairs = true;
         public bool ShowRepairs
@@ -875,6 +906,10 @@ namespace EquipmentFailureAnalysis.ViewModels
             HeatmapSettingOptions.Add(FailureHeatmapOption);
             HeatmapSettingOptions.Add(DowntimeHeatmapOption);
             SelectedHeatmapSetting = FailureHeatmapOption;
+            SelectTimelineAnnotationCommand = ReactiveCommand.Create<Models.Annotation?>(annotation =>
+            {
+                SelectedTimelineAnnotation = annotation;
+            });
 
             EmployeeTimelineEmployees.Add("Все сотрудники");
             SelectedEmployeeTimelineEmployee = "Все сотрудники";
@@ -1057,6 +1092,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                     DayTimelinePoints.Clear();
                     Annotations.Clear();
+                    SelectedTimelineAnnotation = null;
                     var dayAnnotations = new System.Collections.Generic.List<Models.Annotation>();
 
                     var selIssues = GetFilteredIssues(SelectedEquipment);
@@ -1097,6 +1133,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                             EndDate = overlapEnd,
                             Duration = duration.ToString(@"hh\:mm"),
                             Type = issue.Type,
+                            JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                             IsInProgress = issue.IsInProgress
                         });
 
@@ -1114,6 +1151,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                     {
                         Annotations.Add(annotation);
                     }
+
+                    SelectedTimelineAnnotation = Annotations.FirstOrDefault();
 
                     if (intervals.Count == 0)
                     {

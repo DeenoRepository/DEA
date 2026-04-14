@@ -294,6 +294,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         EndDate = overlapEnd,
                         Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
                         Type = issue.Type,
+                        JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                         IsInProgress = issue.IsInProgress
                     });
                 }

@@ -68,7 +68,10 @@ namespace EquipmentFailureAnalysis.ViewModels
         private void BuildTimelineForDate(DateTime date, EquipmentInfo? equipment)
         {
             if (equipment == null)
+            {
+                SelectedTimelineAnnotation = null;
                 return;
+            }
             // compute everything first, then update UI-bound collections on UI thread
             AnalysisDate = date.Date;
             var selIssuesForDate = GetFilteredIssues(equipment).ToList();
@@ -114,6 +117,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                     EndDate = overlapEnd,
                     Duration = duration.ToString(@"hh\:mm"),
                     Type = issue.Type,
+                    JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                     IsInProgress = issue.IsInProgress
                 });
             }
@@ -162,8 +166,11 @@ namespace EquipmentFailureAnalysis.ViewModels
                 DayTimelinePoints = new ObservableCollection<Models.TimelinePoint>(timelinePoints);
                 RepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(repairsTimelinePoints);
                 SetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(setupsTimelinePoints);
-                Annotations = new ObservableCollection<Models.Annotation>(
-                    annList.OrderByDescending(a => TimeSpan.TryParse(a.Duration, out var parsed) ? parsed : TimeSpan.Zero));
+                var sortedAnnotations = annList
+                    .OrderByDescending(a => TimeSpan.TryParse(a.Duration, out var parsed) ? parsed : TimeSpan.Zero)
+                    .ToList();
+                Annotations = new ObservableCollection<Models.Annotation>(sortedAnnotations);
+                SelectedTimelineAnnotation = sortedAnnotations.FirstOrDefault();
                 // update counts for the selected day (issues overlapping that date)
                 try
                 {

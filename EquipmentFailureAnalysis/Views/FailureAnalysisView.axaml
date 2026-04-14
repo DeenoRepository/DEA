@@ -118,7 +118,7 @@
         						<TextBlock Text="График простоев" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
         						<TextBlock Text="Динамика ремонтов и настроек в течение суток" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
                                 <Grid>
-                                    <views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" Height="410" ShowHourLabels="True" VerticalAlignment="Top" />
+                                    <views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}" Height="410" ShowHourLabels="True" VerticalAlignment="Top" />
         							<Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Background="{StaticResource OverlaySurfaceBrush}" BorderBrush="{StaticResource OverlayBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8,6">
         								<StackPanel Spacing="4">
         									<StackPanel Orientation="Horizontal" Spacing="6">
@@ -200,34 +200,37 @@
         							</StackPanel>
         						</Border>
         
-        						<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="8" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
-        							<Grid RowDefinitions="Auto,Auto,*">
-                                        <TextBlock Grid.Row="0" Text="События за день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
-                                       <Grid Grid.Row="1" ColumnDefinitions="2.4*,1.5*,1*" Margin="4,2,4,6">
-        									<TextBlock Grid.Column="0" Text="Событие" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        									<TextBlock Grid.Column="1" Text="Ответственный" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        									<TextBlock Grid.Column="2" Text="Время" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" />
-        								</Grid>
-        								<Border Grid.Row="1" Height="1" VerticalAlignment="Bottom" Background="{StaticResource RowDividerBrush}" Margin="0,0,0,2" />
-        								<ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        									<ItemsControl ItemsSource="{Binding Annotations}">
-        										<ItemsControl.ItemsPanel>
-        											<ItemsPanelTemplate>
-        												<StackPanel />
-        											</ItemsPanelTemplate>
-        										</ItemsControl.ItemsPanel>
-        										<ItemsControl.ItemTemplate>
-        											<DataTemplate>
-                                                        <Grid ColumnDefinitions="2.4*,1.5*,1*" Margin="4,3">
-        													<TextBlock Grid.Column="0" Text="{Binding Description}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-        													<TextBlock Grid.Column="1" Text="{Binding Responsible}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,6,0" />
-        													<TextBlock Grid.Column="2" Text="{Binding Duration}" HorizontalAlignment="Right" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" />
-        												</Grid>
-        											</DataTemplate>
-        										</ItemsControl.ItemTemplate>
-        									</ItemsControl>
-        								</ScrollViewer>
-        							</Grid>
+        						<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="10" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Данные задачи" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                                        <TextBlock Text="Выберите задачу кликом по области графика" FontSize="12" Foreground="{StaticResource TextMuted}" />
+
+                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Тип:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineType}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Ответственный:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineResponsible}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Начало:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedTimelineStart}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Завершение:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedTimelineEnd}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Длительность:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedTimelineDuration}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Статус:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedTimelineStatus}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Jira:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedTimelineJiraKey}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+
+                                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Описание:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </StackPanel>
         						</Border>
         					</Grid>
         				</Border>

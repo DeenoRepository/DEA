@@ -22,8 +22,9 @@ namespace EquipmentFailureAnalysis.Models
         public string Duration { get; set; } = string.Empty;
         // issue type (Настройка or Ремонт)
         public IssueType Type { get; set; }
-
-        // пометка, что событие относится к задаче в процессе
+        // issue key from source system (for example Jira), if available
+        public string JiraIssueKey { get; set; } = string.Empty;
+        // marker that the task is still in progress
         public bool IsInProgress { get; set; }
     }
 }
