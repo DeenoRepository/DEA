@@ -383,6 +383,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .Select(i => i.Equipment.Title)
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .Count();
+            DashboardEquipmentInSystemCount = _masterEquipment.Count;
 
             var assignedCurrentRepairIssues = currentRepairIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
             var unassignedCurrentRepairIssues = Math.Max(0, currentRepairIssues.Count - assignedCurrentRepairIssues.Count);

@@ -509,6 +509,16 @@ namespace EquipmentFailureAnalysis.ViewModels
             }
         }
 
+        public int DashboardEquipmentInSystemCount
+        {
+            get => Dashboard.DashboardEquipmentInSystemCount;
+            set
+            {
+                Dashboard.DashboardEquipmentInSystemCount = value;
+                this.RaisePropertyChanged(nameof(DashboardEquipmentInSystemCount));
+            }
+        }
+
         public int DashboardCurrentPeriodActiveEmployees
         {
             get => Dashboard.DashboardCurrentPeriodActiveEmployees;

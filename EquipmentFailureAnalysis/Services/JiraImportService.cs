@@ -16,6 +16,9 @@ namespace EquipmentFailureAnalysis.Services
         public string Token { get; set; } = string.Empty;
         public string Jql { get; set; } = string.Empty;
         public IReadOnlyCollection<string> FilterIds { get; set; } = Array.Empty<string>();
+        public int PageSize { get; set; } = 1000;
+        public int? TotalResultsLimit { get; set; }
+        public bool EnsureLatestOrdering { get; set; }
     }
 
     public sealed class JiraImportResult
@@ -63,12 +66,14 @@ namespace EquipmentFailureAnalysis.Services
             try
             {
                 var decoder = new JiraApiDataDecoder();
-                var effectiveJql = BuildEffectiveJql(request.Jql, request.FilterIds);
+                var effectiveJql = BuildEffectiveJql(request.Jql, request.FilterIds, request.EnsureLatestOrdering);
                 var items = await decoder.DecodeEquipmentAsync(
                     request.Url,
                     request.Username,
                     request.Token,
                     effectiveJql,
+                    maxResults: request.PageSize,
+                    totalResultsLimit: request.TotalResultsLimit,
                     cancellationToken: cancellationToken);
 
                 try
@@ -107,18 +112,31 @@ namespace EquipmentFailureAnalysis.Services
             }
         }
 
-        private static string BuildEffectiveJql(string jql, IReadOnlyCollection<string> filterIds)
+        private static string BuildEffectiveJql(string jql, IReadOnlyCollection<string> filterIds, bool ensureLatestOrdering)
         {
+            string effectiveJql;
             if (filterIds == null || filterIds.Count == 0)
-                return jql;
+            {
+                effectiveJql = jql?.Trim() ?? string.Empty;
+            }
+            else
+            {
+                var filterClause = string.Join(" OR ", filterIds.Select(id => $"filter = {id}"));
+                var fromFilters = $"({filterClause}) AND status in ('Решен', 'В процессе', 'Resolved', 'In Progress')";
+                effectiveJql = string.IsNullOrWhiteSpace(jql)
+                    ? fromFilters
+                    : $"({fromFilters}) AND ({jql.Trim()})";
+            }
 
-            var filterClause = string.Join(" OR ", filterIds.Select(id => $"filter = {id}"));
-            var fromFilters = $"({filterClause}) AND status in ('Решен', 'В процессе', 'Resolved', 'In Progress')";
+            if (!ensureLatestOrdering)
+                return effectiveJql;
 
-            if (string.IsNullOrWhiteSpace(jql))
-                return fromFilters;
+            if (string.IsNullOrWhiteSpace(effectiveJql))
+                return "ORDER BY updated DESC";
 
-            return $"({fromFilters}) AND ({jql.Trim()})";
+            return effectiveJql.IndexOf("order by", StringComparison.OrdinalIgnoreCase) >= 0
+                ? effectiveJql
+                : $"{effectiveJql} ORDER BY updated DESC";
         }
     }
 }

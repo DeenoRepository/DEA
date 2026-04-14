@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj_verify*/**;bin_verify*/**</DefaultItemExcludes>
     <!-- Disable AvaloniaStats telemetry task to avoid local permission errors in constrained environments. -->
     <UsedAvaloniaProducts></UsedAvaloniaProducts>
   </PropertyGroup>
@@ -15,6 +16,13 @@
 
   <ItemGroup>
     <Content Include="Assets\avalonia-logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**\*.cs" />
+    <Compile Remove="bin\**\*.cs" />
+    <Compile Remove="obj_verify_**\**\*.cs" />
+    <Compile Remove="bin_verify_**\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -32,6 +32,7 @@ namespace EquipmentFailureAnalysis.Utility
             string token,
             string? jql = null,
             int maxResults = 1000,
+            int? totalResultsLimit = null,
             IEnumerable<string>? equipmentFieldIds = null,
             CancellationToken cancellationToken = default)
         {
@@ -47,10 +48,17 @@ namespace EquipmentFailureAnalysis.Utility
             var equipmentCollection = new ObservableCollection<EquipmentInfo>();
             var startAt = 0;
             var pageSize = Math.Max(1, maxResults);
+            var remainingLimit = totalResultsLimit.HasValue
+                ? Math.Max(0, totalResultsLimit.Value)
+                : int.MaxValue;
 
             while (true)
             {
-                var requestUrl = BuildSearchUrl(jiraApiUrl, jql, pageSize, effectiveEquipmentFieldIds, startAt);
+                if (remainingLimit <= 0)
+                    break;
+
+                var requestedPageSize = Math.Min(pageSize, remainingLimit);
+                var requestUrl = BuildSearchUrl(jiraApiUrl, jql, requestedPageSize, effectiveEquipmentFieldIds, startAt);
                 using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
 
                 if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(token))
@@ -80,8 +88,12 @@ namespace EquipmentFailureAnalysis.Utility
                 if (fetchedCount == 0)
                     break;
 
+                var processedInBatch = 0;
                 foreach (var issueElement in issuesElement.EnumerateArray())
                 {
+                    if (processedInBatch >= remainingLimit)
+                        break;
+
                     if (!issueElement.TryGetProperty("fields", out var fields))
                         continue;
 
@@ -139,7 +151,8 @@ namespace EquipmentFailureAnalysis.Utility
                         Description = description,
                         Type = issueType,
                         Responsible = string.IsNullOrWhiteSpace(responsible) ? "Не назначен" : responsible,
-                        IsInProgress = isInProgress
+                        IsInProgress = isInProgress,
+                        JiraIssueKey = TryGetString(issueElement, "key")
                     };
 
                     var equipment = equipmentCollection.FirstOrDefault(e =>
@@ -159,9 +172,11 @@ namespace EquipmentFailureAnalysis.Utility
                     }
 
                     equipment.Issues.Add(issue);
+                    processedInBatch++;
                 }
 
                 startAt += fetchedCount;
+                remainingLimit = Math.Max(0, remainingLimit - processedInBatch);
                 if (LastTotalPositionsFromApi > 0 && startAt >= LastTotalPositionsFromApi)
                     break;
             }

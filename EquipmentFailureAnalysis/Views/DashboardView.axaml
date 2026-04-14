@@ -36,7 +36,7 @@
         									<StackPanel>
         										<TextBlock Text="Активное оборудование" FontSize="11" Foreground="{StaticResource TextMuted}" />
         										<TextBlock Text="{Binding DashboardCurrentPeriodAffectedEquipment, StringFormat='{}{0} ед.'}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        										<TextBlock Text="{Binding EquipmentCollection.Count, StringFormat='В системе: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
+										<TextBlock Text="{Binding DashboardEquipmentInSystemCount, StringFormat='В системе: {0}'}" FontSize="11" Foreground="{StaticResource TextMuted}" />
         									</StackPanel>
         								</Border>
         								<Border Grid.Column="3" Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">

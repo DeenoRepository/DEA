@@ -35,6 +35,9 @@ namespace EquipmentFailureAnalysis.Models
 
         // Признак задачи Jira, которая находится в процессе (не завершена)
         public bool IsInProgress { get; set; }
+
+        // Уникальный ключ задачи Jira (например, PROJ-123)
+        public string? JiraIssueKey { get; set; }
     }
 
     public enum IssueType

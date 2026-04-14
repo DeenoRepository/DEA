@@ -76,6 +76,12 @@ namespace EquipmentFailureAnalysis.Views
 
             if (e.PropertyName.StartsWith("Jira", StringComparison.Ordinal))
                 SaveJiraSettingsFromUi();
+
+            if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.JiraAutoImportEnabled)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.JiraAutoImportPeriodMinutes))
+            {
+                ConfigureJiraAutoImportLoop();
+            }
         }
 
     }

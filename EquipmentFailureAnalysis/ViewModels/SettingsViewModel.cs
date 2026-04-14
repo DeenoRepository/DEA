@@ -26,6 +26,8 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _jiraToken = string.Empty;
         private string _jiraFilterIdInput = string.Empty;
         private string? _jiraSelectedFilterId;
+        private bool _jiraAutoImportEnabled;
+        private int _jiraAutoImportPeriodMinutes = 30;
 
         public SettingsViewModel(MainWindowViewModel shell)
         {
@@ -70,6 +72,22 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<string> JiraFilterIds { get; } = new();
+
+        public bool JiraAutoImportEnabled
+        {
+            get => _jiraAutoImportEnabled;
+            set => this.RaiseAndSetIfChanged(ref _jiraAutoImportEnabled, value);
+        }
+
+        public int JiraAutoImportPeriodMinutes
+        {
+            get => _jiraAutoImportPeriodMinutes;
+            set
+            {
+                var normalized = Math.Clamp(value, 1, 1440);
+                this.RaiseAndSetIfChanged(ref _jiraAutoImportPeriodMinutes, normalized);
+            }
+        }
 
         public ObservableCollection<string> HeatmapSettingOptions => _shell.HeatmapSettingOptions;
 

@@ -13,6 +13,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         private int _dashboardPreviousPeriodIssues;
         private double _dashboardIssuesTrendPercent;
         private int _dashboardCurrentPeriodAffectedEquipment;
+        private int _dashboardEquipmentInSystemCount;
         private string _dashboardCurrentPeriodAvgDuration = "00:00";
         private int _dashboardMaxIssuesInMonth;
         private double _dashboardCurrentPeriodSlaCompliancePercent;
@@ -63,6 +64,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardCurrentPeriodAffectedEquipment;
             set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodAffectedEquipment, value);
+        }
+
+        public int DashboardEquipmentInSystemCount
+        {
+            get => _dashboardEquipmentInSystemCount;
+            set => this.RaiseAndSetIfChanged(ref _dashboardEquipmentInSystemCount, value);
         }
 
         public string DashboardCurrentPeriodAvgDuration
