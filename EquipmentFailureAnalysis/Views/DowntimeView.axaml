@@ -80,60 +80,10 @@
         								</Button>
         							</Grid>
         							<TextBlock Text="Значение ячейки: количество единиц оборудования с неисправностями за день" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
-                                  <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-        								<StackPanel Margin="2">
-        									<StackPanel Orientation="Horizontal" Margin="0,6,0,6">
-        										<TextBlock Width="72" />
-        										<ItemsControl ItemsSource="{Binding DayHeaders}">
-        											<ItemsControl.ItemsPanel>
-        												<ItemsPanelTemplate>
-        													<StackPanel Orientation="Horizontal" />
-        												</ItemsPanelTemplate>
-        											</ItemsControl.ItemsPanel>
-        											<ItemsControl.ItemTemplate>
-        												<DataTemplate>
-        													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Margin="2" Background="Transparent">
-        														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
-        													</Border>
-        												</DataTemplate>
-        											</ItemsControl.ItemTemplate>
-        										</ItemsControl>
-        									</StackPanel>
-        
-        									<ItemsControl ItemsSource="{Binding DowntimeMonthRows}">
-        										<ItemsControl.ItemsPanel>
-        											<ItemsPanelTemplate>
-        												<StackPanel Orientation="Vertical" />
-        											</ItemsPanelTemplate>
-        										</ItemsControl.ItemsPanel>
-        										<ItemsControl.ItemTemplate>
-        											<DataTemplate>
-        												<StackPanel Orientation="Horizontal" Margin="2">
-        													<TextBlock Text="{Binding MonthName}" Width="72" VerticalAlignment="Center" Margin="2" />
-        													<ItemsControl ItemsSource="{Binding Days}">
-        														<ItemsControl.ItemsPanel>
-        															<ItemsPanelTemplate>
-        																<StackPanel Orientation="Horizontal" />
-        															</ItemsPanelTemplate>
-        														</ItemsControl.ItemsPanel>
-        														<ItemsControl.ItemTemplate>
-        															<DataTemplate>
-        																<Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
-        																	Command="{Binding DataContext.ShowDowntimeDayCommand, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}"
-        																	CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                                                   <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=views:DowntimeView}}" CornerRadius="8" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=DowntimeAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
-        																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
-        																	</Border>
-        																</Button>
-        															</DataTemplate>
-        														</ItemsControl.ItemTemplate>
-        													</ItemsControl>
-        												</StackPanel>
-        											</DataTemplate>
-        										</ItemsControl.ItemTemplate>
-        									</ItemsControl>
-        								</StackPanel>
-        							</ScrollViewer>
+                            <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                     MonthRows="{Binding DowntimeMonthRows}"
+                                                     CellCommand="{Binding ShowDowntimeDayCommand}"
+                                                     ConverterMode="DowntimeAnalysis" />
         						</StackPanel>
         					</Border>
         				</Grid>

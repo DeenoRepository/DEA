@@ -164,24 +164,42 @@ namespace EquipmentFailureAnalysis.Views
 
         private void OnWindowResized()
         {
-            // compute ideal DayCellSize so 31 columns fit into central heatmap viewport
+            // Compute DayCellSize so 31 columns fill current page heatmap viewport.
             try
             {
                 if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
-                    // find the heatmap scroller control
-                    var scroller = FindNestedControl<ScrollViewer>("HeatmapScroller");
-                    if (scroller != null)
+                    ScrollViewer? targetScroller = _currentPage switch
                     {
-                        // leave a larger margin so day cells don't overflow the visible area
-                        double available = scroller.Bounds.Width - 120; // padding for labels/margins
-                        if (available <= 0) return;
-                        // 31 day columns
-                        double cellWithMargin = available / 31.0;
-                        // subtract extra to avoid overflow when including cell margins
-                        double size = Math.Max(12.0, Math.Min(64.0, cellWithMargin - 6.0));
-                        vm.DayCellSize = size;
+                        AppPage.FailureAnalysis => FindNestedControl<ScrollViewer>("FailureHeatmapScroller"),
+                        AppPage.DowntimeAnalysis => FindNestedControl<ScrollViewer>("DowntimeHeatmapScroller"),
+                        _ => null
+                    };
+
+                    if (targetScroller == null || targetScroller.Bounds.Width <= 0)
+                    {
+                        targetScroller = new[]
+                        {
+                            FindNestedControl<ScrollViewer>("FailureHeatmapScroller"),
+                            FindNestedControl<ScrollViewer>("DowntimeHeatmapScroller"),
+                            FindNestedControl<ScrollViewer>("HeatmapScroller")
+                        }
+                        .FirstOrDefault(s => s != null && s.IsEffectivelyVisible && s.Bounds.Width > 0);
                     }
+
+                    if (targetScroller == null)
+                        return;
+
+                    // 72px month label + margins of row containers/text blocks.
+                    const double fixedRowOverhead = 80.0;
+                    double available = targetScroller.Bounds.Width - fixedRowOverhead;
+                    if (available <= 0)
+                        return;
+
+                    double cellWithMargin = available / 31.0;
+                    // Per-cell external margins are ~4px in the row templates.
+                    double size = Math.Max(12.0, Math.Min(120.0, cellWithMargin - 4.0));
+                    vm.DayCellSize = size;
                 }
             }
             catch { }

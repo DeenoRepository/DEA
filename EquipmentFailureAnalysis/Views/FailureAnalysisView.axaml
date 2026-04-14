@@ -7,7 +7,7 @@
                 <ColumnDefinition Width="7*" />
                 <ColumnDefinition Width="1.9*" />
             </Grid.ColumnDefinitions>
-                <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="0" Margin="8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <ScrollViewer x:Name="FailureAnalysisCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
               <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch" Spacing="10">
                         <!-- Top header showing day numbers moved into heatmap block for alignment -->
         
@@ -81,77 +81,10 @@
         							</Button>
         						</Grid>
         						<TextBlock Text="Ежедневная интенсивность неисправностей по месяцам" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
-        						<Grid>
-        							<!-- single scroll area that contains both day headers and month rows so they scroll together -->
-                                    <ScrollViewer x:Name="HeatmapScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-        								<StackPanel Margin="2">
-                                            <!-- Day headers aligned with day cells (use width matching day cell width + margin) -->
-                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,6">
-                                                <TextBlock Width="72" />
-        										<ItemsControl ItemsSource="{Binding DayHeaders}">
-        											<ItemsControl.ItemsPanel>
-        												<ItemsPanelTemplate>
-        													<StackPanel Orientation="Horizontal" />
-        												</ItemsPanelTemplate>
-        											</ItemsControl.ItemsPanel>
-        											<ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-        													<Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Margin="2" Background="Transparent">
-        														<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#666" />
-        													</Border>
-        												</DataTemplate>
-        											</ItemsControl.ItemTemplate>
-        										</ItemsControl>
-        									</StackPanel>
-        
-                                            <!-- Month rows -->
-        									<ItemsControl ItemsSource="{Binding MonthRows}">
-        										<ItemsControl.ItemsPanel>
-        											<ItemsPanelTemplate>
-        												<StackPanel Orientation="Vertical" />
-        											</ItemsPanelTemplate>
-        										</ItemsControl.ItemsPanel>
-        										<ItemsControl.ItemTemplate>
-        											<DataTemplate>
-                                                        <StackPanel Orientation="Horizontal" Margin="2">
-        													<TextBlock Text="{Binding MonthName}" Width="72" VerticalAlignment="Center" Margin="2" />
-        													<ItemsControl ItemsSource="{Binding Days}">
-        														<ItemsControl.ItemsPanel>
-        															<ItemsPanelTemplate>
-        																<StackPanel Orientation="Horizontal" />
-        															</ItemsPanelTemplate>
-        														</ItemsControl.ItemsPanel>
-        														<ItemsControl.ItemTemplate>
-                                                                    <DataTemplate>
-                                                                        <Button Margin="2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalAlignment="Left"
-        																		Command="{Binding DataContext.ShowDayTimelineCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-        																		CommandParameter="{Binding Date}" IsVisible="{Binding IsValid}">
-                                                                <Border Width="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" Height="{Binding DataContext.DayCellSize, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="8" Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter=FailureAnalysis}" BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}" BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center">
-        																		<TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
-        																	</Border>
-                                                                        <ToolTip.Tip>
-        																	<StackPanel>
-        																		<TextBlock Text="{Binding Date, StringFormat='Дата: {0:dd.MM.yyyy}'}" />
-        																		<TextBlock Text="{Binding Index, StringFormat='Неисправностей: {0}'}" />
-        																	</StackPanel>
-        																</ToolTip.Tip>
-        																<Button.ContextMenu>
-        																	<ContextMenu>
-                                                         <MenuItem Header="Показать в панели управления" Command="{Binding DataContext.LoadEquipmentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding DataContext.SelectedEquipment, RelativeSource={RelativeSource AncestorType=Window}}" />
-        																	</ContextMenu>
-        																</Button.ContextMenu>
-        																</Button>
-        															</DataTemplate>
-        														</ItemsControl.ItemTemplate>
-        													</ItemsControl>
-        												</StackPanel>
-        											</DataTemplate>
-        										</ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-        								</StackPanel>
-        
-        							</ScrollViewer>
-        						</Grid>
+                            <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                     MonthRows="{Binding MonthRows}"
+                                                     CellCommand="{Binding ShowDayTimelineCommand}"
+                                                     ConverterMode="FailureAnalysis" />
         
         						<!-- Heatmap legend -->
         						<StackPanel Orientation="Horizontal" Margin="8,6,0,0" HorizontalAlignment="Left">

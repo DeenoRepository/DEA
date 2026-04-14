@@ -330,6 +330,13 @@ namespace EquipmentFailureAnalysis.Views
             SetNavigationButtonSelected("EmployeeNavButton", isEmployeeAnalysisPage);
             SetNavigationButtonSelected("ReportsNavButton", isReportsPage);
             SetNavigationButtonSelected("SettingsNavButton", isSettingsPage);
+
+            // Recalculate heatmap cell size when page visibility changes.
+            // Do it immediately and once more after layout pass so Bounds are actual.
+            OnWindowResized();
+            Avalonia.Threading.Dispatcher.UIThread.Post(
+                OnWindowResized,
+                Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
     }
