@@ -5,7 +5,7 @@
     <Grid x:Name="ReportsLayoutRoot">
         		<Grid.ColumnDefinitions>
         			<ColumnDefinition Width="7*" />
-        			<ColumnDefinition Width="1.9*" />
+        			<ColumnDefinition Width="440" />
         		</Grid.ColumnDefinitions>
         
         		<ScrollViewer x:Name="ReportsCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -133,6 +133,8 @@
         		</Grid>
     </Grid>
 </UserControl>
+
+
 
 
 

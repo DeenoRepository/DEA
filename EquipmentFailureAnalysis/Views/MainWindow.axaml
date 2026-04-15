@@ -344,7 +344,7 @@
 			<!-- Use star sizing so layout adapts when window is resized -->
          <ColumnDefinition Width="Auto" />
 			<ColumnDefinition Width="7*" />
-          <ColumnDefinition Width="1.9*" />
+          <ColumnDefinition Width="440" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -489,6 +489,8 @@
 		</Border>
 	</Grid>
 </Window>
+
+
 
 
 

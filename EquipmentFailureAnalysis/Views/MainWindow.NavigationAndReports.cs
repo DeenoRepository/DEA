@@ -30,6 +30,7 @@ namespace EquipmentFailureAnalysis.Views
         private bool _isRightPanelCollapsed;
         private const double ExpandedNavigationWidth = 320d;
         private const double CollapsedNavigationWidth = 70d;
+        private const double ExpandedRightPanelWidth = 440d;
 
         private void ToggleNavigationButton_Click(object? sender, RoutedEventArgs e)
         {
@@ -145,7 +146,7 @@ namespace EquipmentFailureAnalysis.Views
 
             layoutRoot.ColumnDefinitions[1].Width = _isRightPanelCollapsed
                 ? new GridLength(0)
-                : new GridLength(1.9, GridUnitType.Star);
+                : new GridLength(ExpandedRightPanelWidth, GridUnitType.Pixel);
         }
 
         private void UpdateRightPanelTogglePosition()
@@ -668,3 +669,4 @@ namespace EquipmentFailureAnalysis.Views
 
     }
 }
+
