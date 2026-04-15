@@ -248,6 +248,10 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="ZIndex" Value="10" />
 		</Style>
+		<Style Selector="Button.navToggle.navEdgeToggle.rightEdgeToggle">
+			<Setter Property="Margin" Value="-10,0,0,0" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+		</Style>
 		<Style Selector="Button.navToggle:pointerover">
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
 			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
@@ -335,7 +339,7 @@
 		</Style>
 	</Window.Styles>
 
-	<Grid>
+	<Grid x:Name="MainLayoutGrid">
         <Grid.ColumnDefinitions>
 			<!-- Use star sizing so layout adapts when window is resized -->
          <ColumnDefinition Width="Auto" />
@@ -448,6 +452,20 @@
   <views:ReportsView x:Name="ReportsPage" DataContext="{Binding Reports}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
   <views:SettingsView x:Name="SettingsPage" DataContext="{Binding Settings}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
   <views:EmployeeAnalysisView x:Name="EmployeeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+		<Button x:Name="RightPanelToggleButton"
+		        Grid.Row="1"
+		        Grid.ColumnSpan="3"
+		        Classes="navToggle navEdgeToggle"
+		        HorizontalAlignment="Right"
+		        VerticalAlignment="Center"
+		        Margin="0"
+		        Opacity="1"
+		        BorderBrush="{StaticResource AccentSoftBorder}"
+		        ZIndex="100"
+		        Click="ToggleRightPanelButton_Click"
+		        ToolTip.Tip="Свернуть/развернуть правую панель">
+			<TextBlock x:Name="RightPanelToggleGlyph" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+		</Button>
 		<Border Grid.ColumnSpan="3"
 		        Grid.Row="2"
 		        Background="{StaticResource SurfaceBrush}"

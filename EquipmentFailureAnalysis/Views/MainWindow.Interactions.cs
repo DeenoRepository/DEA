@@ -203,6 +203,12 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
             catch { }
+
+            try
+            {
+                UpdateRightPanelTogglePosition();
+            }
+            catch { }
         }
     }
 }

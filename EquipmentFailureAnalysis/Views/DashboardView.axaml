@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.DashboardView">
-    <Grid>
+    <Grid x:Name="DashboardLayoutRoot">
         		<Grid.ColumnDefinitions>
         			<ColumnDefinition Width="7*" />
         			<ColumnDefinition Width="1.9*" />
@@ -130,7 +130,7 @@
         			</StackPanel>
         		</ScrollViewer>
         
-        		<Grid Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+        		<Grid x:Name="DashboardRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
         			<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
         					<TextBlock Text="Качество команды" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />

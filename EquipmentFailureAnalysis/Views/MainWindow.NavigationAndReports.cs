@@ -26,6 +26,7 @@ namespace EquipmentFailureAnalysis.Views
     public partial class MainWindow
     {
         private bool _isNavigationCollapsed;
+        private bool _isRightPanelCollapsed;
         private const double ExpandedNavigationWidth = 320d;
         private const double CollapsedNavigationWidth = 70d;
 
@@ -33,6 +34,13 @@ namespace EquipmentFailureAnalysis.Views
         {
             _isNavigationCollapsed = !_isNavigationCollapsed;
             ApplyNavigationPanelState();
+            ScheduleRightPanelToggleReposition();
+        }
+
+        private void ToggleRightPanelButton_Click(object? sender, RoutedEventArgs e)
+        {
+            _isRightPanelCollapsed = !_isRightPanelCollapsed;
+            ApplyRightPanelState();
         }
 
         private void ApplyNavigationPanelState()
@@ -61,6 +69,8 @@ namespace EquipmentFailureAnalysis.Views
                 toggleGlyph.Text = _isNavigationCollapsed ? "\uE76C" : "\uE76B";
 
             UpdateNavigationToggleLayout(isExpanded);
+            UpdateRightPanelTogglePosition();
+            ScheduleRightPanelToggleReposition();
         }
 
         private void UpdateNavigationButtonLayout(string buttonName, bool isExpanded)
@@ -96,6 +106,99 @@ namespace EquipmentFailureAnalysis.Views
             var control = FindNestedControl<Control>(controlName);
             if (control != null)
                 control.IsVisible = isVisible;
+        }
+
+        private void ApplyRightPanelState()
+        {
+            ApplyRightPanelStateForLayout("DashboardLayoutRoot", "DashboardRightColumn");
+            ApplyRightPanelStateForLayout("FailureAnalysisLayoutRoot", "FailureAnalysisRightColumn");
+            ApplyRightPanelStateForLayout("DowntimeLayoutRoot", "DowntimeRightColumn");
+            ApplyRightPanelStateForLayout("ReportsLayoutRoot", "ReportsRightColumn");
+            ApplyRightPanelStateForLayout("SettingsLayoutRoot", "SettingsRightColumn");
+            ApplyRightPanelStateForLayout("EmployeeAnalysisLayoutRoot", "EmployeeAnalysisRightColumn");
+
+            var glyph = FindNestedControl<TextBlock>("RightPanelToggleGlyph");
+            if (glyph != null)
+                glyph.Text = _isRightPanelCollapsed ? "\uE76B" : "\uE76C";
+
+            var toggleButton = FindNestedControl<Button>("RightPanelToggleButton");
+            if (toggleButton != null)
+            {
+                ToolTip.SetTip(toggleButton, _isRightPanelCollapsed
+                    ? "Развернуть правую панель"
+                    : "Свернуть правую панель");
+            }
+
+            UpdateRightPanelTogglePosition();
+        }
+
+        private void ApplyRightPanelStateForLayout(string layoutRootName, string rightColumnName)
+        {
+            var layoutRoot = FindNestedControl<Grid>(layoutRootName);
+            if (layoutRoot == null || layoutRoot.ColumnDefinitions.Count < 2)
+                return;
+
+            var rightColumn = FindNestedControl<Control>(rightColumnName);
+            if (rightColumn != null)
+                rightColumn.IsVisible = !_isRightPanelCollapsed;
+
+            layoutRoot.ColumnDefinitions[1].Width = _isRightPanelCollapsed
+                ? new GridLength(0)
+                : new GridLength(1.9, GridUnitType.Star);
+        }
+
+        private void UpdateRightPanelTogglePosition()
+        {
+            var toggleButton = FindNestedControl<Button>("RightPanelToggleButton");
+            if (toggleButton == null)
+                return;
+
+            if (_isRightPanelCollapsed)
+            {
+                DockRightPanelToggleToWindowEdge(toggleButton);
+                return;
+            }
+
+            var mainLayout = FindNestedControl<Grid>("MainLayoutGrid");
+            if (mainLayout == null || mainLayout.ColumnDefinitions.Count < 3)
+            {
+                DockRightPanelToggleToWindowEdge(toggleButton);
+                return;
+            }
+
+            var firstColumnWidth = mainLayout.ColumnDefinitions[0].ActualWidth;
+            var secondColumnWidth = mainLayout.ColumnDefinitions[1].ActualWidth;
+            // Right panels have a left margin of 8px; align toggle with the panel's actual left border.
+            var anchorLeft = firstColumnWidth + secondColumnWidth + 8d;
+            if (double.IsNaN(anchorLeft) || double.IsInfinity(anchorLeft) || anchorLeft <= 0)
+            {
+                DockRightPanelToggleToWindowEdge(toggleButton);
+                return;
+            }
+
+            const double toggleWidth = 20d;
+            var left = Math.Max(0, anchorLeft - (toggleWidth / 2d));
+            if (double.IsNaN(left) || double.IsInfinity(left))
+            {
+                DockRightPanelToggleToWindowEdge(toggleButton);
+                return;
+            }
+
+            toggleButton.HorizontalAlignment = HorizontalAlignment.Left;
+            toggleButton.Margin = new Thickness(left, 0, 0, 0);
+        }
+
+        private void ScheduleRightPanelToggleReposition()
+        {
+            Dispatcher.UIThread.Post(
+                UpdateRightPanelTogglePosition,
+                DispatcherPriority.Loaded);
+        }
+
+        private static void DockRightPanelToggleToWindowEdge(Button toggleButton)
+        {
+            toggleButton.HorizontalAlignment = HorizontalAlignment.Right;
+            toggleButton.Margin = new Thickness(0);
         }
 
         private void UpdateNavigationToggleLayout(bool isExpanded)
@@ -425,6 +528,7 @@ namespace EquipmentFailureAnalysis.Views
 
             // Recalculate heatmap cell size when page visibility changes.
             // Do it immediately and once more after layout pass so Bounds are actual.
+            ApplyRightPanelState();
             OnWindowResized();
             Avalonia.Threading.Dispatcher.UIThread.Post(
                 OnWindowResized,

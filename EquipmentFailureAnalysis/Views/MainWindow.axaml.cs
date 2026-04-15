@@ -302,6 +302,11 @@ namespace EquipmentFailureAnalysis.Views
             LoadJiraSettingsToUi();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
             UpdatePageVisibility();
+            Dispatcher.UIThread.Post(() =>
+            {
+                ApplyNavigationPanelState();
+                ApplyRightPanelState();
+            }, DispatcherPriority.Loaded);
             PublishStatus("Приложение готово к работе.");
         }
 
