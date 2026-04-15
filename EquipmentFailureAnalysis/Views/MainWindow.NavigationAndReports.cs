@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -358,29 +359,144 @@ namespace EquipmentFailureAnalysis.Views
             if (file == null)
                 return;
 
-            RenderTargetBitmap? bitmap = null;
+            RenderTargetBitmap? finalBitmap = null;
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                const double centerTopMarginDip = 12d;
+                const double centerBottomMarginDip = 12d;
+                const double centerRightMarginDip = 8d;
+                const double rightLeftMarginDip = 8d;
+
                 var scale = VisualRoot?.RenderScaling ?? 1d;
-                var pixelSize = new PixelSize(
-                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Width * scale)),
-                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Height * scale)));
                 var dpi = new Vector(96d * scale, 96d * scale);
 
-                bitmap = new RenderTargetBitmap(pixelSize, dpi);
-                bitmap.Render(renderTarget);
+                var centerPixelSize = new PixelSize(
+                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Width * scale)),
+                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Height * scale)));
+                using var centerBitmap = new RenderTargetBitmap(centerPixelSize, dpi);
+                centerBitmap.Render(renderTarget);
+
+                var rightColumn = ResolveRightColumnTarget();
+                var includeRightColumn = !_isRightPanelCollapsed
+                    && rightColumn != null
+                    && rightColumn.IsVisible
+                    && rightColumn.Bounds.Width > 1
+                    && rightColumn.Bounds.Height > 1;
+
+                var centerWidthDip = renderTarget.Bounds.Width;
+                var centerHeightDip = renderTarget.Bounds.Height;
+
+                var totalWidthDip = centerWidthDip + centerRightMarginDip;
+                var totalHeightDip = centerHeightDip + centerTopMarginDip + centerBottomMarginDip;
+
+                var compositionRoot = new Grid
+                {
+                    Width = totalWidthDip,
+                    Height = totalHeightDip,
+                    Background = Brushes.Transparent,
+                    IsHitTestVisible = false
+                };
+                compositionRoot.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(totalWidthDip, GridUnitType.Pixel) });
+
+                var centerImage = new Image
+                {
+                    Source = centerBitmap,
+                    Stretch = Stretch.None,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(0, centerTopMarginDip, 0, centerBottomMarginDip)
+                };
+                Grid.SetColumn(centerImage, 0);
+
+                compositionRoot.Children.Add(centerImage);
+
+                RenderTargetBitmap? rightBitmap = null;
+                if (includeRightColumn)
+                {
+                    var rightPixelSize = new PixelSize(
+                        Math.Max(1, (int)Math.Ceiling(rightColumn!.Bounds.Width * scale)),
+                        Math.Max(1, (int)Math.Ceiling(rightColumn.Bounds.Height * scale)));
+                    rightBitmap = new RenderTargetBitmap(rightPixelSize, dpi);
+                    rightBitmap.Render(rightColumn);
+
+                    var rightWidthDip = rightColumn.Bounds.Width;
+                    var rightHeightDip = rightColumn.Bounds.Height;
+
+                    totalWidthDip = centerWidthDip + centerRightMarginDip + rightLeftMarginDip + rightWidthDip;
+                    totalHeightDip = Math.Max(centerHeightDip + centerTopMarginDip + centerBottomMarginDip, rightHeightDip);
+                    compositionRoot.Width = totalWidthDip;
+                    compositionRoot.Height = totalHeightDip;
+
+                    var rightImage = new Image
+                    {
+                        Source = rightBitmap,
+                        Stretch = Stretch.None,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(centerWidthDip + centerRightMarginDip + rightLeftMarginDip, 0, 0, 0)
+                    };
+                    compositionRoot.Children.Add(rightImage);
+                }
+
+                compositionRoot.Measure(new Size(totalWidthDip, totalHeightDip));
+                compositionRoot.Arrange(new Rect(0, 0, totalWidthDip, totalHeightDip));
+
+                var composedPixelSize = new PixelSize(
+                    Math.Max(1, (int)Math.Ceiling(totalWidthDip * scale)),
+                    Math.Max(1, (int)Math.Ceiling(totalHeightDip * scale)));
+                finalBitmap = new RenderTargetBitmap(composedPixelSize, dpi);
+                finalBitmap.Render(compositionRoot);
+                rightBitmap?.Dispose();
             }, DispatcherPriority.Render);
 
-            if (bitmap == null)
+            if (finalBitmap == null)
                 return;
 
             await using (var stream = await file.OpenWriteAsync())
             {
-                bitmap.Save(stream);
+                finalBitmap.Save(stream);
             }
-            bitmap.Dispose();
+            finalBitmap.Dispose();
 
             PublishStatus($"Скриншот средней колонки сохранен: {file.Path.LocalPath}");
+        }
+
+        private Control? ResolveRightColumnTarget()
+        {
+            var targetName = _currentPage switch
+            {
+                AppPage.Dashboard => "DashboardRightColumn",
+                AppPage.FailureAnalysis => "FailureAnalysisRightColumn",
+                AppPage.DowntimeAnalysis => "DowntimeRightColumn",
+                AppPage.Reports => "ReportsRightColumn",
+                AppPage.Settings => "SettingsRightColumn",
+                AppPage.EmployeeAnalysis => "EmployeeAnalysisRightColumn",
+                _ => null
+            };
+
+            if (string.IsNullOrWhiteSpace(targetName))
+                return null;
+
+            return FindNestedControl<Control>(targetName);
+        }
+
+        private Control? ResolveActiveLayoutRoot()
+        {
+            var layoutName = _currentPage switch
+            {
+                AppPage.Dashboard => "DashboardLayoutRoot",
+                AppPage.FailureAnalysis => "FailureAnalysisLayoutRoot",
+                AppPage.DowntimeAnalysis => "DowntimeLayoutRoot",
+                AppPage.Reports => "ReportsLayoutRoot",
+                AppPage.Settings => "SettingsLayoutRoot",
+                AppPage.EmployeeAnalysis => "EmployeeAnalysisLayoutRoot",
+                _ => null
+            };
+
+            if (string.IsNullOrWhiteSpace(layoutName))
+                return null;
+
+            return FindNestedControl<Control>(layoutName);
         }
 
         private static Control ResolveRenderTargetForMiddleColumn(Control middleColumn)
