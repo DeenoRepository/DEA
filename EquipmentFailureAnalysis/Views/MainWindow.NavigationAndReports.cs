@@ -3,7 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.Utility;
@@ -213,6 +215,96 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
 
+        }
+
+        internal async void CaptureMiddleColumnScreenshotButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var middleColumn = ResolveMiddleColumnTarget();
+            if (middleColumn == null)
+            {
+                const string message = "Средняя колонка не найдена для текущей страницы.";
+                await ShowMessageAsync("Скриншот", message);
+                PublishStatus(message);
+                return;
+            }
+
+            var renderTarget = ResolveRenderTargetForMiddleColumn(middleColumn);
+            if (renderTarget.Bounds.Width <= 1 || renderTarget.Bounds.Height <= 1)
+            {
+                const string message = "Средняя колонка еще не готова к захвату. Попробуйте повторить через секунду.";
+                await ShowMessageAsync("Скриншот", message);
+                PublishStatus(message);
+                return;
+            }
+
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Сохранить скриншот средней колонки",
+                SuggestedFileName = $"dea-middle-column-{DateTime.Now:yyyyMMdd-HHmmss}",
+                DefaultExtension = "png",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("PNG image")
+                    {
+                        Patterns = new List<string> { "*.png" },
+                        MimeTypes = new List<string> { "image/png" }
+                    }
+                }
+            });
+
+            if (file == null)
+                return;
+
+            RenderTargetBitmap? bitmap = null;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var scale = VisualRoot?.RenderScaling ?? 1d;
+                var pixelSize = new PixelSize(
+                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Width * scale)),
+                    Math.Max(1, (int)Math.Ceiling(renderTarget.Bounds.Height * scale)));
+                var dpi = new Vector(96d * scale, 96d * scale);
+
+                bitmap = new RenderTargetBitmap(pixelSize, dpi);
+                bitmap.Render(renderTarget);
+            }, DispatcherPriority.Render);
+
+            if (bitmap == null)
+                return;
+
+            await using (var stream = await file.OpenWriteAsync())
+            {
+                bitmap.Save(stream);
+            }
+            bitmap.Dispose();
+
+            PublishStatus($"Скриншот средней колонки сохранен: {file.Path.LocalPath}");
+        }
+
+        private static Control ResolveRenderTargetForMiddleColumn(Control middleColumn)
+        {
+            if (middleColumn is ScrollViewer scrollViewer && scrollViewer.Content is Control contentControl)
+                return contentControl;
+
+            return middleColumn;
+        }
+
+        private Control? ResolveMiddleColumnTarget()
+        {
+            var targetName = _currentPage switch
+            {
+                AppPage.Dashboard => "DashboardCenterColumn",
+                AppPage.FailureAnalysis => "FailureAnalysisCenterColumn",
+                AppPage.DowntimeAnalysis => "DowntimeCenterColumn",
+                AppPage.Reports => "ReportsCenterColumn",
+                AppPage.Settings => "SettingsCenterColumn",
+                AppPage.EmployeeAnalysis => "EmployeeCenterColumn",
+                _ => null
+            };
+
+            if (string.IsNullOrWhiteSpace(targetName))
+                return null;
+
+            return FindNestedControl<Control>(targetName);
         }
 
         private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)

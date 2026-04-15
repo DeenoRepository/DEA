@@ -8,7 +8,7 @@
         			<ColumnDefinition Width="1.9*" />
         		</Grid.ColumnDefinitions>
         
-        		<ScrollViewer Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        		<ScrollViewer x:Name="DashboardCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         			<StackPanel Spacing="10">
         				<Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />

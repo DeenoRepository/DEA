@@ -364,6 +364,16 @@
 				</StackPanel>
 			</StackPanel>
 			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+				<Button Classes="smallIcon"
+				        ToolTip.Tip="Скриншот средней колонки"
+				        Click="CaptureMiddleColumnScreenshotButton_Click">
+					<TextBlock Text="&#xE722;"
+					           FontFamily="Segoe MDL2 Assets"
+					           FontSize="14"
+					           Foreground="{StaticResource TextPrimary}"
+					           HorizontalAlignment="Center"
+					           VerticalAlignment="Center" />
+				</Button>
 			</StackPanel>
 		</Grid>
 	</Border>
