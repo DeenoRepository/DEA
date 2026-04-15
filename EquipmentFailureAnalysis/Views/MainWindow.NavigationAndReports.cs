@@ -426,6 +426,21 @@ namespace EquipmentFailureAnalysis.Views
                     totalHeightDip = Math.Max(centerHeightDip + centerTopMarginDip + centerBottomMarginDip, rightHeightDip);
                     compositionRoot.Width = totalWidthDip;
                     compositionRoot.Height = totalHeightDip;
+                    var rightX = centerWidthDip + centerRightMarginDip + rightLeftMarginDip;
+
+                    // Extend right panel background to the full screenshot height when center content is taller.
+                    var rightPanelBackground = new Border
+                    {
+                        Width = rightWidthDip,
+                        Height = totalHeightDip,
+                        Background = new SolidColorBrush(Color.Parse("#FFFFFF")),
+                        BorderBrush = new SolidColorBrush(Color.Parse("#E1E1E1")),
+                        BorderThickness = new Thickness(1, 0, 0, 0),
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(rightX, 0, 0, 0)
+                    };
+                    compositionRoot.Children.Add(rightPanelBackground);
 
                     var rightImage = new Image
                     {
@@ -433,7 +448,7 @@ namespace EquipmentFailureAnalysis.Views
                         Stretch = Stretch.None,
                         HorizontalAlignment = HorizontalAlignment.Left,
                         VerticalAlignment = VerticalAlignment.Top,
-                        Margin = new Thickness(centerWidthDip + centerRightMarginDip + rightLeftMarginDip, 0, 0, 0)
+                        Margin = new Thickness(rightX, 0, 0, 0)
                     };
                     compositionRoot.Children.Add(rightImage);
                 }
