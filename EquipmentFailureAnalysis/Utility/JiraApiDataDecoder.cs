@@ -141,6 +141,8 @@ namespace EquipmentFailureAnalysis.Utility
                     var typeText = GetCustomFieldText(fields, "customfield_10501");
                     var issueType = DetectIssueType(typeText, title, description);
                     var responsible = ResolveResponsible(fields);
+                    var reporter = ResolveReporter(fields);
+                    var comments = GetCommentsText(fields);
 
                     if (IsExcludedEmployee(TryGetString(fields, "assignee", "name")) || IsExcludedEmployee(responsible))
                         continue;
@@ -153,7 +155,9 @@ namespace EquipmentFailureAnalysis.Utility
                         Type = issueType,
                         Responsible = string.IsNullOrWhiteSpace(responsible) ? "Не назначен" : responsible,
                         IsInProgress = isInProgress,
-                        JiraIssueKey = TryGetString(issueElement, "key")
+                        JiraIssueKey = TryGetString(issueElement, "key"),
+                        Reporter = reporter,
+                        Comments = comments
                     };
 
                     var equipment = equipmentCollection.FirstOrDefault(e =>
@@ -200,8 +204,11 @@ namespace EquipmentFailureAnalysis.Utility
                 "resolutiondate",
                 "status",
                 "assignee",
+                "reporter",
+                "comment",
                 "project",
-                "customfield_10501"
+                "customfield_10501",
+                "customfield_10502"
             };
             fieldsForRequest.AddRange(equipmentFieldIds);
             var fields = string.Join(",", fieldsForRequest.Distinct(StringComparer.OrdinalIgnoreCase));
@@ -337,6 +344,66 @@ namespace EquipmentFailureAnalysis.Utility
                 return userName!;
 
             return "Не назначен";
+        }
+
+        private static string ResolveReporter(JsonElement fields)
+        {
+            // Primary source provided by business: "ФИО Автора"
+            var authorFullName = GetCustomFieldText(fields, "customfield_10502")?.Trim();
+            if (!string.IsNullOrWhiteSpace(authorFullName))
+                return authorFullName;
+
+            var fullName = TryGetString(fields, "reporter", "displayName")?.Trim();
+            if (!string.IsNullOrWhiteSpace(fullName))
+                return fullName;
+
+            var userName = TryGetString(fields, "reporter", "name")?.Trim();
+            if (!string.IsNullOrWhiteSpace(userName))
+                return userName;
+
+            return string.Empty;
+        }
+
+        private static string GetCommentsText(JsonElement fields)
+        {
+            if (!fields.TryGetProperty("comment", out var commentElement))
+                return string.Empty;
+
+            if (!commentElement.TryGetProperty("comments", out var commentsArray) || commentsArray.ValueKind != JsonValueKind.Array)
+                return string.Empty;
+
+            var comments = new List<string>();
+            foreach (var item in commentsArray.EnumerateArray())
+            {
+                var author = TryGetString(item, "author", "displayName")?.Trim();
+                if (string.IsNullOrWhiteSpace(author))
+                    author = TryGetString(item, "author", "name")?.Trim();
+                var createdRaw = TryGetString(item, "created")?.Trim();
+                if (string.IsNullOrWhiteSpace(createdRaw))
+                    createdRaw = TryGetString(item, "updated")?.Trim();
+                var createdLabel = string.Empty;
+                if (!string.IsNullOrWhiteSpace(createdRaw)
+                    && DateTime.TryParse(createdRaw, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var createdAt))
+                {
+                    createdLabel = createdAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture);
+                }
+                else if (!string.IsNullOrWhiteSpace(createdRaw))
+                {
+                    createdLabel = createdRaw;
+                }
+
+                var body = item.TryGetProperty("body", out var bodyElement)
+                    ? ReadJsonValueAsText(bodyElement)
+                    : null;
+                body = NormalizeDescription(body ?? string.Empty);
+                if (string.IsNullOrWhiteSpace(body))
+                    continue;
+
+                var prefix = string.IsNullOrWhiteSpace(author) ? string.Empty : $"{author}: ";
+                comments.Add(string.IsNullOrWhiteSpace(createdLabel) ? $"{prefix}{body}" : $"[{createdLabel}] {prefix}{body}");
+            }
+
+            return comments.Count == 0 ? string.Empty : string.Join(Environment.NewLine + Environment.NewLine, comments);
         }
 
         private static bool IsMissingResponsible(string? value)

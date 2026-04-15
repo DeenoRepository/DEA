@@ -205,7 +205,7 @@
                                         <TextBlock Text="Данные задачи" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
                                         <TextBlock Text="Выберите задачу кликом по области графика" FontSize="12" Foreground="{StaticResource TextMuted}" />
 
-                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Тип:" FontSize="12" Foreground="{StaticResource TextMuted}" />
                                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineType}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
 
@@ -227,8 +227,14 @@
                                             <TextBlock Grid.Row="6" Grid.Column="0" Text="Jira:" FontSize="12" Foreground="{StaticResource TextMuted}" />
                                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedTimelineJiraKey}" FontSize="12" Foreground="{StaticResource TextPrimary}" />
 
-                                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Описание:" FontSize="12" Foreground="{StaticResource TextMuted}" />
-                                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Заявитель:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedTimelineReporter}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+
+                                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Описание:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+
+                                            <TextBlock Grid.Row="9" Grid.Column="0" Text="Комментарии:" FontSize="12" Foreground="{StaticResource TextMuted}" />
+                                            <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedTimelineComments}" FontSize="12" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
                                         </Grid>
                                     </StackPanel>
         						</Border>

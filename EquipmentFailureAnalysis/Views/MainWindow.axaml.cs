@@ -158,7 +158,9 @@ namespace EquipmentFailureAnalysis.Views
                 RepairProbability = source.RepairProbability,
                 SetupProbability = source.SetupProbability,
                 IsInProgress = source.IsInProgress,
-                JiraIssueKey = source.JiraIssueKey
+                JiraIssueKey = source.JiraIssueKey,
+                Reporter = source.Reporter,
+                Comments = source.Comments
             };
         }
 
@@ -197,6 +199,8 @@ namespace EquipmentFailureAnalysis.Views
             if (Math.Abs(target.SetupProbability - source.SetupProbability) > 0.0001) { target.SetupProbability = source.SetupProbability; changed = true; }
             if (target.IsInProgress != source.IsInProgress) { target.IsInProgress = source.IsInProgress; changed = true; }
             if (!string.Equals(target.JiraIssueKey, source.JiraIssueKey, StringComparison.OrdinalIgnoreCase)) { target.JiraIssueKey = source.JiraIssueKey; changed = true; }
+            if (!string.Equals(target.Reporter, source.Reporter, StringComparison.Ordinal)) { target.Reporter = source.Reporter; changed = true; }
+            if (!string.Equals(target.Comments, source.Comments, StringComparison.Ordinal)) { target.Comments = source.Comments; changed = true; }
 
             return changed;
         }

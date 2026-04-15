@@ -279,6 +279,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                 this.RaisePropertyChanged(nameof(SelectedTimelineDescription));
                 this.RaisePropertyChanged(nameof(SelectedTimelineStatus));
                 this.RaisePropertyChanged(nameof(SelectedTimelineJiraKey));
+                this.RaisePropertyChanged(nameof(SelectedTimelineReporter));
+                this.RaisePropertyChanged(nameof(SelectedTimelineComments));
             }
         }
 
@@ -291,8 +293,15 @@ namespace EquipmentFailureAnalysis.ViewModels
         public string SelectedTimelineDescription => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Description) ? "Выберите задачу на графике" : SelectedTimelineAnnotation!.Description;
         public string SelectedTimelineStatus => SelectedTimelineAnnotation == null ? "-" : (SelectedTimelineAnnotation.IsInProgress ? "В процессе" : "Завершена");
         public string SelectedTimelineJiraKey => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.JiraIssueKey) ? "-" : SelectedTimelineAnnotation!.JiraIssueKey;
+        public string SelectedTimelineReporter => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Reporter) ? "-" : SelectedTimelineAnnotation!.Reporter;
+        public string SelectedTimelineComments => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Comments) ? "-" : SelectedTimelineAnnotation!.Comments;
 
-        public ReactiveCommand<DateTime, Unit>? ShowDayTimelineCommand { get; set; }
+        private ReactiveCommand<DateTime, Unit>? _showDayTimelineCommand;
+        public ReactiveCommand<DateTime, Unit>? ShowDayTimelineCommand
+        {
+            get => _showDayTimelineCommand;
+            set => this.RaiseAndSetIfChanged(ref _showDayTimelineCommand, value);
+        }
         public ReactiveCommand<Models.Annotation?, Unit> SelectTimelineAnnotationCommand { get; }
 
         private bool _showRepairs = true;
@@ -1134,6 +1143,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                             Duration = duration.ToString(@"hh\:mm"),
                             Type = issue.Type,
                             JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
+                            Reporter = issue.Reporter ?? string.Empty,
+                            Comments = issue.Comments ?? string.Empty,
                             IsInProgress = issue.IsInProgress
                         });
 

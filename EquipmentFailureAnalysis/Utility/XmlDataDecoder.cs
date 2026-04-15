@@ -155,9 +155,18 @@ namespace EquipmentFailureAnalysis.Utility
             foreach (XmlNode xmlNode in xmlNodeList)
             {
                 var subdivision = GetItemSubdivision(xmlNode, fallbackSubdivision);
-                // Фильтр по статусу (пропускаем нерешенные задачи)
-                string status = xmlNode["status"]?.InnerText ?? string.Empty;
-                if (!status.Equals("Решен", StringComparison.OrdinalIgnoreCase))
+                // Фильтр по статусу: оставляем завершенные и "в работе"
+                string status = xmlNode["status"]?.InnerText?.Trim() ?? string.Empty;
+                bool isResolvedStatus =
+                    status.Equals("Решен", StringComparison.OrdinalIgnoreCase)
+                    || status.Equals("Resolved", StringComparison.OrdinalIgnoreCase)
+                    || status.Equals("Done", StringComparison.OrdinalIgnoreCase)
+                    || status.Equals("Closed", StringComparison.OrdinalIgnoreCase);
+                bool isInProgressStatus =
+                    status.Equals("В процессе", StringComparison.OrdinalIgnoreCase)
+                    || status.Equals("В работе", StringComparison.OrdinalIgnoreCase)
+                    || status.Equals("In Progress", StringComparison.OrdinalIgnoreCase);
+                if (!isResolvedStatus && !isInProgressStatus)
                     continue;
 
                 // 1. Поиск данных об оборудовании в кастомных полях
@@ -198,6 +207,11 @@ namespace EquipmentFailureAnalysis.Utility
                 // 2. Парсинг дат (с учетом формата JIRA RSS)
                 DateTime.TryParse(xmlNode["created"]?.InnerText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime start);
                 DateTime.TryParse(xmlNode["resolved"]?.InnerText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime end);
+                DateTime.TryParse(xmlNode["updated"]?.InnerText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime updated);
+                if (end == default)
+                    end = updated != default ? updated : start;
+                if (end < start)
+                    end = start;
 
                 // 3. Обработка описания (чистка HTML)
                 string description = xmlNode["description"]?.InnerText ?? string.Empty;
@@ -241,13 +255,66 @@ namespace EquipmentFailureAnalysis.Utility
                 if (IsExcludedEmployee(assigneeUsername) || IsExcludedEmployee(responsible))
                     continue;
 
+                // ФИО автора заявки (Jira custom field 10502), fallback на <reporter>
+                var reporterNode = xmlNode.SelectSingleNode("customfields/customfield[@id='customfield_10502']/customfieldvalues/customfieldvalue")
+                    ?? xmlNode.SelectSingleNode("customfields/customfield[customfieldname='ФИО Автора']/customfieldvalues/customfieldvalue");
+                var reporter = reporterNode?.InnerText?.Trim();
+                if (string.IsNullOrWhiteSpace(reporter))
+                    reporter = xmlNode["reporter"]?.InnerText?.Trim();
+
+                // Комментарии из Jira RSS: <comments><comment ...>...</comment></comments>
+                string comments = string.Empty;
+                var commentNodes = xmlNode.SelectNodes("comments/comment");
+                if (commentNodes != null && commentNodes.Count > 0)
+                {
+                    var parts = new List<string>();
+                    foreach (XmlNode commentNode in commentNodes)
+                    {
+                        var author = commentNode.Attributes?["author"]?.Value?.Trim();
+                        var createdRaw = commentNode.Attributes?["created"]?.Value?.Trim();
+                        if (string.IsNullOrWhiteSpace(createdRaw))
+                            createdRaw = commentNode.Attributes?["updated"]?.Value?.Trim();
+                        var text = commentNode.InnerText ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            // Jira XML часто хранит комментарии как HTML (<p>...</p>) внутри текста.
+                            // Снимаем теги, чтобы стабильно выводить плейн-текст в карточке задачи.
+                            text = Regex.Replace(text, "<[^>]+>", string.Empty, RegexOptions.IgnoreCase).Trim();
+                        }
+
+                        if (string.IsNullOrWhiteSpace(text))
+                            continue;
+
+                        var createdLabel = string.Empty;
+                        if (!string.IsNullOrWhiteSpace(createdRaw)
+                            && DateTime.TryParse(createdRaw, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var createdAt))
+                        {
+                            createdLabel = createdAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture);
+                        }
+                        else if (!string.IsNullOrWhiteSpace(createdRaw))
+                        {
+                            createdLabel = createdRaw;
+                        }
+
+                        var prefix = string.IsNullOrWhiteSpace(author) ? string.Empty : $"{author}: ";
+                        parts.Add(string.IsNullOrWhiteSpace(createdLabel) ? $"{prefix}{text}" : $"[{createdLabel}] {prefix}{text}");
+                    }
+
+                    if (parts.Count > 0)
+                        comments = string.Join(Environment.NewLine + Environment.NewLine, parts);
+                }
+
                 var issue = new Issue
                 {
                     Start = start,
                     End = end,
                     Description = description,
                     Type = issueType,
-                    Responsible = string.IsNullOrEmpty(responsible) ? "Не назначен" : responsible
+                    Responsible = string.IsNullOrEmpty(responsible) ? "Не назначен" : responsible,
+                    JiraIssueKey = xmlNode["key"]?.InnerText?.Trim(),
+                    IsInProgress = isInProgressStatus,
+                    Reporter = string.IsNullOrWhiteSpace(reporter) ? null : reporter,
+                    Comments = string.IsNullOrWhiteSpace(comments) ? null : comments
                 };
 
                 // NLP-like heuristic: token scoring with keyword lists and simple normalization

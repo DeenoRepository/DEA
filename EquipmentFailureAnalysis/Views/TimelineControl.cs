@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -197,9 +197,8 @@ namespace EquipmentFailureAnalysis.Views
                 return;
 
             var point = e.GetPosition(this);
-            Models.Annotation? selected = null;
-            if (TryGetAnnotationAt(point, out var found))
-                selected = found;
+            if (!TryGetAnnotationAt(point, out var selected) || selected == null)
+                return;
 
             if (command.CanExecute(selected))
             {
@@ -234,7 +233,7 @@ namespace EquipmentFailureAnalysis.Views
             double y1 = top + 0.1 * plotH;
             double y0 = top + 0.9 * plotH;
 
-            if (point.X < left || point.X > left + plotW || point.Y < y1 || point.Y > y0)
+            if (point.X < left || point.X > left + plotW)
                 return false;
 
             var annSource = Annotations as IList;
@@ -303,50 +302,131 @@ namespace EquipmentFailureAnalysis.Views
             double right = 4;
             double top = 4;
             double bottom = ShowHourLabels ? 70 : 4;
+            double annFont = 12;
+            double gap = 6;
 
             double plotW = Math.Max(1, w - left - right);
-            double plotH = Math.Max(1, h - top - bottom);
-            double y1 = top + 0.1 * plotH;
-            double y0 = top + 0.9 * plotH;
-
-            if (point.X < left || point.X > left + plotW || point.Y < y1 || point.Y > y0)
+            if (point.X < left || point.X > left + plotW)
                 return false;
 
             var annSource = Annotations as IList;
             if (annSource == null || annSource.Count == 0)
                 return false;
 
-            double hour = (point.X - left) / (plotW / 24.0);
-            hour = Math.Clamp(hour, 0.0, 24.0);
+            if (!(ShowHourLabels && ShowAnnotations))
+                return false;
 
-            var active = annSource
-                .OfType<Models.Annotation>()
-                .Where(a => hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
-                .OrderBy(a => Math.Abs(hour - ((a.StartHour + a.EndHour) / 2.0)))
-                .ThenByDescending(a =>
-                {
-                    if (TimeSpan.TryParse(a.Duration, out var parsed))
-                        return parsed.TotalMinutes;
-                    return 0.0;
-                })
-                .FirstOrDefault();
+            var annObjs = annSource.OfType<Models.Annotation>()
+                .OrderBy(a => a.Hour)
+                .ToList();
+            int annCount = annObjs.Count;
+            if (annCount == 0)
+                return false;
 
-            if (active != null)
+            double[] annWidths = new double[annCount];
+            double[] annHeights = new double[annCount];
+            double[] annCenters = new double[annCount];
+            for (int i = 0; i < annCount; i++)
             {
-                annotation = active;
-                return true;
+                var a = annObjs[i];
+                string l1 = a.Description ?? string.Empty;
+                string l2 = a.Responsible ?? string.Empty;
+                string l3 = a.Duration ?? string.Empty;
+                int maxLen = Math.Max(l1.Length, Math.Max(l2.Length, l3.Length));
+                annWidths[i] = Math.Max(140, maxLen * (annFont * 0.52));
+                annHeights[i] = annFont * 3 + 16;
+                annCenters[i] = left + a.Hour * (plotW / 24.0);
             }
 
-            var nearest = annSource
-                .OfType<Models.Annotation>()
-                .Select(a => new { Annotation = a, Dist = Math.Abs(hour - a.StartHour) })
-                .OrderBy(x => x.Dist)
-                .FirstOrDefault();
-
-            if (nearest != null && nearest.Dist <= 0.5)
+            bool annSingleRow = true;
+            for (int i = 0; i < annCount - 1; i++)
             {
-                annotation = nearest.Annotation;
-                return true;
+                double need = (annWidths[i] + annWidths[i + 1]) / 2.0 + gap;
+                if (annCenters[i + 1] - annCenters[i] < need)
+                {
+                    annSingleRow = false;
+                    break;
+                }
+            }
+
+            int annRows = annSingleRow ? 1 : 2;
+            double maxAnnH = annHeights.Max();
+            double annSpace = annRows * (maxAnnH + gap) + 28;
+
+            top += annSpace;
+            var placedRects = new List<Rect>();
+
+            for (int i = 0; i < annCount; i++)
+            {
+                var a = annObjs[i];
+                double ax = annCenters[i];
+                var markerRect = new Rect(ax - 6, top - 13, 12, 12);
+
+                string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
+                string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
+                string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
+                int maxLen2 = 52;
+                if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
+                if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
+
+                string line1 = rawDescription;
+                string line2 = "Ответственный: " + rawResponsible;
+                string line3 = "Длительность: " + rawDuration;
+
+                double wRect = annWidths[i];
+                double hRect = annHeights[i];
+                double ft1w = Math.Max(0, line1.Length * (annFont * 0.6));
+                double ft2w = Math.Max(0, line2.Length * (annFont * 0.6));
+                double ft3w = Math.Max(0, line3.Length * (annFont * 0.6));
+                double contentW = Math.Max(ft1w, Math.Max(ft2w, ft3w));
+                wRect = Math.Max(wRect, contentW + 12);
+
+                double xRect = ax - wRect / 2.0;
+                double minX = left;
+                double maxX = left + plotW - wRect;
+                xRect = Math.Max(minX, Math.Min(xRect, maxX));
+                double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
+
+                var candidate = new Rect(xRect, yRect, wRect, hRect);
+                int tries = 0;
+                while (tries < 10)
+                {
+                    bool coll = false;
+                    foreach (var pr in placedRects)
+                    {
+                        if (pr.Intersects(candidate))
+                        {
+                            coll = true;
+                            double nx = pr.X + pr.Width + gap;
+                            if (nx <= maxX) candidate = new Rect(nx, candidate.Y, candidate.Width, candidate.Height);
+                            else
+                            {
+                                candidate = new Rect(minX, candidate.Y, candidate.Width, candidate.Height);
+                                if (!annSingleRow)
+                                    candidate = new Rect(candidate.X, candidate.Y - (hRect + gap), candidate.Width, candidate.Height);
+                            }
+                            break;
+                        }
+                    }
+                    if (!coll) break;
+                    tries++;
+                }
+                placedRects.Add(candidate);
+
+                var textRect = candidate;
+                double annFt1w = Math.Max(0, line1.Length * (annFont * 0.6));
+                double annFt2w = Math.Max(0, line2.Length * (annFont * 0.6));
+                double annFt3w = Math.Max(0, line3.Length * (annFont * 0.6));
+                double annContentW = Math.Max(annFt1w, Math.Max(annFt2w, annFt3w));
+                wRect = Math.Max(wRect, annContentW + 12);
+                wRect = Math.Min(wRect, plotW - 8);
+                textRect = new Rect(Math.Max(left, Math.Min(left + plotW - wRect, textRect.X)), textRect.Y, wRect, hRect);
+
+                if (markerRect.Contains(point) || textRect.Contains(point))
+                {
+                    annotation = a;
+                    return true;
+                }
             }
 
             return false;
@@ -356,14 +436,14 @@ namespace EquipmentFailureAnalysis.Views
         {
             var start = annotation.StartDate.ToString("HH:mm");
             var end = annotation.EndDate.ToString("HH:mm");
-            var duration = string.IsNullOrWhiteSpace(annotation.Duration) ? "—" : annotation.Duration.Trim();
+            var duration = string.IsNullOrWhiteSpace(annotation.Duration) ? "-" : annotation.Duration.Trim();
             var responsible = string.IsNullOrWhiteSpace(annotation.Responsible) ? "Не назначен" : annotation.Responsible.Trim();
             var description = string.IsNullOrWhiteSpace(annotation.Description) ? "Без описания" : annotation.Description.Trim();
 
             if (description.Length > 90)
                 description = description.Substring(0, 87) + "...";
 
-            builder.AppendLine($"{title}  •  {start}–{end}  •  {duration}");
+            builder.AppendLine($"{title} - {start}-{end} - {duration}");
             builder.AppendLine($"Ответственный: {responsible}");
             builder.Append(description);
         }
@@ -893,3 +973,5 @@ namespace EquipmentFailureAnalysis.Views
         }
     }
 }
+
+

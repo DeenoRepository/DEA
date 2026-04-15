@@ -332,6 +332,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                     Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
                     Type = issue.Type,
                     JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
+                    Reporter = issue.Reporter ?? string.Empty,
+                    Comments = issue.Comments ?? string.Empty,
                     IsInProgress = issue.IsInProgress
                 });
             }

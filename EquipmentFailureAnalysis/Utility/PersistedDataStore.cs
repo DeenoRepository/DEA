@@ -19,6 +19,8 @@ namespace EquipmentFailureAnalysis.Utility
             public string? Responsible { get; set; }
             public bool IsInProgress { get; set; }
             public string? JiraIssueKey { get; set; }
+            public string? Reporter { get; set; }
+            public string? Comments { get; set; }
         }
 
         private sealed class PersistedEquipment
@@ -61,7 +63,9 @@ namespace EquipmentFailureAnalysis.Utility
                             Type = i.Type,
                             Responsible = i.Responsible,
                             IsInProgress = i.IsInProgress,
-                            JiraIssueKey = i.JiraIssueKey
+                            JiraIssueKey = i.JiraIssueKey,
+                            Reporter = i.Reporter,
+                            Comments = i.Comments
                         })
                         .ToList()
                 })
@@ -104,7 +108,9 @@ namespace EquipmentFailureAnalysis.Utility
                             Type = issue.Type,
                             Responsible = issue.Responsible,
                             IsInProgress = issue.IsInProgress,
-                            JiraIssueKey = issue.JiraIssueKey
+                            JiraIssueKey = issue.JiraIssueKey,
+                            Reporter = issue.Reporter,
+                            Comments = issue.Comments
                         });
                     }
 

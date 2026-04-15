@@ -24,6 +24,10 @@ namespace EquipmentFailureAnalysis.Models
         public IssueType Type { get; set; }
         // issue key from source system (for example Jira), if available
         public string JiraIssueKey { get; set; } = string.Empty;
+        // creator/reporter of the task
+        public string Reporter { get; set; } = string.Empty;
+        // comments text from the task
+        public string Comments { get; set; } = string.Empty;
         // marker that the task is still in progress
         public bool IsInProgress { get; set; }
     }

@@ -38,6 +38,12 @@ namespace EquipmentFailureAnalysis.Models
 
         // Уникальный ключ задачи Jira (например, PROJ-123)
         public string? JiraIssueKey { get; set; }
+
+        // Пользователь, подавший заявку (Reporter в Jira)
+        public string? Reporter { get; set; }
+
+        // Комментарии из заявки Jira (объединенный текст)
+        public string? Comments { get; set; }
     }
 
     public enum IssueType
