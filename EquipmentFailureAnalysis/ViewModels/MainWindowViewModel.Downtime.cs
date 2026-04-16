@@ -36,6 +36,13 @@ namespace EquipmentFailureAnalysis.ViewModels
                 _ => source
             };
 
+            source = SelectedDowntimeStatusFilter switch
+            {
+                "В процессе" => source.Where(i => i.IsInProgress),
+                "Завершена" => source.Where(i => !i.IsInProgress),
+                _ => source
+            };
+
             if (!string.Equals(SelectedDowntimeResponsibleFilter, "Все ответственные", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.Equals(SelectedDowntimeResponsibleFilter, "Без ответственного", StringComparison.CurrentCultureIgnoreCase))
@@ -237,6 +244,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         private void ResetUniversalFilters()
         {
             SelectedDowntimeIssueTypeFilter = "Все типы";
+            SelectedDowntimeStatusFilter = "Все статусы";
             SelectedDowntimeResponsibleFilter = "Все ответственные";
             SelectedDowntimeSubdivisionFilter = "Все группы";
             DowntimeEquipmentSearchQuery = string.Empty;
@@ -284,6 +292,13 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 "Ремонты" => source.Where(i => i.Type == IssueType.Ремонт),
                 "Настройки" => source.Where(i => i.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            source = SelectedDowntimeStatusFilter switch
+            {
+                "В процессе" => source.Where(i => i.IsInProgress),
+                "Завершена" => source.Where(i => !i.IsInProgress),
                 _ => source
             };
 

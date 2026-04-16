@@ -16,6 +16,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
         private DateTime _downtimeAnalysisDate = DateTime.Now.Date;
         private string _selectedDowntimeIssueTypeFilter = "\u0412\u0441\u0435 \u0442\u0438\u043f\u044b";
+        private string _selectedDowntimeStatusFilter = "\u0412\u0441\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b";
         private string _selectedDowntimeResponsibleFilter = "\u0412\u0441\u0435 \u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435";
         private string _selectedDowntimeSubdivisionFilter = "\u0412\u0441\u0435 \u0433\u0440\u0443\u043f\u043f\u044b";
         private string _downtimeEquipmentSearchQuery = string.Empty;
@@ -37,6 +38,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             DowntimeIssueTypeFilters.Add("\u0412\u0441\u0435 \u0442\u0438\u043f\u044b");
             DowntimeIssueTypeFilters.Add("\u0420\u0435\u043c\u043e\u043d\u0442\u044b");
             DowntimeIssueTypeFilters.Add("\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438");
+            DowntimeStatusFilters.Add("\u0412\u0441\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b");
+            DowntimeStatusFilters.Add("\u0412 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435");
+            DowntimeStatusFilters.Add("\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430");
 
             ResetUniversalFiltersCommand = ReactiveCommand.Create(ResetUniversalFilters);
             ShowDowntimeDayCommand = ReactiveCommand.Create<DateTime>(date =>
@@ -46,6 +50,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         }
 
         public ObservableCollection<string> DowntimeIssueTypeFilters { get; } = new();
+        public ObservableCollection<string> DowntimeStatusFilters { get; } = new();
         public ObservableCollection<string> DowntimeResponsibleFilters { get; } = new();
         public ObservableCollection<string> DowntimeSubdivisionFilters { get; } = new();
         public ObservableCollection<MonthRow> DowntimeMonthRows { get; } = new();
@@ -83,6 +88,19 @@ namespace EquipmentFailureAnalysis.ViewModels
                     return;
 
                 this.RaiseAndSetIfChanged(ref _selectedDowntimeIssueTypeFilter, value);
+                OnFiltersChanged();
+            }
+        }
+
+        public string SelectedDowntimeStatusFilter
+        {
+            get => _selectedDowntimeStatusFilter;
+            set
+            {
+                if (string.Equals(_selectedDowntimeStatusFilter, value, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _selectedDowntimeStatusFilter, value);
                 OnFiltersChanged();
             }
         }
@@ -414,6 +432,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             _isRefreshingFilters = true;
             SelectedDowntimeIssueTypeFilter = "\u0412\u0441\u0435 \u0442\u0438\u043f\u044b";
+            SelectedDowntimeStatusFilter = "\u0412\u0441\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b";
             SelectedDowntimeResponsibleFilter = "\u0412\u0441\u0435 \u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435";
             SelectedDowntimeSubdivisionFilter = "\u0412\u0441\u0435 \u0433\u0440\u0443\u043f\u043f\u044b";
             DowntimeEquipmentSearchQuery = string.Empty;
@@ -454,6 +473,13 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 "\u0420\u0435\u043c\u043e\u043d\u0442\u044b" => source.Where(i => i.Type == IssueType.Ремонт),
                 "\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438" => source.Where(i => i.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            source = SelectedDowntimeStatusFilter switch
+            {
+                "\u0412 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435" => source.Where(i => i.IsInProgress),
+                "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430" => source.Where(i => !i.IsInProgress),
                 _ => source
             };
 

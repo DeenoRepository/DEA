@@ -1,6 +1,9 @@
 ﻿using EquipmentFailureAnalysis.Models;
 using ReactiveUI;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive;
 
 namespace EquipmentFailureAnalysis.ViewModels
 {
@@ -29,12 +32,25 @@ namespace EquipmentFailureAnalysis.ViewModels
         private ObservableCollection<SubdivisionRatingRow> _dashboardSubdivisionRatings = new();
         private ObservableCollection<DashboardTrendPoint> _dashboardMonthlyTrends = new();
 
+        private bool _isRefreshingFilters;
+        private string _selectedDashboardIssueTypeFilter = "Все типы";
+        private string _selectedDashboardResponsibleFilter = "Все ответственные";
+        private string _selectedDashboardSubdivisionFilter = "Все группы";
+
         public DashboardViewModel(MainWindowViewModel shell)
         {
             _shell = shell;
+            DashboardIssueTypeFilters.Add("Все типы");
+            DashboardIssueTypeFilters.Add("Ремонты");
+            DashboardIssueTypeFilters.Add("Настройки");
+            ResetDashboardFiltersCommand = ReactiveCommand.Create(ResetDashboardFilters);
         }
 
         public ObservableCollection<EquipmentInfo> EquipmentCollection => _shell.EquipmentCollection;
+        public ObservableCollection<string> DashboardIssueTypeFilters { get; } = new();
+        public ObservableCollection<string> DashboardResponsibleFilters { get; } = new();
+        public ObservableCollection<string> DashboardSubdivisionFilters { get; } = new();
+        public ReactiveCommand<Unit, Unit> ResetDashboardFiltersCommand { get; }
 
         public int DashboardCurrentPeriodIssues
         {
@@ -154,6 +170,109 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardSubdivisionRatings;
             set => this.RaiseAndSetIfChanged(ref _dashboardSubdivisionRatings, value);
+        }
+
+        public string SelectedDashboardIssueTypeFilter
+        {
+            get => _selectedDashboardIssueTypeFilter;
+            set
+            {
+                var normalized = string.IsNullOrWhiteSpace(value) ? "Все типы" : value.Trim();
+                if (string.Equals(_selectedDashboardIssueTypeFilter, normalized, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _selectedDashboardIssueTypeFilter, normalized);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        public string SelectedDashboardResponsibleFilter
+        {
+            get => _selectedDashboardResponsibleFilter;
+            set
+            {
+                var normalized = string.IsNullOrWhiteSpace(value) ? "Все ответственные" : value.Trim();
+                if (string.Equals(_selectedDashboardResponsibleFilter, normalized, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _selectedDashboardResponsibleFilter, normalized);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        public string SelectedDashboardSubdivisionFilter
+        {
+            get => _selectedDashboardSubdivisionFilter;
+            set
+            {
+                var normalized = string.IsNullOrWhiteSpace(value) ? "Все группы" : value.Trim();
+                if (string.Equals(_selectedDashboardSubdivisionFilter, normalized, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _selectedDashboardSubdivisionFilter, normalized);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        internal void RebuildResponsibleFilters()
+        {
+            var previous = SelectedDashboardResponsibleFilter;
+            DashboardResponsibleFilters.Clear();
+            DashboardResponsibleFilters.Add("Все ответственные");
+            DashboardResponsibleFilters.Add("Без ответственного");
+
+            foreach (var responsible in _shell.GetEquipmentForReports()
+                .SelectMany(e => e.Issues)
+                .Select(i => i.Responsible?.Trim())
+                .Where(r => !string.IsNullOrWhiteSpace(r) && !string.Equals(r, "-", StringComparison.CurrentCultureIgnoreCase))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(r => r, StringComparer.CurrentCultureIgnoreCase))
+            {
+                DashboardResponsibleFilters.Add(responsible!);
+            }
+
+            _isRefreshingFilters = true;
+            SelectedDashboardResponsibleFilter = DashboardResponsibleFilters.Contains(previous) ? previous : "Все ответственные";
+            _isRefreshingFilters = false;
+        }
+
+        internal void RebuildSubdivisionFilters()
+        {
+            var previous = SelectedDashboardSubdivisionFilter;
+            DashboardSubdivisionFilters.Clear();
+            DashboardSubdivisionFilters.Add("Все группы");
+            DashboardSubdivisionFilters.Add("Без группы");
+
+            foreach (var subdivision in _shell.GetEquipmentForReports()
+                .Select(e => e.Subdivision?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
+            {
+                DashboardSubdivisionFilters.Add(subdivision!);
+            }
+
+            _isRefreshingFilters = true;
+            SelectedDashboardSubdivisionFilter = DashboardSubdivisionFilters.Contains(previous) ? previous : "Все группы";
+            _isRefreshingFilters = false;
+        }
+
+        private void ResetDashboardFilters()
+        {
+            _isRefreshingFilters = true;
+            SelectedDashboardIssueTypeFilter = "Все типы";
+            SelectedDashboardResponsibleFilter = "Все ответственные";
+            SelectedDashboardSubdivisionFilter = "Все группы";
+            _isRefreshingFilters = false;
+            _shell.HandleDashboardFilterChanged();
+        }
+
+        private void OnDashboardFiltersChanged()
+        {
+            if (_isRefreshingFilters)
+                return;
+
+            _shell.HandleDashboardFilterChanged();
         }
     }
 }

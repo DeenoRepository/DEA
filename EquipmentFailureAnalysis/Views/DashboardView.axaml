@@ -13,6 +13,28 @@
         				<Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
         					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        						<StackPanel Spacing="8">
+        							<TextBlock Text="Фильтр" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="Фильтрация метрик и графиков на этой странице" FontSize="12" Foreground="{StaticResource TextMuted}" />
+        							<Grid ColumnDefinitions="Auto,260,*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+        								<TextBlock Grid.Column="0" Text="Группа:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        								<ComboBox Grid.Column="1"
+        								          ItemsSource="{Binding DashboardSubdivisionFilters}"
+        								          SelectedItem="{Binding SelectedDashboardSubdivisionFilter, Mode=TwoWay}"
+        								          Background="{StaticResource SurfaceBrush}"
+        								          BorderBrush="{StaticResource ControlBorderBrush}"
+        								          BorderThickness="1" />
+        								<Button Grid.Column="3"
+        								        Classes="resetFilter"
+        								        Content="Сброс"
+        								        Command="{Binding ResetDashboardFiltersCommand}" />
+        							</Grid>
+        						</StackPanel>
+        					</Border>
+        				</Grid>
+        				<Grid>
+        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
         						<StackPanel>
                                   <TextBlock Text="Состояние работ" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         							<TextBlock Text="Показывает текущую интенсивность работ и ключевые изменения относительно предыдущего периода" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,2,0,10" TextWrapping="Wrap" />

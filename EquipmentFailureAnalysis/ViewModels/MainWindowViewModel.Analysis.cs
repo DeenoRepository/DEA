@@ -84,6 +84,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             _masterEquipment = all;
             RebuildDowntimeResponsibleFilters();
             RebuildDowntimeSubdivisionFilters();
+            RebuildDashboardFilters();
             RebuildEmployeeMonthOptions();
             RebuildEmployeeSubdivisionFilters();
             // keep left column ordering by total issues
@@ -352,8 +353,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             var previousPeriodStart = currentPeriodStart.AddDays(-30);
             var previousPeriodEnd = currentPeriodStart;
 
-            var currentIssues = GetIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
-            var previousIssues = GetIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
+            var currentIssues = GetDashboardFilteredIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
+            var previousIssues = GetDashboardFilteredIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
             var currentRepairIssues = currentIssues
                 .Where(i => i.Issue.Type == IssueType.Ремонт)
                 .ToList();
@@ -405,11 +406,25 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ? 0.0
                 : slaMetCount * 100.0 / assignedCurrentIssues.Count;
 
-            var topPerformer = EmployeeAnalysisRows.FirstOrDefault();
+            var topPerformer = currentIssues
+                .Where(i => !IsUnassignedResponsible(i.Issue.Responsible))
+                .GroupBy(i => i.Issue.Responsible!.Trim(), StringComparer.CurrentCultureIgnoreCase)
+                .Select(g =>
+                {
+                    var all = g.ToList();
+                    var slaMet = all.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var sla = all.Count == 0 ? 0.0 : slaMet * 100.0 / all.Count;
+                    var score = all.Count * 0.6 + sla * 0.4;
+                    return new { Name = g.Key, Count = all.Count, Sla = sla, Score = score };
+                })
+                .OrderByDescending(x => x.Score)
+                .ThenByDescending(x => x.Count)
+                .ThenBy(x => x.Name)
+                .FirstOrDefault();
             DashboardTopPerformer = topPerformer?.Name ?? "-";
             DashboardTopPerformerValue = topPerformer == null
                 ? "Нет данных"
-                : $"Оценка {topPerformer.PerformanceSummary}, SLA {topPerformer.SlaCompliancePercent:0.#}%";
+                : $"{topPerformer.Count} событий, SLA {topPerformer.Sla:0.#}%";
 
             var topRiskEquipment = currentRepairIssues
                 .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
@@ -505,7 +520,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             var trendItems = months
                 .Select(m =>
                 {
-                    var monthIssues = GetIssuesOverlappingPeriod(m.start, m.end).ToList();
+                    var monthIssues = GetDashboardFilteredIssuesOverlappingPeriod(m.start, m.end).ToList();
                     var monthRepairs = monthIssues
                         .Where(x => x.Issue.Type == IssueType.Ремонт)
                         .ToList();
@@ -541,6 +556,32 @@ namespace EquipmentFailureAnalysis.ViewModels
                 item.IntensityPercent = item.IssuesCount * 100.0 / maxIssues;
 
             DashboardMonthlyTrends = new ObservableCollection<Models.DashboardTrendPoint>(trendItems);
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> GetDashboardFilteredIssuesOverlappingPeriod(DateTime start, DateTime end)
+        {
+            var source = GetIssuesOverlappingPeriod(start, end);
+
+            if (!string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                    source = source.Where(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision));
+                else
+                    source = source.Where(i => string.Equals(i.Equipment.Subdivision?.Trim(), Dashboard.SelectedDashboardSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return source;
+        }
+
+        internal void HandleDashboardFilterChanged()
+        {
+            BuildDashboard();
+        }
+
+        private void RebuildDashboardFilters()
+        {
+            Dashboard.RebuildResponsibleFilters();
+            Dashboard.RebuildSubdivisionFilters();
         }
 
         private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> GetIssuesOverlappingPeriod(DateTime start, DateTime end)

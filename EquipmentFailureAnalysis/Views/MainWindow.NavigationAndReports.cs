@@ -31,6 +31,12 @@ namespace EquipmentFailureAnalysis.Views
         private const double ExpandedNavigationWidth = 320d;
         private const double CollapsedNavigationWidth = 70d;
         private const double ExpandedRightPanelWidth = 440d;
+        private string _savedDowntimeIssueTypeFilter = "Все типы";
+        private string _savedDowntimeStatusFilter = "Все статусы";
+        private string _savedDowntimeResponsibleFilter = "Все ответственные";
+        private string _savedDowntimeSubdivisionFilter = "Все группы";
+        private string _savedDowntimeEquipmentSearchQuery = string.Empty;
+        private string _savedDashboardSubdivisionFilter = "Все группы";
 
         private void ToggleNavigationButton_Click(object? sender, RoutedEventArgs e)
         {
@@ -232,18 +238,23 @@ namespace EquipmentFailureAnalysis.Views
 
         private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             _currentPage = AppPage.FailureAnalysis;
             UpdatePageVisibility();
+            RestorePageFilters();
         }
 
         private void DashboardButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             _currentPage = AppPage.Dashboard;
             UpdatePageVisibility();
+            RestorePageFilters();
         }
 
         private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
             {
                 vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
@@ -251,19 +262,24 @@ namespace EquipmentFailureAnalysis.Views
 
             _currentPage = AppPage.DowntimeAnalysis;
             UpdatePageVisibility();
+            RestorePageFilters();
         }
 
         private void SettingsButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             _currentPage = AppPage.Settings;
             UpdatePageVisibility();
+            RestorePageFilters();
         }
 
         private void ReportsButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             _currentPage = AppPage.Reports;
             UpdatePageVisibility();
             InitializeReportTools();
+            RestorePageFilters();
         }
 
         private void InitializeReportTools()
@@ -544,8 +560,36 @@ namespace EquipmentFailureAnalysis.Views
 
         private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
+            CapturePageFilters();
             _currentPage = AppPage.EmployeeAnalysis;
             UpdatePageVisibility();
+            RestorePageFilters();
+        }
+
+        private void CapturePageFilters()
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            _savedDowntimeIssueTypeFilter = vm.SelectedDowntimeIssueTypeFilter;
+            _savedDowntimeStatusFilter = vm.SelectedDowntimeStatusFilter;
+            _savedDowntimeResponsibleFilter = vm.SelectedDowntimeResponsibleFilter;
+            _savedDowntimeSubdivisionFilter = vm.SelectedDowntimeSubdivisionFilter;
+            _savedDowntimeEquipmentSearchQuery = vm.DowntimeEquipmentSearchQuery;
+            _savedDashboardSubdivisionFilter = vm.Dashboard.SelectedDashboardSubdivisionFilter;
+        }
+
+        private void RestorePageFilters()
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            vm.SelectedDowntimeIssueTypeFilter = _savedDowntimeIssueTypeFilter;
+            vm.SelectedDowntimeStatusFilter = _savedDowntimeStatusFilter;
+            vm.SelectedDowntimeResponsibleFilter = _savedDowntimeResponsibleFilter;
+            vm.SelectedDowntimeSubdivisionFilter = _savedDowntimeSubdivisionFilter;
+            vm.DowntimeEquipmentSearchQuery = _savedDowntimeEquipmentSearchQuery;
+            vm.Dashboard.SelectedDashboardSubdivisionFilter = _savedDashboardSubdivisionFilter;
         }
 
         internal void FailureHeatmapSettingsButton_Click(object? sender, RoutedEventArgs e)

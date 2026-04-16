@@ -796,6 +796,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         };
 
         public ObservableCollection<string> DowntimeIssueTypeFilters => Downtime.DowntimeIssueTypeFilters;
+        public ObservableCollection<string> DowntimeStatusFilters => Downtime.DowntimeStatusFilters;
         public ObservableCollection<string> DowntimeResponsibleFilters => Downtime.DowntimeResponsibleFilters;
         public ObservableCollection<string> DowntimeSubdivisionFilters => Downtime.DowntimeSubdivisionFilters;
 
@@ -816,6 +817,16 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 Downtime.SelectedDowntimeSubdivisionFilter = value;
                 this.RaisePropertyChanged(nameof(SelectedDowntimeSubdivisionFilter));
+            }
+        }
+
+        public string SelectedDowntimeStatusFilter
+        {
+            get => Downtime.SelectedDowntimeStatusFilter;
+            set
+            {
+                Downtime.SelectedDowntimeStatusFilter = value;
+                this.RaisePropertyChanged(nameof(SelectedDowntimeStatusFilter));
             }
         }
 
@@ -940,6 +951,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             _masterEquipment = all;
             RebuildDowntimeResponsibleFilters();
             RebuildDowntimeSubdivisionFilters();
+            RebuildDashboardFilters();
             RebuildEmployeeSubdivisionFilters();
             RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
