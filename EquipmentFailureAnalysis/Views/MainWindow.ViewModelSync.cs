@@ -74,7 +74,8 @@ namespace EquipmentFailureAnalysis.Views
             if (string.IsNullOrWhiteSpace(e.PropertyName))
                 return;
 
-            if (e.PropertyName.StartsWith("Jira", StringComparison.Ordinal))
+            if (e.PropertyName.StartsWith("Jira", StringComparison.Ordinal)
+                || e.PropertyName.StartsWith("Ldap", StringComparison.Ordinal))
                 SaveJiraSettingsFromUi();
 
             if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.JiraAutoImportEnabled)

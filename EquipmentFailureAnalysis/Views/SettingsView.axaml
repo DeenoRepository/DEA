@@ -58,6 +58,17 @@
         								</Grid>
         							</StackPanel>
         						</Border>
+
+        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        							<StackPanel Spacing="6">
+        								<TextBlock Text="LDAP вход в приложение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<CheckBox Content="Включить LDAP авторизацию при запуске" IsChecked="{Binding LdapAuthEnabled, Mode=TwoWay}" />
+        								<TextBlock Text="Параметры LDAP (сервер/порт/SSL/домен) настраиваются через кнопку ... в окне входа."
+        								           FontSize="11"
+        								           Foreground="{StaticResource TextMuted}"
+        								           TextWrapping="Wrap" />
+        							</StackPanel>
+        						</Border>
         					</StackPanel>
         				</Border>
         

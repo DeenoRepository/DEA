@@ -30,9 +30,11 @@ namespace EquipmentFailureAnalysis.Views
         private readonly HtmlReportService _htmlReportService = new HtmlReportService();
         private readonly JiraImportService _jiraImportService = new JiraImportService();
         private readonly XmlImportService _xmlImportService = new XmlImportService();
+        private readonly LdapAuthenticationService _ldapAuthenticationService = new LdapAuthenticationService();
         private readonly DispatcherTimer _settingsSaveDebounceTimer;
         private readonly SemaphoreSlim _jiraImportLock = new SemaphoreSlim(1, 1);
         private bool _suppressSettingsSave;
+        private bool _startupLdapAuthHandled;
         private INotifyPropertyChanged? _trackedSettingsVm;
         private CancellationTokenSource? _jiraAutoImportCts;
         private Task? _jiraAutoImportTask;
@@ -284,6 +286,52 @@ namespace EquipmentFailureAnalysis.Views
                     string.Equals(styled.Name, name, StringComparison.Ordinal));
         }
 
+        private async Task EnsureLdapAuthorizationOnStartupAsync()
+        {
+            if (_startupLdapAuthHandled)
+                return;
+
+            _startupLdapAuthHandled = true;
+
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var settings = vm.Settings;
+            if (!settings.LdapAuthEnabled)
+                return;
+
+            var loginRequest = new LdapLoginRequest
+            {
+                Server = settings.LdapServer.Trim(),
+                Port = settings.LdapPort > 0 ? settings.LdapPort : (settings.LdapUseSsl ? 636 : 389),
+                UseSsl = settings.LdapUseSsl,
+                Domain = settings.LdapDomain?.Trim() ?? string.Empty,
+                BaseDn = settings.LdapBaseDn?.Trim() ?? string.Empty,
+                InitialUsername = settings.LdapLastUsername?.Trim() ?? string.Empty
+            };
+
+            var dialog = new LdapLoginWindow(loginRequest, _ldapAuthenticationService);
+
+            var authResult = await dialog.ShowDialog<LdapLoginResult?>(this);
+
+            settings.LdapServer = loginRequest.Server?.Trim() ?? string.Empty;
+            settings.LdapPort = loginRequest.Port > 0 ? loginRequest.Port : 389;
+            settings.LdapUseSsl = loginRequest.UseSsl;
+            settings.LdapDomain = loginRequest.Domain?.Trim() ?? string.Empty;
+            settings.LdapBaseDn = loginRequest.BaseDn?.Trim() ?? string.Empty;
+
+            if (authResult?.Success != true)
+            {
+                SaveJiraSettingsFromUi(immediate: true);
+                Close();
+                return;
+            }
+
+            settings.LdapLastUsername = authResult.Username?.Trim() ?? string.Empty;
+            SaveJiraSettingsFromUi(immediate: true);
+            PublishStatus($"LDAP авторизация успешна: {settings.LdapLastUsername}");
+        }
+
         public MainWindow()
         {
             _settingsSaveDebounceTimer = new DispatcherTimer
@@ -297,6 +345,7 @@ namespace EquipmentFailureAnalysis.Views
             };
 
             InitializeComponent();
+            Opened += async (_, _) => await EnsureLdapAuthorizationOnStartupAsync();
             ApplyNavigationPanelState();
             InitializeReportTools();
             LoadJiraSettingsToUi();
@@ -399,6 +448,13 @@ namespace EquipmentFailureAnalysis.Views
             public bool ReportFieldResponsible { get; set; } = true;
             public bool ReportFieldDescription { get; set; } = true;
             public string ReportLastFilePath { get; set; } = string.Empty;
+            public bool LdapAuthEnabled { get; set; }
+            public string LdapServer { get; set; } = string.Empty;
+            public int LdapPort { get; set; } = 389;
+            public bool LdapUseSsl { get; set; }
+            public string LdapDomain { get; set; } = string.Empty;
+            public string LdapBaseDn { get; set; } = string.Empty;
+            public string LdapLastUsername { get; set; } = string.Empty;
         }
 
         private static string NormalizeReportGroupByKey(string? value)
@@ -479,7 +535,16 @@ namespace EquipmentFailureAnalysis.Views
                     ReportFieldType = reportsVm?.ReportFieldType ?? existing.ReportFieldType,
                     ReportFieldResponsible = reportsVm?.ReportFieldResponsible ?? existing.ReportFieldResponsible,
                     ReportFieldDescription = reportsVm?.ReportFieldDescription ?? existing.ReportFieldDescription,
-                    ReportLastFilePath = reportsVm?.ReportLastFilePath ?? existing.ReportLastFilePath
+                    ReportLastFilePath = reportsVm?.ReportLastFilePath ?? existing.ReportLastFilePath,
+                    LdapAuthEnabled = settingsVm?.LdapAuthEnabled ?? existing.LdapAuthEnabled,
+                    LdapServer = settingsVm?.LdapServer?.Trim() ?? existing.LdapServer,
+                    LdapPort = settingsVm != null
+                        ? Math.Clamp(settingsVm.LdapPort <= 0 ? 389 : settingsVm.LdapPort, 1, 65535)
+                        : Math.Clamp(existing.LdapPort <= 0 ? 389 : existing.LdapPort, 1, 65535),
+                    LdapUseSsl = settingsVm?.LdapUseSsl ?? existing.LdapUseSsl,
+                    LdapDomain = settingsVm?.LdapDomain?.Trim() ?? existing.LdapDomain,
+                    LdapBaseDn = settingsVm?.LdapBaseDn?.Trim() ?? existing.LdapBaseDn,
+                    LdapLastUsername = settingsVm?.LdapLastUsername?.Trim() ?? existing.LdapLastUsername
                 };
 
                 _jiraSettingsStore.Save("jira_import_settings.json", settings);
@@ -513,6 +578,13 @@ namespace EquipmentFailureAnalysis.Views
                 foreach (var filterId in loadedIds.Where(v => !string.IsNullOrWhiteSpace(v) && v.All(char.IsDigit)).Distinct(StringComparer.Ordinal))
                     shellSettingsVm.Settings.JiraFilterIds.Add(filterId.Trim());
                 shellSettingsVm.Settings.JiraSelectedFilterId = null;
+                shellSettingsVm.Settings.LdapAuthEnabled = settings.LdapAuthEnabled;
+                shellSettingsVm.Settings.LdapServer = settings.LdapServer ?? string.Empty;
+                shellSettingsVm.Settings.LdapPort = Math.Clamp(settings.LdapPort <= 0 ? 389 : settings.LdapPort, 1, 65535);
+                shellSettingsVm.Settings.LdapUseSsl = settings.LdapUseSsl;
+                shellSettingsVm.Settings.LdapDomain = settings.LdapDomain ?? string.Empty;
+                shellSettingsVm.Settings.LdapBaseDn = settings.LdapBaseDn ?? string.Empty;
+                shellSettingsVm.Settings.LdapLastUsername = settings.LdapLastUsername ?? string.Empty;
                 }
 
                 if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)

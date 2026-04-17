@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="EquipmentFailureAnalysis.Views.LdapLoginWindow"
+        Width="440"
+        Height="360"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Title="LDAP Авторизация">
+  <Border Padding="16">
+    <StackPanel Spacing="12">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Вход в систему" FontSize="20" FontWeight="SemiBold" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBlock x:Name="ServerText"
+                     Grid.Column="0"
+                     Text="LDAP"
+                     FontSize="12"
+                     Opacity="0.8"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Center" />
+          <Button Grid.Column="1"
+                  Content="..."
+                  Width="34"
+                  Height="28"
+                  Padding="0"
+                  ToolTip.Tip="Настройки LDAP"
+                  Click="SettingsButton_Click" />
+        </Grid>
+      </StackPanel>
+
+      <Border Height="1" Background="#D9D9D9" />
+
+      <StackPanel Spacing="6">
+        <TextBlock Text="Логин" />
+        <TextBox x:Name="UsernameBox"
+                 Text="{Binding Username, Mode=TwoWay}"
+                 Watermark="domain\\user или user@domain" />
+      </StackPanel>
+
+      <StackPanel Spacing="6">
+        <TextBlock Text="Пароль" />
+        <TextBox x:Name="PasswordBox"
+                 Text="{Binding Password, Mode=TwoWay}"
+                 PasswordChar="*" />
+      </StackPanel>
+
+      <TextBlock x:Name="ErrorText"
+                 IsVisible="False"
+                 Foreground="#C62828"
+                 TextWrapping="Wrap" />
+
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusText}"
+                   VerticalAlignment="Center"
+                   FontSize="12"
+                   Opacity="0.8"
+                   TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="1"
+                Content="Отмена"
+                MinWidth="90"
+                Click="CancelButton_Click" />
+        <Button Grid.Column="2"
+                Content="Войти"
+                MinWidth="90"
+                Click="SignInButton_Click" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</Window>
