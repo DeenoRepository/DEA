@@ -262,6 +262,7 @@
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Cursor" Value="Hand" />
 		</Style>
 		<Style Selector="Border.employeeAnalysisRow:pointerover">
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
@@ -272,6 +273,7 @@
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Cursor" Value="Hand" />
 		</Style>
 		<Style Selector="Border.downtimeEquipmentRow:pointerover">
 			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
@@ -297,7 +299,15 @@
 			<Setter Property="Background" Value="{StaticResource PressedSurfaceBrush}" />
 		</Style>
 
-		<Style Selector="TextBox, ComboBox, CalendarDatePicker, NumericUpDown, ListBox">
+		<Style Selector="TextBox, ComboBox, CalendarDatePicker, NumericUpDown">
+			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Height" Value="32" />
+		</Style>
+		<Style Selector="ListBox">
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
 			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
@@ -306,6 +316,55 @@
 		<Style Selector="CalendarDatePicker TextBox">
 			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
 			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+		</Style>
+
+		<!-- Status Badges styles -->
+		<Style Selector="Border.badge">
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="Padding" Value="8,2" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.badge TextBlock">
+			<Setter Property="FontSize" Value="10" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		
+		<!-- Repair/Danger badge -->
+		<Style Selector="Border.badge-danger">
+			<Setter Property="Background" Value="#FEE2E2" />
+			<Setter Property="BorderBrush" Value="#FCA5A5" />
+		</Style>
+		<Style Selector="Border.badge-danger TextBlock">
+			<Setter Property="Foreground" Value="#991B1B" />
+		</Style>
+
+		<!-- Setup/Warning badge -->
+		<Style Selector="Border.badge-warning">
+			<Setter Property="Background" Value="#FEF3C7" />
+			<Setter Property="BorderBrush" Value="#FCD34D" />
+		</Style>
+		<Style Selector="Border.badge-warning TextBlock">
+			<Setter Property="Foreground" Value="#92400E" />
+		</Style>
+
+		<!-- Success/Completed badge -->
+		<Style Selector="Border.badge-success">
+			<Setter Property="Background" Value="#D1FAE5" />
+			<Setter Property="BorderBrush" Value="#6EE7B7" />
+		</Style>
+		<Style Selector="Border.badge-success TextBlock">
+			<Setter Property="Foreground" Value="#065F46" />
+		</Style>
+
+		<!-- Info/Normal badge -->
+		<Style Selector="Border.badge-info">
+			<Setter Property="Background" Value="#E0F2FE" />
+			<Setter Property="BorderBrush" Value="#7DD3FC" />
+		</Style>
+		<Style Selector="Border.badge-info TextBlock">
+			<Setter Property="Foreground" Value="#0369A1" />
 		</Style>
 
 		<Style Selector="ProgressBar">

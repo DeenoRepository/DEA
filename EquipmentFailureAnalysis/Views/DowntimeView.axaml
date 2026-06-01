@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.DowntimeView">
@@ -203,23 +203,42 @@
         						</StackPanel>
         					</Border>
         
-        					<Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="10" BorderBrush="{StaticResource RowDividerBrush}" BorderThickness="1" VerticalAlignment="Stretch">
-        						<StackPanel Spacing="8">
-        							<TextBlock Text="Ключевые показатели дня" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
-        								<StackPanel>
-        									<TextBlock Text="Пиковый час по количеству оборудования" FontSize="11" Foreground="{StaticResource TextMuted}" />
-        									<TextBlock Text="{Binding DowntimePeakHour}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        								</StackPanel>
-        							</Border>
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
-        								<StackPanel>
-        									<TextBlock Text="Оборудование с максимальным числом событий" FontSize="11" Foreground="{StaticResource TextMuted}" />
-                                          <TextBlock Text="{Binding DowntimeTopEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Stretch" />
-        									<TextBlock Text="{Binding DowntimeTopEquipmentIssues, StringFormat='{}{0} событий'}" FontSize="12" Foreground="{StaticResource TextMuted}" />
-        								</StackPanel>
-        							</Border>
+        					<Border Grid.Row="3" Background="{StaticResource CardBackground}" CornerRadius="12" Padding="12" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" VerticalAlignment="Stretch">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        						<StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+        							    <TextBlock Text="Показатели дня" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                                        <TextBlock Text="Ключевые инциденты и пиковые периоды" FontSize="11" Foreground="{StaticResource TextMuted}" />
+                                    </StackPanel>
+ 
+                                    <Border Height="1" Background="{StaticResource RowDividerBrush}" />
+ 
+                                    <!-- Группа: Периоды -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="ВРЕМЯ НАГРУЗКИ" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMuted}" LetterSpacing="0.05" />
+                                        <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        								    <StackPanel>
+        									    <TextBlock Text="Пиковый час по кол-ву оборудования" FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,0,0,4" />
+        									    <TextBlock Text="{Binding DowntimePeakHour}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        								    </StackPanel>
+        							    </Border>
+                                    </StackPanel>
+ 
+                                    <Border Height="1" Background="{StaticResource RowDividerBrush}" />
+ 
+                                    <!-- Группа: Оборудование -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="АНАЛИЗ ИНЦИДЕНТОВ" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMuted}" LetterSpacing="0.05" />
+                                        <Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        								    <StackPanel Spacing="4">
+        									    <TextBlock Text="Максимум событий на оборудование" FontSize="11" Foreground="{StaticResource TextMuted}" />
+                                                <TextBlock Text="{Binding DowntimeTopEquipment}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" />
+        									    <TextBlock Text="{Binding DowntimeTopEquipmentIssues, StringFormat='{}{0} событий'}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentForeground}" />
+        								    </StackPanel>
+        							    </Border>
+                                    </StackPanel>
         						</StackPanel>
+                                </ScrollViewer>
         					</Border>
         				</Grid>
         			</Border>

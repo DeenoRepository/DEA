@@ -288,6 +288,10 @@ namespace EquipmentFailureAnalysis.ViewModels
                 this.RaisePropertyChanged(nameof(SelectedTimelineJiraKey));
                 this.RaisePropertyChanged(nameof(SelectedTimelineReporter));
                 this.RaisePropertyChanged(nameof(SelectedTimelineComments));
+                this.RaisePropertyChanged(nameof(IsSelectedTimelineRepair));
+                this.RaisePropertyChanged(nameof(IsSelectedTimelineSetup));
+                this.RaisePropertyChanged(nameof(IsSelectedTimelineInProgress));
+                this.RaisePropertyChanged(nameof(IsSelectedTimelineCompleted));
             }
         }
 
@@ -302,6 +306,11 @@ namespace EquipmentFailureAnalysis.ViewModels
         public string SelectedTimelineJiraKey => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.JiraIssueKey) ? "-" : SelectedTimelineAnnotation!.JiraIssueKey;
         public string SelectedTimelineReporter => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Reporter) ? "-" : SelectedTimelineAnnotation!.Reporter;
         public string SelectedTimelineComments => string.IsNullOrWhiteSpace(SelectedTimelineAnnotation?.Comments) ? "-" : SelectedTimelineAnnotation!.Comments;
+
+        public bool IsSelectedTimelineRepair => SelectedTimelineAnnotation?.Type == Models.IssueType.Ремонт;
+        public bool IsSelectedTimelineSetup => SelectedTimelineAnnotation?.Type == Models.IssueType.Настройка;
+        public bool IsSelectedTimelineInProgress => SelectedTimelineAnnotation?.IsInProgress ?? false;
+        public bool IsSelectedTimelineCompleted => SelectedTimelineAnnotation != null && !SelectedTimelineAnnotation.IsInProgress;
 
         private ReactiveCommand<DateTime, Unit>? _showDayTimelineCommand;
         public ReactiveCommand<DateTime, Unit>? ShowDayTimelineCommand

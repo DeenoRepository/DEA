@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
@@ -20,6 +20,32 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.FailureHeatmapSettingsButton_Click(sender, e);
+        }
+
+        private async void CopyInventoryNumberButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm && vm.SelectedEquipment != null && !string.IsNullOrWhiteSpace(vm.SelectedEquipment.InventoryNumber))
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(vm.SelectedEquipment.InventoryNumber);
+                    vm.StatusMessage = $"Инвентарный номер скопирован: {vm.SelectedEquipment.InventoryNumber}";
+                }
+            }
+        }
+
+        private async void CopyJiraKeyButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm && !string.IsNullOrWhiteSpace(vm.SelectedTimelineJiraKey) && vm.SelectedTimelineJiraKey != "-")
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(vm.SelectedTimelineJiraKey);
+                    vm.StatusMessage = $"Ключ Jira скопирован: {vm.SelectedTimelineJiraKey}";
+                }
+            }
         }
     }
 }
