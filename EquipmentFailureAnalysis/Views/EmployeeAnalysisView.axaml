@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.EmployeeAnalysisView">
@@ -12,7 +12,7 @@
         			<StackPanel Spacing="10">
                        <Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
         						<StackPanel Spacing="8">
         							<TextBlock Text="События сотрудника за день" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         							<TextBlock Text="Выберите сотрудника и дату, чтобы увидеть timeline его событий" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
@@ -33,7 +33,7 @@
         							</Grid>
         
         							<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
-        								<views:TimelineControl Items="{Binding EmployeeTimelinePoints}" RepairsItems="{Binding EmployeeRepairsTimelinePoints}" SetupsItems="{Binding EmployeeSetupsTimelinePoints}" Annotations="{Binding EmployeeTimelineAnnotations}" Height="220" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True" VerticalAlignment="Top" />
+        								<views:TimelineControl Items="{Binding EmployeeTimelinePoints}" RepairsItems="{Binding EmployeeRepairsTimelinePoints}" SetupsItems="{Binding EmployeeSetupsTimelinePoints}" Annotations="{Binding EmployeeTimelineAnnotations}" Height="180" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True" VerticalAlignment="Top" />
         							</Border>
         						</StackPanel>
         					</Border>
@@ -41,7 +41,7 @@
         
         				<Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
         						<StackPanel>
         							<TextBlock Text="Анализ работы сотрудников" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         							<TextBlock Text="Сводная оценка нагрузки, длительности работ и распределения задач по ответственным" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,2,0,10" TextWrapping="Wrap" />
@@ -122,7 +122,7 @@
         
         				<Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+        					<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
         						<StackPanel>
         							<TextBlock Text="Детализация по сотрудникам" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6" />
                                    <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.95*" Margin="4,2,4,6">
@@ -174,7 +174,7 @@
         		</ScrollViewer>
         
         		<Grid x:Name="EmployeeAnalysisRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
+        			<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
         					<TextBlock Text="Сводка по эффективности" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
         					<TextBlock Text="Показывает лидеров по активности и суммарной занятости. Данные строятся по всем импортированным событиям." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />

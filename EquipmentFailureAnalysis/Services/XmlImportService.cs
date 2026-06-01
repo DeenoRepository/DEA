@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EquipmentFailureAnalysis.Services
 {
@@ -130,5 +131,19 @@ namespace EquipmentFailureAnalysis.Services
 
         private string GetLastImportedPathFile()
             => Path.Combine(_storageDirectory, "last_imported_xml.txt");
+
+        public async Task<XmlImportResult> ImportFromPathsAsync(IEnumerable<string> paths, bool persistFirstPath = true)
+        {
+            return await Task.Run(() => ImportFromPaths(paths, persistFirstPath));
+        }
+
+        public async Task<(bool Success, ObservableCollection<EquipmentInfo> Items)> TryLoadLastImportedEquipmentAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var success = TryLoadLastImportedEquipment(out var items);
+                return (success, items);
+            });
+        }
     }
 }

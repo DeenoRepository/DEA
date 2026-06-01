@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -302,131 +302,33 @@ namespace EquipmentFailureAnalysis.Views
             double right = 4;
             double top = 4;
             double bottom = ShowHourLabels ? 70 : 4;
-            double annFont = 12;
-            double gap = 6;
 
             double plotW = Math.Max(1, w - left - right);
+            double plotH = Math.Max(1, h - top - bottom);
+
             if (point.X < left || point.X > left + plotW)
+                return false;
+
+            if (point.Y < top || point.Y > top + plotH)
                 return false;
 
             var annSource = Annotations as IList;
             if (annSource == null || annSource.Count == 0)
                 return false;
 
-            if (!(ShowHourLabels && ShowAnnotations))
-                return false;
+            double hour = (point.X - left) / (plotW / 24.0);
+            hour = Math.Clamp(hour, 0.0, 24.0);
 
-            var annObjs = annSource.OfType<Models.Annotation>()
-                .OrderBy(a => a.Hour)
-                .ToList();
-            int annCount = annObjs.Count;
-            if (annCount == 0)
-                return false;
+            // Find an annotation that covers this hour.
+            var matching = annSource.OfType<Models.Annotation>()
+                .Where(a => hour >= a.StartHour && hour <= Math.Max(a.EndHour, a.StartHour + 0.1))
+                .OrderBy(a => a.StartHour)
+                .FirstOrDefault();
 
-            double[] annWidths = new double[annCount];
-            double[] annHeights = new double[annCount];
-            double[] annCenters = new double[annCount];
-            for (int i = 0; i < annCount; i++)
+            if (matching != null)
             {
-                var a = annObjs[i];
-                string l1 = a.Description ?? string.Empty;
-                string l2 = a.Responsible ?? string.Empty;
-                string l3 = a.Duration ?? string.Empty;
-                int maxLen = Math.Max(l1.Length, Math.Max(l2.Length, l3.Length));
-                annWidths[i] = Math.Max(140, maxLen * (annFont * 0.52));
-                annHeights[i] = annFont * 3 + 16;
-                annCenters[i] = left + a.Hour * (plotW / 24.0);
-            }
-
-            bool annSingleRow = true;
-            for (int i = 0; i < annCount - 1; i++)
-            {
-                double need = (annWidths[i] + annWidths[i + 1]) / 2.0 + gap;
-                if (annCenters[i + 1] - annCenters[i] < need)
-                {
-                    annSingleRow = false;
-                    break;
-                }
-            }
-
-            int annRows = annSingleRow ? 1 : 2;
-            double maxAnnH = annHeights.Max();
-            double annSpace = annRows * (maxAnnH + gap) + 28;
-
-            top += annSpace;
-            var placedRects = new List<Rect>();
-
-            for (int i = 0; i < annCount; i++)
-            {
-                var a = annObjs[i];
-                double ax = annCenters[i];
-                var markerRect = new Rect(ax - 6, top - 13, 12, 12);
-
-                string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
-                string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
-                string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
-                int maxLen2 = 52;
-                if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
-                if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
-
-                string line1 = rawDescription;
-                string line2 = "Ответственный: " + rawResponsible;
-                string line3 = "Длительность: " + rawDuration;
-
-                double wRect = annWidths[i];
-                double hRect = annHeights[i];
-                double ft1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                double ft2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                double ft3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                double contentW = Math.Max(ft1w, Math.Max(ft2w, ft3w));
-                wRect = Math.Max(wRect, contentW + 12);
-
-                double xRect = ax - wRect / 2.0;
-                double minX = left;
-                double maxX = left + plotW - wRect;
-                xRect = Math.Max(minX, Math.Min(xRect, maxX));
-                double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
-
-                var candidate = new Rect(xRect, yRect, wRect, hRect);
-                int tries = 0;
-                while (tries < 10)
-                {
-                    bool coll = false;
-                    foreach (var pr in placedRects)
-                    {
-                        if (pr.Intersects(candidate))
-                        {
-                            coll = true;
-                            double nx = pr.X + pr.Width + gap;
-                            if (nx <= maxX) candidate = new Rect(nx, candidate.Y, candidate.Width, candidate.Height);
-                            else
-                            {
-                                candidate = new Rect(minX, candidate.Y, candidate.Width, candidate.Height);
-                                if (!annSingleRow)
-                                    candidate = new Rect(candidate.X, candidate.Y - (hRect + gap), candidate.Width, candidate.Height);
-                            }
-                            break;
-                        }
-                    }
-                    if (!coll) break;
-                    tries++;
-                }
-                placedRects.Add(candidate);
-
-                var textRect = candidate;
-                double annFt1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                double annFt2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                double annFt3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                double annContentW = Math.Max(annFt1w, Math.Max(annFt2w, annFt3w));
-                wRect = Math.Max(wRect, annContentW + 12);
-                wRect = Math.Min(wRect, plotW - 8);
-                textRect = new Rect(Math.Max(left, Math.Min(left + plotW - wRect, textRect.X)), textRect.Y, wRect, hRect);
-
-                if (markerRect.Contains(point) || textRect.Contains(point))
-                {
-                    annotation = a;
-                    return true;
-                }
+                annotation = matching;
+                return true;
             }
 
             return false;
@@ -462,8 +364,6 @@ namespace EquipmentFailureAnalysis.Views
             var repairsItems = RepairsItems as IList ?? new System.Collections.ArrayList();
             var setupsItems = SetupsItems as IList ?? new System.Collections.ArrayList();
 
-            // don't return when there is no data: still draw scale/ticks
-
             var bounds = this.Bounds;
             double w = bounds.Width;
             double h = bounds.Height;
@@ -481,11 +381,6 @@ namespace EquipmentFailureAnalysis.Views
 
             // --- estimate annotation space above the plot and shift plot down ---
             var anns = Annotations as IList ?? new System.Collections.ArrayList();
-            var annTypeface = UiTypeface;
-            var annTitleTypeface = new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold);
-            double annFont = 12;
-            double gap = 6;
-
             var annObjs = new System.Collections.Generic.List<Models.Annotation>();
             foreach (var it in anns)
                 if (it is Models.Annotation a) annObjs.Add(a);
@@ -501,70 +396,15 @@ namespace EquipmentFailureAnalysis.Views
                 .Select(a => left + a.EndHour * (plotW / 24.0))
                 .ToList();
 
-            // precompute counts and durations of issue types for summary
-            int repairCount = 0;
-            int setupCount = 0;
-            double repairMinutesSum = 0.0;
-            double setupMinutesSum = 0.0;
-            foreach (var a in annObjs)
-            {
-                try
-                {
-                    TimeSpan dur = TimeSpan.Zero;
-                    try { TimeSpan.TryParse(a.Duration, out dur); } catch { dur = TimeSpan.Zero; }
-                    if (a.Type == Models.IssueType.Ремонт)
-                    {
-                        repairCount++;
-                        repairMinutesSum += dur.TotalMinutes;
-                    }
-                    else if (a.Type == Models.IssueType.Настройка)
-                    {
-                        setupCount++;
-                        setupMinutesSum += dur.TotalMinutes;
-                    }
-                }
-                catch { }
-            }
-
-            int annCount = annObjs.Count;
-            double[] annWidths = new double[annCount];
-            double[] annHeights = new double[annCount];
-            double[] annCenters = new double[annCount];
-
-            for (int i = 0; i < annCount; i++)
-            {
-                var a = annObjs[i];
-                string l1 = a.Description ?? string.Empty;
-                string l2 = a.Responsible ?? string.Empty;
-                string l3 = a.Duration ?? string.Empty;
-                int maxLen = Math.Max(l1.Length, Math.Max(l2.Length, l3.Length));
-                annWidths[i] = Math.Max(140, maxLen * (annFont * 0.52));
-                annHeights[i] = annFont * 3 + 16;
-                annCenters[i] = left + a.Hour * (plotW / 24.0);
-            }
-
-            // decide rows needed: 1 if no overlaps, else 2 (chess)
-            bool annSingleRow = true;
-            for (int i = 0; i < annCount - 1; i++)
-            {
-                double need = (annWidths[i] + annWidths[i + 1]) / 2.0 + gap;
-                if (annCenters[i + 1] - annCenters[i] < need)
-                {
-                    annSingleRow = false;
-                    break;
-                }
-            }
-
-            int annRows = annCount == 0 ? 0 : (annSingleRow ? 1 : 2);
-            double maxAnnH = annCount > 0 ? annHeights.Max() : 0;
-            double annSpace = (ShowHourLabels && ShowAnnotations) ? annRows * (maxAnnH + gap) + 28 : 0;
+            // Set annotation space to 0 to keep the layout compact and clean
+            double annSpace = 0;
 
             // shift plot down
             top += annSpace;
             plotH = Math.Max(1, h - top - bottom);
 
             // draw horizontal grid lines for 0 and 1 (subtle)
-            var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(90, 200, 200, 200)), 1);
+            var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(50, 203, 213, 225)), 1);
             // y for value 1 (top)
             double y1 = top + 0.1 * plotH;
             // y for value 0 (bottom)
@@ -616,7 +456,7 @@ namespace EquipmentFailureAnalysis.Views
             double tickTop = top + plotH;
             double tickBottom = tickTop + 6;
             double xScale = plotW / 24.0;
-            var tickPen = new Pen(Brushes.Gray, 1);
+            var tickPen = new Pen(new SolidColorBrush(Color.Parse("#94A3B8")), 1);
             for (int i = 0; i < 24; i++)
             {
                 double cx = left + i * xScale;
@@ -627,7 +467,7 @@ namespace EquipmentFailureAnalysis.Views
             context.DrawLine(tickPen, new Point(cxEnd, tickTop), new Point(cxEnd, tickBottom));
 
             // draw vertical grid every 15 minutes (dashed, very subtle)
-            var gridDashPen = new Pen(new SolidColorBrush(Color.FromArgb(40, 200, 200, 200)), 1) { DashStyle = new DashStyle(new double[] { 4, 4 }, 0) };
+            var gridDashPen = new Pen(new SolidColorBrush(Color.FromArgb(15, 203, 213, 225)), 1) { DashStyle = new DashStyle(new double[] { 4, 4 }, 0) };
             for (int q = 0; q <= 24 * 4; q++)
             {
                 double hour = q * 0.25; // quarter hours
@@ -637,8 +477,8 @@ namespace EquipmentFailureAnalysis.Views
 
             // draw shift boundary markers (e.g., 08:00 start and 16:30 end)
             double[] shiftHours = new double[] { 8.0, 16.5 };
-            var shiftPen = new Pen(new SolidColorBrush(Color.FromArgb(130, 46, 125, 50)), 1.6);
-            var labelBrushShift = new SolidColorBrush(Color.FromArgb(150, 46, 125, 50));
+            var shiftPen = new Pen(new SolidColorBrush(Color.Parse("#818CF8")), 1.2) { DashStyle = new DashStyle(new double[] { 4, 3 }, 0) };
+            var labelBrushShift = new SolidColorBrush(Color.Parse("#4F46E5"));
             var tfShift = UiTypeface;
             double labelFont = 11;
             // draw shaded area for the main shift (between first two entries) if available
@@ -646,7 +486,7 @@ namespace EquipmentFailureAnalysis.Views
             {
                 double sX = left + shiftHours[0] * (plotW / 24.0);
                 double eX = left + shiftHours[1] * (plotW / 24.0);
-                var fillBrush = new SolidColorBrush(Color.FromArgb(35, 76, 175, 80));
+                var fillBrush = new SolidColorBrush(Color.FromArgb(15, 79, 70, 229)); // Soft Indigo tint
                 context.FillRectangle(fillBrush, new Rect(sX, top, Math.Max(0, eX - sX), plotH));
             }
 
@@ -663,128 +503,14 @@ namespace EquipmentFailureAnalysis.Views
                 context.DrawText(ftLbl, new Point(sx - approxW / 2.0, top - labelFont - 4));
             }
 
-            if (ShowHourLabels && ShowAnnotations)
-            {
-                // draw annotations (markers + small text above graph)
-                var connectorPen = new Pen(Brushes.Gray, 1) { DashStyle = new DashStyle(new double[] { 1, 2 }, 0) };
-                var placedRects = new System.Collections.Generic.List<Rect>();
-
-                for (int i = 0; i < annCount; i++)
-                {
-                    var a = annObjs[i];
-                    double ax = annCenters[i];
-
-                    Color typeColor = Color.Parse("#E65100");
-                    try
-                    {
-                        if (a.Type == Models.IssueType.Ремонт)
-                            typeColor = Color.Parse("#C62828");
-                        else if (a.Type == Models.IssueType.Настройка)
-                            typeColor = Color.Parse("#F9A825");
-                    }
-                    catch { }
-
-                    var markerBrush = new SolidColorBrush(typeColor);
-                    var marker = new Rect(ax - 6, top - 13, 12, 12);
-                    var eg = new EllipseGeometry(new Rect(marker.X, marker.Y, marker.Width, marker.Height));
-                    context.DrawGeometry(markerBrush, new Pen(Brushes.White, 1), eg);
-
-                    string rawDescription = string.IsNullOrWhiteSpace(a.Description) ? "-" : a.Description.Trim();
-                    string rawResponsible = string.IsNullOrWhiteSpace(a.Responsible) ? "-" : a.Responsible.Trim();
-                    string rawDuration = string.IsNullOrWhiteSpace(a.Duration) ? "-" : a.Duration.Trim();
-
-                    int maxLen2 = 52;
-                    if (rawDescription.Length > maxLen2) rawDescription = rawDescription.Substring(0, maxLen2 - 3) + "...";
-                    if (rawResponsible.Length > maxLen2) rawResponsible = rawResponsible.Substring(0, maxLen2 - 3) + "...";
-
-                    string line1 = rawDescription;
-                    string line2 = "Ответственный: " + rawResponsible;
-                    string line3 = "Длительность: " + rawDuration;
-
-                    // recalc width/height based on actual text lengths to avoid overflow
-                    double wRect = annWidths[i];
-                    double hRect = annHeights[i];
-                    // approximate text widths
-                    double ft1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                    double ft2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                    double ft3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                    double contentW = Math.Max(ft1w, Math.Max(ft2w, ft3w));
-                    wRect = Math.Max(wRect, contentW + 12); // padding
-
-                    double xRect = ax - wRect / 2.0;
-                    double minX = left;
-                    double maxX = left + plotW - wRect;
-                    xRect = Math.Max(minX, Math.Min(xRect, maxX));
-
-                    double yRect = annSingleRow ? (top - 18 - hRect - 4) : (top - 18 - hRect - 4 - (i % 2) * (hRect + gap));
-
-                    // simple collision avoidance: nudge horizontally if intersects previous
-                    var candidate = new Rect(xRect, yRect, wRect, hRect);
-                    int tries = 0;
-                    while (tries < 10)
-                    {
-                        bool coll = false;
-                        foreach (var pr in placedRects)
-                        {
-                            if (pr.Intersects(candidate))
-                            {
-                                coll = true;
-                                // try move right
-                                double nx = pr.X + pr.Width + gap;
-                                if (nx <= maxX) candidate = new Rect(nx, candidate.Y, candidate.Width, candidate.Height);
-                                else
-                                {
-                                    // move leftmost
-                                    candidate = new Rect(minX, candidate.Y, candidate.Width, candidate.Height);
-                                    // try move up one extra row if chess mode
-                                    if (!annSingleRow)
-                                        candidate = new Rect(candidate.X, candidate.Y - (hRect + gap), candidate.Width, candidate.Height);
-                                }
-                                break;
-                            }
-                        }
-                        if (!coll) break;
-                        tries++;
-                    }
-
-                    placedRects.Add(candidate);
-
-                    var textRect = candidate;
-                    var startPoint = new Point(ax, top);
-                    var endPoint = new Point(textRect.X + textRect.Width / 2.0, textRect.Y + textRect.Height);
-                    context.DrawLine(connectorPen, startPoint, endPoint);
-
-                    // ensure the annotation box is wide enough for text and has padding
-                    double annFt1w = Math.Max(0, line1.Length * (annFont * 0.6));
-                    double annFt2w = Math.Max(0, line2.Length * (annFont * 0.6));
-                    double annFt3w = Math.Max(0, line3.Length * (annFont * 0.6));
-                    double annContentW = Math.Max(annFt1w, Math.Max(annFt2w, annFt3w));
-                    wRect = Math.Max(wRect, annContentW + 12); // padding
-                    // clamp width so it doesn't overflow plot area
-                    wRect = Math.Min(wRect, plotW - 8);
-                    textRect = new Rect(Math.Max(left, Math.Min(left + plotW - wRect, textRect.X)), textRect.Y, wRect, hRect);
-
-                    // draw rectangular annotation box with solid background and thin border
-                    var fillBrush2 = new SolidColorBrush(Color.FromArgb(248, 255, 255, 255));
-                    var borderPen2 = new Pen(new SolidColorBrush(Color.FromArgb(220, typeColor.R, typeColor.G, typeColor.B)), 1.2);
-                    var roundedTextRect = new RoundedRect(textRect, 6);
-                    context.DrawRectangle(fillBrush2, borderPen2, roundedTextRect);
-
-                    var ft1 = new FormattedText(line1, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTitleTypeface, annFont, Brushes.Black);
-                    var ft2 = new FormattedText(line2, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
-                    var ft3 = new FormattedText(line3, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, annTypeface, annFont - 0.4, Brushes.Black);
-                    context.DrawText(ft1, new Point(textRect.X + 6, textRect.Y + 4));
-                    context.DrawText(ft2, new Point(textRect.X + 6, textRect.Y + 4 + annFont + 3));
-                    context.DrawText(ft3, new Point(textRect.X + 6, textRect.Y + 4 + 2 * (annFont + 3)));
-                }
-            }
-
-            // tooltips removed per request (annotations show multiline text directly)
+            // draw baseline representing normal (OK) state
+            var baselinePen = new Pen(new SolidColorBrush(Color.Parse("#CBD5E1")), 1.5);
+            context.DrawLine(baselinePen, new Point(left, y0), new Point(left + plotW, y0));
 
             // draw y-axis labels (left)
-            var labelBrushY = Brushes.Black;
+            var labelBrushY = new SolidColorBrush(Color.Parse("#475569"));
             var tfY = UiTypeface;
-            double labelFontSize = 12;
+            double labelFontSize = 11;
             var ftTop = new FormattedText("Сбой", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
             var ftBottom = new FormattedText("OK", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
             context.DrawText(ftTop, new Point(2, y1 - labelFontSize / 2));
@@ -793,7 +519,7 @@ namespace EquipmentFailureAnalysis.Views
             // draw horizontal HH:MM labels if enabled
             if (ShowHourLabels)
             {
-                var labelBrush = Brushes.Black;
+                var labelBrush = new SolidColorBrush(Color.Parse("#64748B"));
                 double fontSize = 10;
                 var tf = UiTypeface;
 
@@ -834,39 +560,14 @@ namespace EquipmentFailureAnalysis.Views
                 return segments;
             }
 
-            static bool IsNearInProgressDrop(double x, System.Collections.Generic.List<double> markers)
-            {
-                if (markers == null || markers.Count == 0)
-                    return false;
 
-                const double tolerancePx = 1.0;
-                return markers.Any(mx => Math.Abs(mx - x) <= tolerancePx);
-            }
-
-            void DrawZigzagTransition(double x, double yStart, double yEnd, Pen pen)
-            {
-                const double ampX = 2.0;
-                const int segments = 8;
-
-                var prev = new Point(x, yStart);
-                for (int i = 1; i <= segments; i++)
-                {
-                    var t = i / (double)segments;
-                    var yy = yStart + (yEnd - yStart) * t;
-                    var xx = x + ((i % 2 == 0) ? ampX : -ampX);
-                    var current = new Point(xx, yy);
-                    context.DrawLine(pen, prev, current);
-                    prev = current;
-                }
-
-                context.DrawLine(pen, prev, new Point(x, yEnd));
-            }
 
             void DrawSeries(Point[] series, IBrush strokeBrush, IBrush activeAreaBrush, System.Collections.Generic.List<double> inProgressDropXs)
             {
                 if (series.Length == 0)
                     return;
 
+                // 1. Draw active area fills
                 for (int i = 0; i < series.Length; i++)
                 {
                     double xStart = series[i].X;
@@ -880,30 +581,35 @@ namespace EquipmentFailureAnalysis.Views
                     }
                 }
 
-                var linePen = new Pen(strokeBrush, 1.4) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
+                // 2. Draw outline borders only for active blocks
+                var linePen = new Pen(strokeBrush, 1.6) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
                 for (int i = 0; i < series.Length; i++)
                 {
                     double xStart = series[i].X;
                     double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
                     double y = series[i].Y;
-                    context.DrawLine(linePen, new Point(xStart, y), new Point(xEnd, y));
 
-                    if (i < series.Length - 1)
+                    if (Math.Abs(y - y1) < 0.1)
                     {
-                        double nextY = series[i + 1].Y;
-                        if (Math.Abs(nextY - y) > 0.1)
+                        // Draw top border
+                        context.DrawLine(linePen, new Point(xStart, y1), new Point(xEnd, y1));
+
+                        // Draw left border if this is the start of an active block
+                        if (i == 0 || Math.Abs(series[i - 1].Y - y0) < 0.1)
                         {
-                            var isDropFromOneToZero = Math.Abs(y - y1) < 0.1 && Math.Abs(nextY - y0) < 0.1;
-                            if (isDropFromOneToZero && IsNearInProgressDrop(xEnd, inProgressDropXs))
-                                DrawZigzagTransition(xEnd, y, nextY, linePen);
-                            else
-                                context.DrawLine(linePen, new Point(xEnd, y), new Point(xEnd, nextY));
+                            context.DrawLine(linePen, new Point(xStart, y0), new Point(xStart, y1));
+                        }
+
+                        // Draw right border if this is the end of an active block
+                        if (i == series.Length - 1 || Math.Abs(series[i + 1].Y - y0) < 0.1)
+                        {
+                            context.DrawLine(linePen, new Point(xEnd, y0), new Point(xEnd, y1));
                         }
                     }
                 }
             }
 
-            var repairsStroke = new SolidColorBrush(Color.Parse("#D32F2F"));
+            var repairsStroke = new SolidColorBrush(Color.Parse("#EF4444"));
 
             var repairsAreaGradient = new LinearGradientBrush
             {
@@ -911,12 +617,12 @@ namespace EquipmentFailureAnalysis.Views
                 EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
-                    new GradientStop(Color.FromArgb(110, 211, 47, 47), 0.0),
-                    new GradientStop(Color.FromArgb(15, 211, 47, 47), 1.0)
+                    new GradientStop(Color.FromArgb(90, 239, 68, 68), 0.0),
+                    new GradientStop(Color.FromArgb(15, 239, 68, 68), 1.0)
                 }
             };
 
-            var setupsStroke = new SolidColorBrush(Color.Parse("#FBC02D"));
+            var setupsStroke = new SolidColorBrush(Color.Parse("#F59E0B"));
 
             var setupsAreaGradient = new LinearGradientBrush
             {
@@ -924,8 +630,8 @@ namespace EquipmentFailureAnalysis.Views
                 EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
-                    new GradientStop(Color.FromArgb(110, 251, 192, 45), 0.0),
-                    new GradientStop(Color.FromArgb(12, 251, 192, 45), 1.0)
+                    new GradientStop(Color.FromArgb(90, 245, 158, 11), 0.0),
+                    new GradientStop(Color.FromArgb(15, 245, 158, 11), 1.0)
                 }
             };
 
@@ -935,15 +641,15 @@ namespace EquipmentFailureAnalysis.Views
             var repairsHorizontal = BuildHorizontalSegments(repairsPts);
             var setupsHorizontal = BuildHorizontalSegments(setupsPts);
 
-            var mixStroke = new SolidColorBrush(Color.Parse("#FF8F00"));
+            var mixStroke = new SolidColorBrush(Color.Parse("#F97316"));
             var mixAreaGradient = new LinearGradientBrush
             {
                 StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                 EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
-                    new GradientStop(Color.FromArgb(130, 255, 143, 0), 0.0),
-                    new GradientStop(Color.FromArgb(18, 255, 143, 0), 1.0)
+                    new GradientStop(Color.FromArgb(110, 249, 115, 22), 0.0),
+                    new GradientStop(Color.FromArgb(18, 249, 115, 22), 1.0)
                 }
             };
             var mixPen = new Pen(mixStroke, 2.0) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };

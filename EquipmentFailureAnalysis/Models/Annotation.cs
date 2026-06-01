@@ -18,6 +18,8 @@ namespace EquipmentFailureAnalysis.Models
         public DateTime StartDate { get; set; }
         // overlap end date/time
         public DateTime EndDate { get; set; }
+
+        public string TimeInterval => $"{StartDate:HH:mm} - {EndDate:HH:mm}";
         // duration string like HH:mm
         public string Duration { get; set; } = string.Empty;
         // issue type (Настройка or Ремонт)

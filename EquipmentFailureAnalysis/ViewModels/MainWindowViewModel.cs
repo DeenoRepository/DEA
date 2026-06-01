@@ -1,4 +1,4 @@
-﻿using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Models;
 using EquipmentFailureAnalysis.Utility;
 using System;
 using System.Collections.ObjectModel;
@@ -15,6 +15,13 @@ namespace EquipmentFailureAnalysis.ViewModels
         public DowntimeViewModel Downtime { get; }
         public ReportsViewModel Reports { get; }
         public SettingsViewModel Settings { get; }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        }
 
         private sealed class EmployeeIssueProjection
         {
@@ -1222,27 +1229,35 @@ namespace EquipmentFailureAnalysis.ViewModels
                 {
                     var monthDate = new DateTime(year, month, 1);
                     var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
+                    var name = monthDate.ToString("MMMM yyyy");
+                    if (!string.IsNullOrEmpty(name))
+                        name = char.ToUpper(name[0]) + name.Substring(1);
                     var monthRow = new Models.MonthRow
                     {
                         Month = monthDate.Month,
                         Year = monthDate.Year,
-                        MonthName = monthDate.ToString("MMM")
+                        MonthName = name
                     };
 
-                    // create fixed 31 columns so header days align with buttons
-                    for (int d = 1; d <= 31; d++)
+                    int offset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                    for (int i = 0; i < offset; i++)
                     {
-                        var isValid = d <= daysInMonth;
-                        var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = isValid };
-                        if (isValid)
-                        {
-                            // set valid date and find corresponding date in DailyDowntimeIndexCollection
-                            cell.Date = new DateTime(monthDate.Year, monthDate.Month, d);
-                            var entry = DailyDowntimeIndexCollection.FirstOrDefault(x => x.Day.Date == cell.Date.Date);
-                            if (entry != null)
-                                cell.Index = entry.Index;
-                        }
+                        monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
+                    }
+
+                    for (int d = 1; d <= daysInMonth; d++)
+                    {
+                        var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = true };
+                        cell.Date = new DateTime(monthDate.Year, monthDate.Month, d);
+                        var entry = DailyDowntimeIndexCollection.FirstOrDefault(x => x.Day.Date == cell.Date.Date);
+                        if (entry != null)
+                            cell.Index = entry.Index;
                         monthRow.Days.Add(cell);
+                    }
+
+                    while (monthRow.Days.Count < 42)
+                    {
+                        monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
                     }
 
                     MonthRows.Add(monthRow);

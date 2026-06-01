@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -168,7 +168,7 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             var mainLayout = FindNestedControl<Grid>("MainLayoutGrid");
-            if (mainLayout == null || mainLayout.ColumnDefinitions.Count < 3)
+            if (mainLayout == null || mainLayout.ColumnDefinitions.Count < 4)
             {
                 DockRightPanelToggleToWindowEdge(toggleButton);
                 return;
@@ -176,8 +176,9 @@ namespace EquipmentFailureAnalysis.Views
 
             var firstColumnWidth = mainLayout.ColumnDefinitions[0].ActualWidth;
             var secondColumnWidth = mainLayout.ColumnDefinitions[1].ActualWidth;
+            var splitterColumnWidth = mainLayout.ColumnDefinitions[2].ActualWidth;
             // Right panels have a left margin of 8px; align toggle with the panel's actual left border.
-            var anchorLeft = firstColumnWidth + secondColumnWidth + 8d;
+            var anchorLeft = firstColumnWidth + secondColumnWidth + splitterColumnWidth + 8d;
             if (double.IsNaN(anchorLeft) || double.IsInfinity(anchorLeft) || anchorLeft <= 0)
             {
                 DockRightPanelToggleToWindowEdge(toggleButton);

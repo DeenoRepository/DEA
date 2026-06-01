@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -226,27 +226,36 @@ namespace EquipmentFailureAnalysis.ViewModels
             {
                 var monthDate = new DateTime(year, month, 1);
                 var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
+                var name = monthDate.ToString("MMMM yyyy");
+                if (!string.IsNullOrEmpty(name))
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+
                 var monthRow = new MonthRow
                 {
                     Month = monthDate.Month,
                     Year = monthDate.Year,
-                    MonthName = monthDate.ToString("MMM")
+                    MonthName = name
                 };
 
-                for (int d = 1; d <= 31; d++)
+                int offset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                for (int i = 0; i < offset; i++)
                 {
-                    var isValid = d <= daysInMonth;
-                    var cell = new DayCell { DayNumber = d, Index = 0, IsValid = isValid };
+                    monthRow.Days.Add(new DayCell { DayNumber = 0, Index = 0, IsValid = false });
+                }
 
-                    if (isValid)
-                    {
-                        var day = new DateTime(monthDate.Year, monthDate.Month, d);
-                        var dayEnd = day.AddDays(1);
-                        cell.Date = day;
-                        cell.Index = filteredEquipment.Count(eq => GetDowntimeFilteredIssues(eq, day, dayEnd).Any());
-                    }
-
+                for (int d = 1; d <= daysInMonth; d++)
+                {
+                    var cell = new DayCell { DayNumber = d, Index = 0, IsValid = true };
+                    var day = new DateTime(monthDate.Year, monthDate.Month, d);
+                    var dayEnd = day.AddDays(1);
+                    cell.Date = day;
+                    cell.Index = filteredEquipment.Count(eq => GetDowntimeFilteredIssues(eq, day, dayEnd).Any());
                     monthRow.Days.Add(cell);
+                }
+
+                while (monthRow.Days.Count < 42)
+                {
+                    monthRow.Days.Add(new DayCell { DayNumber = 0, Index = 0, IsValid = false });
                 }
 
                 DowntimeMonthRows.Add(monthRow);

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.FailureAnalysisView">
@@ -125,7 +125,7 @@
         						<TextBlock Text="График простоев" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,2" />
         						<TextBlock Text="Динамика ремонтов и настроек в течение суток" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" />
                                 <Grid>
-                                    <views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}" Height="410" ShowHourLabels="True" VerticalAlignment="Top" />
+                                    <views:TimelineControl Items="{Binding DayTimelinePoints}" RepairsItems="{Binding RepairsTimelinePoints}" SetupsItems="{Binding SetupsTimelinePoints}" Annotations="{Binding Annotations}" AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}" Height="180" ShowHourLabels="True" VerticalAlignment="Top" />
         							<Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Background="{StaticResource OverlaySurfaceBrush}" BorderBrush="{StaticResource OverlayBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8,6">
         								<StackPanel Spacing="4">
         									<StackPanel Orientation="Horizontal" Spacing="6">

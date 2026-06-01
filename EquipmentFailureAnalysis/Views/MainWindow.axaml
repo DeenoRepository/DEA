@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -104,38 +104,38 @@
 		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
 
         <!-- Palette -->
-       <SolidColorBrush x:Key="PrimaryBackground" Color="#F3F3F3" />
-		<SolidColorBrush x:Key="HeaderBackground" Color="#364F73" />
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#F8FAFC" />
+		<SolidColorBrush x:Key="HeaderBackground" Color="#0F172A" />
 		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
-     <SolidColorBrush x:Key="AccentBrush" Color="#0F6CBD" />
-		<SolidColorBrush x:Key="AccentForeground" Color="#0F6CBD" />
-		<SolidColorBrush x:Key="AccentSoftBackground" Color="#E8F3FF" />
-		<SolidColorBrush x:Key="AccentSoftBorder" Color="#C7E0F4" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#4F46E5" />
+		<SolidColorBrush x:Key="AccentForeground" Color="#4F46E5" />
+		<SolidColorBrush x:Key="AccentSoftBackground" Color="#EEF2F6" />
+		<SolidColorBrush x:Key="AccentSoftBorder" Color="#E2E8F0" />
 		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="SurfaceAlt" Color="#F7F7F7" />
-		<SolidColorBrush x:Key="ControlBorderBrush" Color="#D0D0D0" />
-		<SolidColorBrush x:Key="BorderSubtleBrush" Color="#E1E1E1" />
-		<SolidColorBrush x:Key="RowDividerBrush" Color="#E7E7E7" />
-		<SolidColorBrush x:Key="TextSecondary" Color="#323130" />
-		<SolidColorBrush x:Key="TextMuted" Color="#605E5C" />
-		<SolidColorBrush x:Key="HeaderTextBrush" Color="#F3F6FB" />
+		<SolidColorBrush x:Key="SurfaceAlt" Color="#F8FAFC" />
+		<SolidColorBrush x:Key="ControlBorderBrush" Color="#E2E8F0" />
+		<SolidColorBrush x:Key="BorderSubtleBrush" Color="#F1F5F9" />
+		<SolidColorBrush x:Key="RowDividerBrush" Color="#F1F5F9" />
+		<SolidColorBrush x:Key="TextSecondary" Color="#475569" />
+		<SolidColorBrush x:Key="TextMuted" Color="#94A3B8" />
+		<SolidColorBrush x:Key="HeaderTextBrush" Color="#F8FAFC" />
 		<SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="SuccessBrush" Color="#059669" />
+		<SolidColorBrush x:Key="SuccessBrush" Color="#10B981" />
 		<SolidColorBrush x:Key="SuccessStrongBrush" Color="#047857" />
-		<SolidColorBrush x:Key="SuccessSoftBackground" Color="#DCFCE7" />
+		<SolidColorBrush x:Key="SuccessSoftBackground" Color="#ECFDF5" />
 		<SolidColorBrush x:Key="SuccessSoftBorder" Color="#A7F3D0" />
-		<SolidColorBrush x:Key="WarningBrush" Color="#D97706" />
-		<SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
-		<SolidColorBrush x:Key="LegendRepairBrush" Color="#D32F2F" />
-		<SolidColorBrush x:Key="LegendSetupBrush" Color="#FBC02D" />
-		<SolidColorBrush x:Key="LegendOverlapBrush" Color="#FF8F00" />
-		<SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#CCFFFFFF" />
-		<SolidColorBrush x:Key="OverlayBorderBrush" Color="#CBD5E1" />
-		<SolidColorBrush x:Key="PressedSurfaceBrush" Color="#EDF2F7" />
-		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#0F172A" />
-		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#CBD5E1" />
-	 <SolidColorBrush x:Key="TextPrimary" Color="#201F1E" />
+		<SolidColorBrush x:Key="WarningBrush" Color="#F59E0B" />
+		<SolidColorBrush x:Key="DangerBrush" Color="#EF4444" />
+		<SolidColorBrush x:Key="LegendRepairBrush" Color="#EF4444" />
+		<SolidColorBrush x:Key="LegendSetupBrush" Color="#F59E0B" />
+		<SolidColorBrush x:Key="LegendOverlapBrush" Color="#D97706" />
+		<SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#F1F5F9" />
+		<SolidColorBrush x:Key="OverlayBorderBrush" Color="#E2E8F0" />
+		<SolidColorBrush x:Key="PressedSurfaceBrush" Color="#E2E8F0" />
+		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#0F172A" />
+		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#F8FAFC" />
+		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#334155" />
+		<SolidColorBrush x:Key="TextPrimary" Color="#0F172A" />
 
 		<!-- Styles -->
         <Style x:Key="SidebarButtonStyle" Selector="Button.navEntry">
@@ -344,7 +344,8 @@
 			<!-- Use star sizing so layout adapts when window is resized -->
          <ColumnDefinition Width="Auto" />
 			<ColumnDefinition Width="7*" />
-          <ColumnDefinition Width="440" />
+			<ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="440" MinWidth="260" MaxWidth="600" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -353,7 +354,7 @@
 		</Grid.RowDefinitions>
 
  <!-- Top header -->
-  <Border Grid.ColumnSpan="3" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
+  <Border Grid.ColumnSpan="4" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -446,15 +447,18 @@
 				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 			</Button>
 		</Grid>
-  <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:FailureAnalysisView x:Name="FailureAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="True" />
-  <views:DowntimeView x:Name="DowntimeAnalysisPage" DataContext="{Binding Downtime}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:ReportsView x:Name="ReportsPage" DataContext="{Binding Reports}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:SettingsView x:Name="SettingsPage" DataContext="{Binding Settings}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:EmployeeAnalysisView x:Name="EmployeeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:FailureAnalysisView x:Name="FailureAnalysisPage" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="True" />
+  <views:DowntimeView x:Name="DowntimeAnalysisPage" DataContext="{Binding Downtime}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:ReportsView x:Name="ReportsPage" DataContext="{Binding Reports}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:SettingsView x:Name="SettingsPage" DataContext="{Binding Settings}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <views:EmployeeAnalysisView x:Name="EmployeeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+		
+		<GridSplitter Grid.Column="2" Grid.Row="1" Width="4" Background="Transparent" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" VerticalAlignment="Stretch" HorizontalAlignment="Center" />
+
 		<Button x:Name="RightPanelToggleButton"
 		        Grid.Row="1"
-		        Grid.ColumnSpan="3"
+		        Grid.ColumnSpan="4"
 		        Classes="navToggle navEdgeToggle"
 		        HorizontalAlignment="Right"
 		        VerticalAlignment="Center"
@@ -466,7 +470,7 @@
 		        ToolTip.Tip="Свернуть/развернуть правую панель">
 			<TextBlock x:Name="RightPanelToggleGlyph" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Button>
-		<Border Grid.ColumnSpan="3"
+		<Border Grid.ColumnSpan="4"
 		        Grid.Row="2"
 		        Background="{StaticResource SurfaceBrush}"
 		        BorderBrush="{StaticResource BorderSubtleBrush}"

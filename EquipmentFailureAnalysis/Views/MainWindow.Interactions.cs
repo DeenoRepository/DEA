@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -140,26 +140,37 @@ namespace EquipmentFailureAnalysis.Views
             if (res.Length == 0)
                 return;
 
-            var result = _xmlImportService.ImportFromPaths(res);
-            if (!result.Success)
-            {
-                var tb = new TextBlock { Text = "Ошибка при загрузке файла: " + result.ErrorMessage };
-                var wnd = new Window
-                {
-                    Title = "Ошибка импорта",
-                    Width = 400,
-                    Height = 120,
-                    Content = tb
-                };
-                await wnd.ShowDialog(this);
-                PublishStatus($"Ошибка импорта XML: {result.ErrorMessage}");
-                return;
-            }
-
             if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
-                vm.ImportEquipment(result.Items);
+                vm.IsLoading = true;
 
-            PublishStatus($"Импорт XML завершен: {result.Items.Count} ед. оборудования.");
+            try
+            {
+                var result = await _xmlImportService.ImportFromPathsAsync(res);
+                if (!result.Success)
+                {
+                    var tb = new TextBlock { Text = "Ошибка при загрузке файла: " + result.ErrorMessage };
+                    var wnd = new Window
+                    {
+                        Title = "Ошибка импорта",
+                        Width = 400,
+                        Height = 120,
+                        Content = tb
+                    };
+                    await wnd.ShowDialog(this);
+                    PublishStatus($"Ошибка импорта XML: {result.ErrorMessage}");
+                    return;
+                }
+
+                if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm2)
+                    vm2.ImportEquipment(result.Items);
+
+                PublishStatus($"Импорт XML завершен: {result.Items.Count} ед. оборудования.");
+            }
+            finally
+            {
+                if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm3)
+                    vm3.IsLoading = false;
+            }
         }
 
         private void OnWindowResized()
@@ -206,6 +217,23 @@ namespace EquipmentFailureAnalysis.Views
 
             try
             {
+                var width = this.Bounds.Width;
+                if (width > 0)
+                {
+                    // Collapse right panel if screen width is less than 1250px
+                    if (width < 1250 && !_isRightPanelCollapsed)
+                    {
+                        _isRightPanelCollapsed = true;
+                        ApplyRightPanelState();
+                    }
+                    
+                    // Collapse left navigation if screen width is less than 950px
+                    if (width < 950 && !_isNavigationCollapsed)
+                    {
+                        _isNavigationCollapsed = true;
+                        ApplyNavigationPanelState();
+                    }
+                }
                 UpdateRightPanelTogglePosition();
             }
             catch { }
