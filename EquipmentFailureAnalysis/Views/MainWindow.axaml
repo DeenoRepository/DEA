@@ -11,7 +11,7 @@
 		x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/dea-logo.ico"
 		Title="DEA - Equipment Failure Analysis"
-		Background="{StaticResource PrimaryBackground}"
+		Background="{DynamicResource PrimaryBackground}"
 		WindowState="Maximized">
 
 	<Design.DataContext>
@@ -39,31 +39,31 @@
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 			<Setter Property="FontSize" Value="30" />
 			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="Foreground" Value="{StaticResource HeaderTextBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource HeaderTextBrush}" />
 			<Setter Property="Margin" Value="0,0,0,0" />
 		</Style>
         <Style x:Key="SectionTitleStyle" Selector="TextBlock.sectionTitle">
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 			<Setter Property="FontSize" Value="14" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
         <Style x:Key="CardTitleStyle" Selector="TextBlock.cardTitle">
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 			<Setter Property="FontSize" Value="13" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
         <Style x:Key="CardValueStyle" Selector="TextBlock.cardValue">
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 			<Setter Property="FontSize" Value="20" />
 			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
         <Style x:Key="CardSubtextStyle" Selector="TextBlock.cardSubtext">
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 			<Setter Property="FontSize" Value="12" />
-			<Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
 		</Style>
 
 		<!-- Button tweaks -->
@@ -79,10 +79,10 @@
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="FontSize" Value="13" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{StaticResource AccentForeground}" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
 			<Setter Property="CornerRadius" Value="6" />
 		</Style>
 		<Style x:Key="ResetFilterButtonStyle" Selector="Button.resetFilter">
@@ -90,10 +90,10 @@
 			<Setter Property="Padding" Value="12,6" />
 			<Setter Property="FontSize" Value="12" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{StaticResource AccentForeground}" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
 			<Setter Property="CornerRadius" Value="6" />
 		</Style>
 
@@ -103,43 +103,9 @@
 		<SolidColorBrush x:Key="HeatmapOrange" Color="#FFB74D" />
 		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
 
-        <!-- Palette -->
-        <SolidColorBrush x:Key="PrimaryBackground" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="HeaderBackground" Color="#0F172A" />
-		<SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#4F46E5" />
-		<SolidColorBrush x:Key="AccentForeground" Color="#4F46E5" />
-		<SolidColorBrush x:Key="AccentSoftBackground" Color="#EEF2F6" />
-		<SolidColorBrush x:Key="AccentSoftBorder" Color="#E2E8F0" />
-		<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="SurfaceAlt" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="ControlBorderBrush" Color="#E2E8F0" />
-		<SolidColorBrush x:Key="BorderSubtleBrush" Color="#F1F5F9" />
-		<SolidColorBrush x:Key="RowDividerBrush" Color="#F1F5F9" />
-		<SolidColorBrush x:Key="TextSecondary" Color="#475569" />
-		<SolidColorBrush x:Key="TextMuted" Color="#94A3B8" />
-		<SolidColorBrush x:Key="HeaderTextBrush" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
-		<SolidColorBrush x:Key="SuccessBrush" Color="#10B981" />
-		<SolidColorBrush x:Key="SuccessStrongBrush" Color="#047857" />
-		<SolidColorBrush x:Key="SuccessSoftBackground" Color="#ECFDF5" />
-		<SolidColorBrush x:Key="SuccessSoftBorder" Color="#A7F3D0" />
-		<SolidColorBrush x:Key="WarningBrush" Color="#F59E0B" />
-		<SolidColorBrush x:Key="DangerBrush" Color="#EF4444" />
-		<SolidColorBrush x:Key="LegendRepairBrush" Color="#EF4444" />
-		<SolidColorBrush x:Key="LegendSetupBrush" Color="#F59E0B" />
-		<SolidColorBrush x:Key="LegendOverlapBrush" Color="#D97706" />
-		<SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#F1F5F9" />
-		<SolidColorBrush x:Key="OverlayBorderBrush" Color="#E2E8F0" />
-		<SolidColorBrush x:Key="PressedSurfaceBrush" Color="#E2E8F0" />
-		<SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#0F172A" />
-		<SolidColorBrush x:Key="TooltipForegroundBrush" Color="#F8FAFC" />
-		<SolidColorBrush x:Key="TooltipBorderBrush" Color="#334155" />
-		<SolidColorBrush x:Key="TextPrimary" Color="#0F172A" />
-
 		<!-- Styles -->
         <Style x:Key="SidebarButtonStyle" Selector="Button.navEntry">
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
@@ -147,37 +113,37 @@
 			<Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
 
         <Style x:Key="DayButtonStyle" Selector="Button.Day">
 			<Setter Property="Width" Value="30" />
 			<Setter Property="Height" Value="30" />
 			<Setter Property="Padding" Value="0" />
-			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="FontSize" Value="12" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
 
     </Window.Resources>
 
 	<Window.Styles>
        <Style Selector="TextBlock">
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
 
 		<Style Selector="Button">
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="CornerRadius" Value="8" />
 			<Setter Property="Padding" Value="10,7" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 			<Setter Property="FontWeight" Value="SemiBold" />
 		</Style>
 		<Style Selector="Button.navEntry">
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
 			<Setter Property="CornerRadius" Value="8" />
@@ -185,19 +151,19 @@
 			<Setter Property="FontWeight" Value="SemiBold" />
 			<Setter Property="HorizontalContentAlignment" Value="Left" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
 		<Style Selector="Button:pointerover">
-			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 		</Style>
        <Style Selector="Button.navEntry:pointerover">
-			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
+			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button.navEntry:selected">
-			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
+			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
@@ -208,16 +174,16 @@
 			<Setter Property="CornerRadius" Value="8" />
 		</Style>
 		<Style Selector="Button.navEntry.navCompact:pointerover">
-			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 		</Style>
 		<Style Selector="Button.navEntry.navCompact:selected">
-			<Setter Property="Background" Value="{StaticResource AccentSoftBackground}" />
+			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="TextBlock.navIcon">
-			<Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
 			<Setter Property="FontSize" Value="19" />
 			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
@@ -225,15 +191,15 @@
 			<Setter Property="FontSize" Value="24" />
 		</Style>
 		<Style Selector="Button.navEntry:selected TextBlock.navIcon">
-			<Setter Property="Foreground" Value="{StaticResource AccentForeground}" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
 		</Style>
 		<Style Selector="Button.navToggle">
 			<Setter Property="Width" Value="30" />
 			<Setter Property="Height" Value="30" />
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="CornerRadius" Value="6" />
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 		</Style>
 		<Style Selector="Button.navToggle.navEdgeToggle">
@@ -241,8 +207,8 @@
 			<Setter Property="Height" Value="46" />
 			<Setter Property="CornerRadius" Value="12" />
 			<Setter Property="Margin" Value="0,0,-10,0" />
-			<Setter Property="Background" Value="{StaticResource CardBackground}" />
-			<Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}" />
+			<Setter Property="Background" Value="{DynamicResource CardBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
 			<Setter Property="Opacity" Value="0.86" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -253,8 +219,8 @@
 			<Setter Property="HorizontalAlignment" Value="Left" />
 		</Style>
 		<Style Selector="Button.navToggle:pointerover">
-			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 			<Setter Property="Opacity" Value="1" />
 		</Style>
 		<Style Selector="Border.employeeAnalysisRow">
@@ -265,8 +231,8 @@
 			<Setter Property="Cursor" Value="Hand" />
 		</Style>
 		<Style Selector="Border.employeeAnalysisRow:pointerover">
-			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 		</Style>
 		<Style Selector="Border.downtimeEquipmentRow">
 			<Setter Property="Background" Value="Transparent" />
@@ -276,8 +242,8 @@
 			<Setter Property="Cursor" Value="Hand" />
 		</Style>
 		<Style Selector="Border.downtimeEquipmentRow:pointerover">
-			<Setter Property="Background" Value="{StaticResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{StaticResource AccentSoftBorder}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
 		</Style>
 		<Style Selector="Button.downtimeRowLink">
 			<Setter Property="Background" Value="Transparent" />
@@ -296,26 +262,26 @@
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button:pressed">
-			<Setter Property="Background" Value="{StaticResource PressedSurfaceBrush}" />
+			<Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
 		</Style>
 
 		<Style Selector="TextBox, ComboBox, CalendarDatePicker, NumericUpDown">
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 			<Setter Property="CornerRadius" Value="6" />
 			<Setter Property="Height" Value="32" />
 		</Style>
 		<Style Selector="ListBox">
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 		</Style>
 		<Style Selector="CalendarDatePicker TextBox">
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
-			<Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
 		</Style>
 
 		<!-- Status Badges styles -->
@@ -369,23 +335,23 @@
 
 		<Style Selector="ProgressBar">
 			<Setter Property="Height" Value="8" />
-			<Setter Property="Background" Value="{StaticResource RowDividerBrush}" />
+			<Setter Property="Background" Value="{DynamicResource RowDividerBrush}" />
 		</Style>
 
 		<Style Selector="CheckBox">
-			<Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
 			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
 		</Style>
 
 		<Style Selector="ToolTip">
-			<Setter Property="Background" Value="{StaticResource TooltipBackgroundBrush}" />
-			<Setter Property="Foreground" Value="{StaticResource TooltipForegroundBrush}" />
-			<Setter Property="BorderBrush" Value="{StaticResource TooltipBorderBrush}" />
+			<Setter Property="Background" Value="{DynamicResource TooltipBackgroundBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource TooltipForegroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TooltipBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="Padding" Value="8,6" />
 		</Style>
 		<Style Selector="ToolTip TextBlock">
-			<Setter Property="Foreground" Value="{StaticResource TooltipForegroundBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource TooltipForegroundBrush}" />
 		</Style>
 
 		<!-- Implicit style to completely hide ScrollBar visuals while keeping scrolling behavior -->
@@ -413,7 +379,7 @@
 		</Grid.RowDefinitions>
 
  <!-- Top header -->
-  <Border Grid.ColumnSpan="4" Grid.Row="0" Background="{StaticResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
+  <Border Grid.ColumnSpan="4" Grid.Row="0" Background="{DynamicResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -423,8 +389,8 @@
 			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
 				<Image Source="/Assets/dea-logo.png" Width="120" Height="70" />
 				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
-					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="{StaticResource HeaderTextBrush}" />
-					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="{StaticResource HeaderTextBrush}">Мониторинг рабочих смен и простоев</TextBlock>
+					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="{DynamicResource HeaderTextBrush}" />
+					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="{DynamicResource HeaderTextBrush}">Мониторинг рабочих смен и простоев</TextBlock>
 				</StackPanel>
 			</StackPanel>
 			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
@@ -434,7 +400,7 @@
 					<TextBlock Text="&#xE722;"
 					           FontFamily="Segoe MDL2 Assets"
 					           FontSize="14"
-					           Foreground="{StaticResource TextPrimary}"
+					           Foreground="{DynamicResource TextPrimary}"
 					           HorizontalAlignment="Center"
 					           VerticalAlignment="Center" />
 				</Button>
@@ -443,20 +409,20 @@
 	</Border>
 
     <Grid x:Name="NavigationHostGrid" Grid.Column="0" Grid.Row="1" Width="320" Margin="0,0,12,0" MinWidth="72" MaxWidth="340" HorizontalAlignment="Stretch">
-		   <Border Background="{StaticResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
+		   <Border Background="{DynamicResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
                 <StackPanel Spacing="8">
 					<StackPanel x:Name="NavigationHeaderPanel" Spacing="1" Margin="0,0,0,2">
-						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-						<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+						<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 					</StackPanel>
-					<Border Background="{StaticResource RowDividerBrush}" Height="1" Margin="0,1,0,4" />
+					<Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="0,1,0,4" />
 
 					<Button x:Name="DashboardNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="DashboardButton_Click" ToolTip.Tip="Панель управления">
 						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
 							<TextBlock Classes="navIcon" Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
 							<StackPanel x:Name="DashboardNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Панель управления" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<TextBlock Text="Общие тренды по работам, простоям и эффективности сотрудников" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+								<TextBlock Text="Панель управления" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+								<TextBlock Text="Общие тренды по работам, простоям и эффективности сотрудников" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 					</Button>
@@ -465,8 +431,8 @@
 						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
 							<TextBlock Classes="navIcon" Text="&#xE823;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
 							<StackPanel x:Name="DowntimeNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<TextBlock Text="Карта тепла, перечень оборудования с фиксацей простоев за день" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+								<TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+								<TextBlock Text="Карта тепла, перечень оборудования с фиксацей простоев за день" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 					</Button>
@@ -475,8 +441,8 @@
 						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
 							<TextBlock Classes="navIcon" Text="&#xE716;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
 							<StackPanel x:Name="EmployeeNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Анализ сотрудников" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<TextBlock Text="Эффективность, длительность работ и активность ответственных" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+								<TextBlock Text="Анализ сотрудников" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+								<TextBlock Text="Эффективность, длительность работ и активность ответственных" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 					</Button>
@@ -485,8 +451,8 @@
 						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
 							<TextBlock Classes="navIcon" Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
 							<StackPanel x:Name="ReportsNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Отчеты" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<TextBlock Text="Сводные отчеты по ключевым метрикам и качеству выполнения" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+								<TextBlock Text="Отчеты" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+								<TextBlock Text="Сводные отчеты по ключевым метрикам и качеству выполнения" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 					</Button>
@@ -495,15 +461,15 @@
 						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
 							<TextBlock Classes="navIcon" Text="&#xE713;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
 							<StackPanel x:Name="SettingsNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-								<TextBlock Text="Параметры отображения и конфигурация приложения" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+								<TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+								<TextBlock Text="Параметры отображения и конфигурация приложения" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 					</Button>
 				</StackPanel>
 			</Border>
 			<Button x:Name="NavigationToggleButton" Classes="navToggle navEdgeToggle" Click="ToggleNavigationButton_Click" ToolTip.Tip="Свернуть/развернуть навигацию">
-				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 			</Button>
 		</Grid>
   <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
@@ -523,16 +489,16 @@
 		        VerticalAlignment="Center"
 		        Margin="0"
 		        Opacity="1"
-		        BorderBrush="{StaticResource AccentSoftBorder}"
+		        BorderBrush="{DynamicResource AccentSoftBorder}"
 		        ZIndex="100"
 		        Click="ToggleRightPanelButton_Click"
 		        ToolTip.Tip="Свернуть/развернуть правую панель">
-			<TextBlock x:Name="RightPanelToggleGlyph" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+			<TextBlock x:Name="RightPanelToggleGlyph" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Button>
 		<Border Grid.ColumnSpan="4"
 		        Grid.Row="2"
-		        Background="{StaticResource SurfaceBrush}"
-		        BorderBrush="{StaticResource BorderSubtleBrush}"
+		        Background="{DynamicResource SurfaceBrush}"
+		        BorderBrush="{DynamicResource BorderSubtleBrush}"
 		        BorderThickness="1,1,1,0"
 		        Padding="10,6">
 			<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -540,12 +506,12 @@
 				           Text="Статус:"
 				           FontSize="12"
 				           FontWeight="SemiBold"
-				           Foreground="{StaticResource TextSecondary}"
+				           Foreground="{DynamicResource TextSecondary}"
 				           VerticalAlignment="Center" />
 				<TextBlock Grid.Column="1"
 				           Text="{Binding StatusMessage}"
 				           FontSize="12"
-				           Foreground="{StaticResource TextSecondary}"
+				           Foreground="{DynamicResource TextSecondary}"
 				           TextTrimming="CharacterEllipsis"
 				           VerticalAlignment="Center" />
 			</Grid>

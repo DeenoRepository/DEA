@@ -124,5 +124,29 @@ namespace EquipmentFailureAnalysis.Utility
                 return false;
             }
         }
+
+        public static void SaveTheme(string theme)
+        {
+            try
+            {
+                var file = Path.Combine(GetStorageDirectory(), "theme_setting.txt");
+                File.WriteAllText(file, theme ?? "Light");
+            }
+            catch { }
+        }
+
+        public static string LoadTheme()
+        {
+            try
+            {
+                var file = Path.Combine(GetStorageDirectory(), "theme_setting.txt");
+                if (File.Exists(file))
+                {
+                    return File.ReadAllText(file).Trim();
+                }
+            }
+            catch { }
+            return "Light";
+        }
     }
 }

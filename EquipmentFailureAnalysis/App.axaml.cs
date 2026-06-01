@@ -18,6 +18,14 @@ namespace EquipmentFailureAnalysis
 
         public override void OnFrameworkInitializationCompleted()
         {
+            var savedTheme = PersistedDataStore.LoadTheme();
+            RequestedThemeVariant = savedTheme switch
+            {
+                "Light" => Avalonia.Styling.ThemeVariant.Light,
+                "Dark" => Avalonia.Styling.ThemeVariant.Dark,
+                _ => Avalonia.Styling.ThemeVariant.Default
+            };
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var vm = new MainWindowViewModel();

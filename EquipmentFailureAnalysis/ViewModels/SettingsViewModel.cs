@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -36,10 +36,44 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _ldapBaseDn = string.Empty;
         private string _ldapLastUsername = string.Empty;
 
+        private string _selectedTheme = "Light";
+
         public SettingsViewModel(MainWindowViewModel shell)
         {
             _shell = shell;
             _shell.PropertyChanged += OnShellPropertyChanged;
+            _selectedTheme = Utility.PersistedDataStore.LoadTheme();
+            ApplyTheme(_selectedTheme);
+        }
+
+        public List<string> ThemeOptions { get; } = new() { "Light", "Dark", "Default" };
+
+        public string SelectedTheme
+        {
+            get => _selectedTheme;
+            set
+            {
+                var old = _selectedTheme;
+                this.RaiseAndSetIfChanged(ref _selectedTheme, value ?? "Light");
+                if (old != _selectedTheme)
+                {
+                    ApplyTheme(_selectedTheme);
+                    Utility.PersistedDataStore.SaveTheme(_selectedTheme);
+                }
+            }
+        }
+
+        private void ApplyTheme(string theme)
+        {
+            if (Avalonia.Application.Current != null)
+            {
+                Avalonia.Application.Current.RequestedThemeVariant = theme switch
+                {
+                    "Light" => Avalonia.Styling.ThemeVariant.Light,
+                    "Dark" => Avalonia.Styling.ThemeVariant.Dark,
+                    _ => Avalonia.Styling.ThemeVariant.Default
+                };
+            }
         }
 
         public string JiraResourceUrl

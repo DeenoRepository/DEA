@@ -10,8 +10,8 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <Border Background="{StaticResource CardBackground}"
-                        BorderBrush="{StaticResource ControlBorderBrush}"
+                <Border Background="{DynamicResource CardBackground}"
+                        BorderBrush="{DynamicResource ControlBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="16"
                         BoxShadow="0 4 20 0 #0A000000"
@@ -24,21 +24,21 @@
                                    HorizontalAlignment="Center"
                                    FontWeight="Bold"
                                    FontSize="14"
-                                   Foreground="{StaticResource TextPrimary}"
+                                   Foreground="{DynamicResource TextPrimary}"
                                    Margin="0,0,0,4" />
 
                         <!-- Weekday Headers -->
                         <Grid ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
                         </Grid>
 
-                        <Border Background="{StaticResource RowDividerBrush}" Height="1" Margin="0,0,0,4" />
+                        <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="0,0,0,4" />
 
                         <!-- Days Grid (6 weeks * 7 days = 42 cells) -->
                         <ItemsControl ItemsSource="{Binding Days}">
@@ -64,11 +64,21 @@
                                                     IsVisible="{Binding IsValid}"
                                                     CornerRadius="6"
                                                     Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter={Binding ConverterMode, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}}"
-                                                    BorderBrush="{Binding Date, Converter={StaticResource TodayBorderBrushConverter}}"
-                                                    BorderThickness="{Binding Date, Converter={StaticResource TodayBorderThicknessConverter}}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     ToolTip.Tip="{Binding Index, StringFormat='Событий: {0}'}">
+                                                <Border.BorderBrush>
+                                                    <MultiBinding Converter="{StaticResource SelectedBrushConverter}">
+                                                        <Binding Path="Date" />
+                                                        <Binding Path="SelectedDate" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.BorderBrush>
+                                                <Border.BorderThickness>
+                                                    <MultiBinding Converter="{StaticResource SelectedThicknessConverter}">
+                                                        <Binding Path="Date" />
+                                                        <Binding Path="SelectedDate" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.BorderThickness>
                                                 <TextBlock Text="{Binding DayNumber}"
                                                            IsVisible="{Binding IsValid}"
                                                            HorizontalAlignment="Center"

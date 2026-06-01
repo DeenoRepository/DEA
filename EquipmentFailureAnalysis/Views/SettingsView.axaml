@@ -10,63 +10,79 @@
         
         		<ScrollViewer x:Name="SettingsCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         			<StackPanel Spacing="10">
-        				<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14" HorizontalAlignment="Stretch">
+        				<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14" HorizontalAlignment="Stretch">
         					<StackPanel Spacing="10">
         						<StackPanel Spacing="3">
-        							<TextBlock Text="Параметры интеграции Jira" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        							<TextBlock Text="Параметры интеграции Jira" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+        							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
         						</StackPanel>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
-        								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         								<StackPanel Spacing="4">
-        									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-									<TextBox x:Name="JiraResourceUrlBox" Text="{Binding JiraResourceUrl, Mode=TwoWay}" Watermark="https://your-jira/rest/api/2/search" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+									<TextBox x:Name="JiraResourceUrlBox" Text="{Binding JiraResourceUrl, Mode=TwoWay}" Watermark="https://your-jira/rest/api/2/search" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
         								</StackPanel>
         								<StackPanel Spacing="4">
-        									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-									<TextBox x:Name="JiraJqlBox" Text="{Binding JiraJql, Mode=TwoWay}" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+									<TextBox x:Name="JiraJqlBox" Text="{Binding JiraJql, Mode=TwoWay}" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
         								</StackPanel>
         							</StackPanel>
         						</Border>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
-        								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Text="{Binding JiraFilterIdInput, Mode=TwoWay}" Watermark="10422" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
-        									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="{StaticResource AccentSoftBackground}" Foreground="{StaticResource AccentForeground}" BorderBrush="{StaticResource AccentSoftBorder}" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
+									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Text="{Binding JiraFilterIdInput, Mode=TwoWay}" Watermark="10422" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
+        									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="{DynamicResource AccentSoftBackground}" Foreground="{DynamicResource AccentForeground}" BorderBrush="{DynamicResource AccentSoftBorder}" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
         								</Grid>
-								<ListBox x:Name="JiraFilterIdsList" ItemsSource="{Binding JiraFilterIds}" SelectedItem="{Binding JiraSelectedFilterId, Mode=TwoWay}" MinHeight="90" MaxHeight="170" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
-        								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
+								<ListBox x:Name="JiraFilterIdsList" ItemsSource="{Binding JiraFilterIds}" SelectedItem="{Binding JiraSelectedFilterId, Mode=TwoWay}" MinHeight="90" MaxHeight="170" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
+        								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
         							</StackPanel>
         						</Border>
         
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="8">
-        								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
         									<StackPanel Grid.Column="0" Spacing="4">
-        										<TextBlock Text="Логин Jira" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-										<TextBox x:Name="JiraUsernameBox" Text="{Binding JiraUsername, Mode=TwoWay}" Watermark="user@company.com" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        										<TextBlock Text="Логин Jira" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+										<TextBox x:Name="JiraUsernameBox" Text="{Binding JiraUsername, Mode=TwoWay}" Watermark="user@company.com" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
         									</StackPanel>
         									<StackPanel Grid.Column="1" Spacing="4">
-        										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="{StaticResource TextSecondary}" />
-										<TextBox x:Name="JiraTokenBox" Text="{Binding JiraToken, Mode=TwoWay}" PasswordChar="*" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+        										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+										<TextBox x:Name="JiraTokenBox" Text="{Binding JiraToken, Mode=TwoWay}" PasswordChar="*" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
         									</StackPanel>
         								</Grid>
         							</StackPanel>
         						</Border>
 
-        						<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         							<StackPanel Spacing="6">
-        								<TextBlock Text="LDAP вход в приложение" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Text="LDAP вход в приложение" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         								<CheckBox Content="Включить LDAP авторизацию при запуске" IsChecked="{Binding LdapAuthEnabled, Mode=TwoWay}" />
         								<TextBlock Text="Параметры LDAP (сервер/порт/SSL/домен) настраиваются через кнопку ... в окне входа."
         								           FontSize="11"
-        								           Foreground="{StaticResource TextMuted}"
+        								           Foreground="{DynamicResource TextMuted}"
         								           TextWrapping="Wrap" />
+        							</StackPanel>
+        						</Border>
+        					</StackPanel>
+        				</Border>
+
+        				<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14" HorizontalAlignment="Stretch">
+        					<StackPanel Spacing="10">
+        						<StackPanel Spacing="3">
+        							<TextBlock Text="Внешний вид и оформление" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+        							<TextBlock Text="Настройте цветовую схему интерфейса приложения." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
+        						</StackPanel>
+        
+        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        							<StackPanel Spacing="8">
+        								<TextBlock Text="Тема оформления" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
+        								<ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" CornerRadius="6" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
         							</StackPanel>
         						</Border>
         					</StackPanel>
@@ -76,34 +92,34 @@
         		</ScrollViewer>
         
         	   <Grid x:Name="SettingsRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
+        			<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
-        					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+        					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="8">
-        							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimary}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Click="ImportButton_Click" />
-        							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="{StaticResource AccentBrush}" Foreground="{StaticResource InverseTextBrush}" BorderBrush="{StaticResource AccentForeground}" BorderThickness="1" Click="ImportFromJiraButton_Click" />
+        							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ImportButton_Click" />
+        							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource InverseTextBrush}" BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1" Click="ImportFromJiraButton_Click" />
         						</StackPanel>
         					</Border>
 
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="8">
-        							<TextBlock Text="Фоновый автоимпорт Jira" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        							<TextBlock Text="Фоновый автоимпорт Jira" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         							<CheckBox Content="Включить циклический импорт в фоне" IsChecked="{Binding JiraAutoImportEnabled, Mode=TwoWay}" />
         							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        								<TextBlock Grid.Column="0" Text="Интервал (мин):" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+        								<TextBlock Grid.Column="0" Text="Интервал (мин):" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
         								<NumericUpDown Grid.Column="1" Minimum="1" Maximum="1440" Increment="1" FormatString="F0" Value="{Binding JiraAutoImportPeriodMinutes, Mode=TwoWay}" />
         							</Grid>
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel Spacing="4">
-        							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
-        							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
-        							<TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
+        							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
+        							<TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа." FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
         						</StackPanel>
         					</Border>
         				</StackPanel>

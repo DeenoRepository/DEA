@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -82,6 +82,18 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.GenerateHtmlReportButton_Click(sender, e);
+        }
+
+        private void ExportPdfButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.ExportPdfButton_Click(sender, e);
+        }
+
+        private void ExportCsvButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.ExportCsvButton_Click(sender, e);
         }
     }
 }

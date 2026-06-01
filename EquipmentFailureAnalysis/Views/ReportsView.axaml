@@ -12,35 +12,35 @@
         			<StackPanel Spacing="10">
                       <Grid>
         					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-                           <Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
+                           <Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
         						<StackPanel Spacing="10">
         							<StackPanel Spacing="3">
-        								<TextBlock Text="Инструменты формирования отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        								<TextBlock Text="Выберите период, параметры отбора и состав отчета, затем сформируйте HTML-файл" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        								<TextBlock Text="Инструменты формирования отчета" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+        								<TextBlock Text="Выберите период, параметры отбора и состав отчета, затем сформируйте HTML-файл" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
         							</StackPanel>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
-        									<TextBlock Text="Параметры периода и группировки" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        									<TextBlock Text="Параметры периода и группировки" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         									<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-        										<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        										<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
 										<CalendarDatePicker x:Name="ReportStartDatePicker"
 										                    Grid.Column="1"
 										                    MinWidth="140"
 										                    HorizontalAlignment="Stretch"
-										                    Foreground="{StaticResource TextPrimary}"
-										                    Background="{StaticResource SurfaceBrush}"
+										                    Foreground="{DynamicResource TextPrimary}"
+										                    Background="{DynamicResource SurfaceBrush}"
 										                    SelectedDate="{Binding ReportStartDate, Mode=TwoWay}" />
-        										<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        										<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
 										<CalendarDatePicker x:Name="ReportEndDatePicker"
 										                    Grid.Column="3"
 										                    MinWidth="140"
 										                    HorizontalAlignment="Stretch"
-										                    Foreground="{StaticResource TextPrimary}"
-										                    Background="{StaticResource SurfaceBrush}"
+										                    Foreground="{DynamicResource TextPrimary}"
+										                    Background="{DynamicResource SurfaceBrush}"
 										                    SelectedDate="{Binding ReportEndDate, Mode=TwoWay}" />
-        										<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
-										<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="{Binding ReportGroupByIndex, Mode=TwoWay}" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1">
+        										<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+										<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="{Binding ReportGroupByIndex, Mode=TwoWay}" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1">
 											<ComboBoxItem Tag="day" Content="По дням" />
 											<ComboBoxItem Tag="month" Content="По месяцам" />
 											<ComboBoxItem Tag="employee" Content="По сотрудникам" />
@@ -50,9 +50,9 @@
         								</StackPanel>
         							</Border>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
-        									<TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        									<TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         									<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
 										<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="{Binding ReportIncludeDashboard, Mode=TwoWay}" />
 										<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="{Binding ReportIncludeDowntime, Mode=TwoWay}" />
@@ -62,15 +62,15 @@
         									</Grid>
         									<Grid ColumnDefinitions="Auto,Auto,130,*" ColumnSpacing="8" VerticalAlignment="Center">
 										<CheckBox x:Name="ReportFilterByDurationCheckBox" Grid.Column="0" Content="Фильтр по длительности" IsChecked="{Binding ReportFilterByDuration, Mode=TwoWay}" VerticalAlignment="Center" />
-        										<TextBlock Grid.Column="1" Text="мин. ≥" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+        										<TextBlock Grid.Column="1" Text="мин. ≥" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
 										<NumericUpDown x:Name="ReportMinDurationMinutesUpDown" Grid.Column="2" Minimum="0" Maximum="10080" Increment="5" FormatString="F0" Value="{Binding ReportMinDurationMinutes, Mode=TwoWay}" />
         									</Grid>
         								</StackPanel>
         							</Border>
         
-        							<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         								<StackPanel Spacing="8">
-        									<TextBlock Text="Поля детализации отчета" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" />
+        									<TextBlock Text="Поля детализации отчета" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
         									<Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
 										<CheckBox x:Name="ReportFieldStartCheckBox" Grid.Row="0" Grid.Column="0" Content="Начало" IsChecked="{Binding ReportFieldStart, Mode=TwoWay}" />
 										<CheckBox x:Name="ReportFieldEndCheckBox" Grid.Row="0" Grid.Column="1" Content="Окончание / длительность" IsChecked="{Binding ReportFieldEnd, Mode=TwoWay}" />
@@ -83,10 +83,12 @@
         								</StackPanel>
         							</Border>
         
-        							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-        								<Button Grid.Column="0" Content="Сформировать HTML" MinWidth="180" Padding="14,8" Background="{StaticResource AccentBrush}" Foreground="{StaticResource InverseTextBrush}" BorderBrush="{StaticResource AccentForeground}" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
-								<TextBox x:Name="ReportLastFilePathBox" Grid.Column="1" IsReadOnly="True" Text="{Binding ReportLastFilePath, Mode=TwoWay}" Watermark="Путь к сформированному отчету" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
-        							</Grid>
+         							<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="8" ColumnSpacing="8" VerticalAlignment="Center">
+         								<Button Grid.Row="0" Grid.Column="0" Content="Экспорт HTML" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource InverseTextBrush}" BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
+         								<Button Grid.Row="0" Grid.Column="1" Content="Экспорт PDF" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ExportPdfButton_Click" />
+         								<Button Grid.Row="0" Grid.Column="2" Content="Экспорт CSV" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ExportCsvButton_Click" />
+								        <TextBox x:Name="ReportLastFilePathBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True" Text="{Binding ReportLastFilePath, Mode=TwoWay}" Watermark="Путь к экспортированному файлу" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
+         							</Grid>
         						</StackPanel>
         					</Border>
         				</Grid>
@@ -94,38 +96,38 @@
         		</ScrollViewer>
         
         		<Grid x:Name="ReportsRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{StaticResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
+        			<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
         				<StackPanel Spacing="10">
-        					<TextBlock Text="Итоги отчета" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
-        					<TextBlock Text="Ключевые значения по надежности оборудования и эффективности команды" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+        					<TextBlock Text="Итоги отчета" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+        					<TextBlock Text="Ключевые значения по надежности оборудования и эффективности команды" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
-        							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="{StaticResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
-        							<TextBlock Text="Средняя длительность" FontSize="11" Foreground="{StaticResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+        							<TextBlock Text="Средняя длительность" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
-        							<TextBlock Text="Оборудование риска" FontSize="11" Foreground="{StaticResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" />
-        							<TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="12" Foreground="{StaticResource TextMuted}" />
+        							<TextBlock Text="Оборудование риска" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="WrapWithOverflow" />
+        							<TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="12" Foreground="{DynamicResource TextMuted}" />
         						</StackPanel>
         					</Border>
         
-        					<Border Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
         						<StackPanel>
-        							<TextBlock Text="Лидер по эффективности" FontSize="11" Foreground="{StaticResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextWrapping="WrapWithOverflow" />
-        							<TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="12" Foreground="{StaticResource TextMuted}" />
+        							<TextBlock Text="Лидер по эффективности" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+        							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="WrapWithOverflow" />
+        							<TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="12" Foreground="{DynamicResource TextMuted}" />
         						</StackPanel>
         					</Border>
         				</StackPanel>

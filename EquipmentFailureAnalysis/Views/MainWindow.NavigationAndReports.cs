@@ -339,6 +339,104 @@ namespace EquipmentFailureAnalysis.Views
 
         }
 
+        internal async void ExportPdfButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var reports = vm.Reports;
+            if (!reports.TryBuildHtmlReportOptions(DateTime.Now, out var options, out var validationError))
+            {
+                var message = validationError ?? "Параметры отчета заполнены некорректно.";
+                await ShowMessageAsync("Экспорт PDF", message);
+                PublishStatus($"Ошибка экспорта PDF: {message}");
+                return;
+            }
+
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Экспорт отчета в PDF",
+                SuggestedFileName = $"dea_report_{DateTime.Now:yyyyMMdd_HHmmss}",
+                DefaultExtension = "pdf",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("PDF документ")
+                    {
+                        Patterns = new List<string> { "*.pdf" },
+                        MimeTypes = new List<string> { "application/pdf" }
+                    }
+                }
+            });
+
+            if (file == null)
+                return;
+
+            var localPath = file.Path.LocalPath;
+            var exportService = new ExportService();
+            var success = exportService.ExportToPdf(vm, options, localPath);
+
+            if (success)
+            {
+                reports.ReportLastFilePath = localPath;
+                PublishStatus($"Отчет PDF успешно сохранен: {localPath}");
+                await ShowMessageAsync("Экспорт PDF", "Отчет PDF успешно экспортирован.");
+            }
+            else
+            {
+                PublishStatus("Ошибка при записи PDF-файла.");
+                await ShowMessageAsync("Экспорт PDF", "Не удалось экспортировать отчет в PDF.");
+            }
+        }
+
+        internal async void ExportCsvButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var reports = vm.Reports;
+            if (!reports.TryBuildHtmlReportOptions(DateTime.Now, out var options, out var validationError))
+            {
+                var message = validationError ?? "Параметры отчета заполнены некорректно.";
+                await ShowMessageAsync("Экспорт CSV", message);
+                PublishStatus($"Ошибка экспорта CSV: {message}");
+                return;
+            }
+
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Экспорт отчета в CSV",
+                SuggestedFileName = $"dea_report_{DateTime.Now:yyyyMMdd_HHmmss}",
+                DefaultExtension = "csv",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("CSV документ (для Excel)")
+                    {
+                        Patterns = new List<string> { "*.csv" },
+                        MimeTypes = new List<string> { "text/csv" }
+                    }
+                }
+            });
+
+            if (file == null)
+                return;
+
+            var localPath = file.Path.LocalPath;
+            var exportService = new ExportService();
+            var success = exportService.ExportToCsv(vm, options, localPath);
+
+            if (success)
+            {
+                reports.ReportLastFilePath = localPath;
+                PublishStatus($"Отчет CSV успешно сохранен: {localPath}");
+                await ShowMessageAsync("Экспорт CSV", "Отчет CSV успешно экспортирован.");
+            }
+            else
+            {
+                PublishStatus("Ошибка при записи CSV-файла.");
+                await ShowMessageAsync("Экспорт CSV", "Не удалось экспортировать отчет в CSV.");
+            }
+        }
+
         internal async void CaptureMiddleColumnScreenshotButton_Click(object? sender, RoutedEventArgs e)
         {
             var middleColumn = ResolveMiddleColumnTarget();

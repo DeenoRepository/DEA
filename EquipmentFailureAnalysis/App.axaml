@@ -11,17 +11,93 @@
     </Application.DataTemplates>
 
     <Application.Resources>
-        <utility:ValueToColorConverter x:Key="ColorConverter"/>
-        <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
-        <utility:RepairsToBrushConverter x:Key="RepairsToBrushConverter" />
-        <utility:RepairsToStatusConverter x:Key="RepairsToStatusConverter" />
-        <utility:RepairsToForegroundConverter x:Key="RepairsToForegroundConverter" />
-        <utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
-        <utility:StatusToBrushConverter x:Key="StatusToBrush" />
-        <utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
-        <utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
-        <utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
-        <utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
+        <ResourceDictionary>
+            <utility:ValueToColorConverter x:Key="ColorConverter"/>
+            <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
+            <utility:RepairsToBrushConverter x:Key="RepairsToBrushConverter" />
+            <utility:RepairsToStatusConverter x:Key="RepairsToStatusConverter" />
+            <utility:RepairsToForegroundConverter x:Key="RepairsToForegroundConverter" />
+            <utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
+            <utility:StatusToBrushConverter x:Key="StatusToBrush" />
+            <utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
+            <utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
+            <utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
+            <utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
+            <utility:DayCellSelectedBrushConverter x:Key="SelectedBrushConverter" />
+            <utility:DayCellSelectedThicknessConverter x:Key="SelectedThicknessConverter" />
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="PrimaryBackground" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="HeaderBackground" Color="#0F172A" />
+                    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="AccentBrush" Color="#4F46E5" />
+                    <SolidColorBrush x:Key="AccentForeground" Color="#4F46E5" />
+                    <SolidColorBrush x:Key="AccentSoftBackground" Color="#EEF2F6" />
+                    <SolidColorBrush x:Key="AccentSoftBorder" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="SurfaceAlt" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="ControlBorderBrush" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="BorderSubtleBrush" Color="#F1F5F9" />
+                    <SolidColorBrush x:Key="RowDividerBrush" Color="#F1F5F9" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#0F172A" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#475569" />
+                    <SolidColorBrush x:Key="TextMuted" Color="#94A3B8" />
+                    <SolidColorBrush x:Key="HeaderTextBrush" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#10B981" />
+                    <SolidColorBrush x:Key="SuccessStrongBrush" Color="#047857" />
+                    <SolidColorBrush x:Key="SuccessSoftBackground" Color="#ECFDF5" />
+                    <SolidColorBrush x:Key="SuccessSoftBorder" Color="#A7F3D0" />
+                    <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B" />
+                    <SolidColorBrush x:Key="DangerBrush" Color="#EF4444" />
+                    <SolidColorBrush x:Key="LegendRepairBrush" Color="#EF4444" />
+                    <SolidColorBrush x:Key="LegendSetupBrush" Color="#F59E0B" />
+                    <SolidColorBrush x:Key="LegendOverlapBrush" Color="#D97706" />
+                    <SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#F1F5F9" />
+                    <SolidColorBrush x:Key="OverlayBorderBrush" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#0F172A" />
+                    <SolidColorBrush x:Key="TooltipForegroundBrush" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="TooltipBorderBrush" Color="#334155" />
+                </ResourceDictionary>
+                
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="PrimaryBackground" Color="#0B0F19" />
+                    <SolidColorBrush x:Key="HeaderBackground" Color="#111827" />
+                    <SolidColorBrush x:Key="CardBackground" Color="#1E293B" />
+                    <SolidColorBrush x:Key="AccentBrush" Color="#6366F1" />
+                    <SolidColorBrush x:Key="AccentForeground" Color="#818CF8" />
+                    <SolidColorBrush x:Key="AccentSoftBackground" Color="#2A3347" />
+                    <SolidColorBrush x:Key="AccentSoftBorder" Color="#334155" />
+                    <SolidColorBrush x:Key="SurfaceBrush" Color="#1E293B" />
+                    <SolidColorBrush x:Key="SurfaceAlt" Color="#1A2333" />
+                    <SolidColorBrush x:Key="ControlBorderBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="BorderSubtleBrush" Color="#1E293B" />
+                    <SolidColorBrush x:Key="RowDividerBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#CBD5E1" />
+                    <SolidColorBrush x:Key="TextMuted" Color="#64748B" />
+                    <SolidColorBrush x:Key="HeaderTextBrush" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="InverseTextBrush" Color="#0F172A" />
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#34D399" />
+                    <SolidColorBrush x:Key="SuccessStrongBrush" Color="#A7F3D0" />
+                    <SolidColorBrush x:Key="SuccessSoftBackground" Color="#064E3B" />
+                    <SolidColorBrush x:Key="SuccessSoftBorder" Color="#065F46" />
+                    <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24" />
+                    <SolidColorBrush x:Key="DangerBrush" Color="#F87171" />
+                    <SolidColorBrush x:Key="LegendRepairBrush" Color="#F87171" />
+                    <SolidColorBrush x:Key="LegendSetupBrush" Color="#FBBF24" />
+                    <SolidColorBrush x:Key="LegendOverlapBrush" Color="#F59E0B" />
+                    <SolidColorBrush x:Key="OverlaySurfaceBrush" Color="#1E293B" />
+                    <SolidColorBrush x:Key="OverlayBorderBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="TooltipBackgroundBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="TooltipForegroundBrush" Color="#0F172A" />
+                    <SolidColorBrush x:Key="TooltipBorderBrush" Color="#E2E8F0" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
   
     <Application.Styles>

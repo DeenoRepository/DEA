@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using EquipmentFailureAnalysis.Models;
+using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 
@@ -19,6 +20,9 @@ namespace EquipmentFailureAnalysis.Views
 
         public static readonly StyledProperty<string> ConverterModeProperty =
             AvaloniaProperty.Register<HeatmapGridControl, string>(nameof(ConverterMode), "FailureAnalysis");
+
+        public static readonly StyledProperty<DateTime> SelectedDateProperty =
+            AvaloniaProperty.Register<HeatmapGridControl, DateTime>(nameof(SelectedDate), DateTime.Today);
 
         public IEnumerable<int>? DayHeaders
         {
@@ -42,6 +46,12 @@ namespace EquipmentFailureAnalysis.Views
         {
             get => GetValue(ConverterModeProperty);
             set => SetValue(ConverterModeProperty, value);
+        }
+
+        public System.DateTime SelectedDate
+        {
+            get => GetValue(SelectedDateProperty);
+            set => SetValue(SelectedDateProperty, value);
         }
 
         public HeatmapGridControl()
