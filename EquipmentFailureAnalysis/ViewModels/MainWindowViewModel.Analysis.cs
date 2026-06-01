@@ -283,6 +283,15 @@ namespace EquipmentFailureAnalysis.ViewModels
                 : currentRepairIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
             Dashboard.DashboardCurrentPeriodMttr = FormatDuration(TimeSpan.FromMinutes(mttrMinutes));
 
+            var totalEquipmentCount = Math.Max(1, _masterEquipment.Count);
+            var totalAvailableMinutes = totalEquipmentCount * 30.0 * 24.0 * 60.0;
+            var totalDowntimeMinutes = currentIssues.Sum(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+            var totalFailures = currentIssues.Count(i => i.Issue.Type == IssueType.Ремонт);
+            var mtbfMinutes = totalFailures == 0 
+                ? totalAvailableMinutes 
+                : Math.Max(0, (totalAvailableMinutes - totalDowntimeMinutes) / totalFailures);
+            Dashboard.DashboardCurrentPeriodMtbf = FormatDuration(TimeSpan.FromMinutes(mtbfMinutes));
+
             DashboardCurrentPeriodAffectedEquipment = currentIssues
                 .Select(i => i.Equipment.Title)
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
@@ -401,6 +410,76 @@ namespace EquipmentFailureAnalysis.ViewModels
                     .ThenBy(r => r.IssuesCount)
                     .ThenBy(r => r.Subdivision)
                     .Take(5));
+
+            var pPoints = currentIssues
+                .Where(i => i.Issue.Type == IssueType.Ремонт)
+                .GroupBy(i => i.Equipment.Title)
+                .Select(g => new ParetoPoint
+                {
+                    Label = g.Key,
+                    Value = g.Count()
+                })
+                .OrderByDescending(p => p.Value)
+                .ToList();
+
+            var totalFailuresCount = (double)pPoints.Sum(p => p.Value);
+            var runningSum = 0.0;
+            foreach (var pt in pPoints)
+            {
+                runningSum += pt.Value;
+                pt.CumulativePercent = totalFailuresCount == 0 ? 0.0 : (runningSum * 100.0 / totalFailuresCount);
+            }
+
+            Dashboard.DashboardParetoPoints = new ObservableCollection<ParetoPoint>(pPoints.Take(10));
+
+            var warningsList = new System.Collections.Generic.List<DataWarning>();
+            foreach (var eq in _masterEquipment)
+            {
+                foreach (var issue in eq.Issues)
+                {
+                    if (string.IsNullOrWhiteSpace(issue.Description) || issue.Description.Length < 5)
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Неполное описание",
+                            Severity = "Warning",
+                            Description = "Описание проблемы пустое или слишком короткое.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+
+                    if (IsUnassignedResponsible(issue.Responsible))
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Нет ответственного",
+                            Severity = "Warning",
+                            Description = "Ответственный сотрудник не назначен для задачи.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+
+                    if (!issue.IsInProgress && issue.End < issue.Start)
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Ошибка хронологии",
+                            Severity = "Error",
+                            Description = "Время закрытия задачи предшествует времени открытия.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+                }
+            }
+
+            Dashboard.DashboardDataWarnings = new ObservableCollection<DataWarning>(
+                warningsList.OrderByDescending(w => w.Severity == "Error" ? 1 : 0).ThenByDescending(w => w.Start).Take(15));
 
             BuildDashboardMonthlyTrends(now);
         }

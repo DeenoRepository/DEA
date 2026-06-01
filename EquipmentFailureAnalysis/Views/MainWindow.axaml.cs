@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -6,6 +6,8 @@ using Avalonia.LogicalTree;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Media;
+using Avalonia.Data;
 using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.Utility;
 using System.Linq;
@@ -42,6 +44,13 @@ namespace EquipmentFailureAnalysis.Views
 
         private DateTime _lastEquipmentMenuOpenUtc = DateTime.MinValue;
         private AppPage _currentPage = AppPage.Dashboard;
+
+        private DashboardView? _dashboardPage;
+        private FailureAnalysisView? _failureAnalysisPage;
+        private DowntimeView? _downtimeAnalysisPage;
+        private ReportsView? _reportsPage;
+        private SettingsView? _settingsPage;
+        private EmployeeAnalysisView? _employeeAnalysisPage;
 
         private enum AppPage
         {
@@ -253,7 +262,30 @@ namespace EquipmentFailureAnalysis.Views
             void Apply()
             {
                 if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
                     vm.AddStatusEvent(message);
+
+                    // Determine Toast type
+                    string toastType = "Info";
+                    if (message.Contains("Ошибка", StringComparison.OrdinalIgnoreCase) || 
+                        message.Contains("ошибка", StringComparison.OrdinalIgnoreCase))
+                    {
+                        toastType = "Error";
+                    }
+                    else if (message.Contains("успешно", StringComparison.OrdinalIgnoreCase) || 
+                             message.Contains("Успешно", StringComparison.OrdinalIgnoreCase) || 
+                             message.Contains("завершен", StringComparison.OrdinalIgnoreCase) || 
+                             message.Contains("завершено", StringComparison.OrdinalIgnoreCase))
+                    {
+                        toastType = "Success";
+                    }
+
+                    // Don't show toast for initial boot status
+                    if (!message.Equals("Приложение готово к работе.", StringComparison.OrdinalIgnoreCase))
+                    {
+                        ShowToast(message, toastType);
+                    }
+                }
             }
 
             if (Dispatcher.UIThread.CheckAccess())
@@ -263,6 +295,156 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             Dispatcher.UIThread.Post(Apply);
+        }
+
+        public void ShowToast(string message, string type = "Info")
+        {
+            var container = FindNestedControl<StackPanel>("ToastContainer");
+            if (container == null)
+                return;
+
+            var toast = new Border
+            {
+                Classes = { "toastCard", type.ToLowerInvariant() }
+            };
+
+            var grid = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"),
+                ColumnSpacing = 12
+            };
+
+            var iconGlyph = type.ToLowerInvariant() switch
+            {
+                "success" => "\uE8FB", // Accept/Checkmark
+                "error" => "\uEA39",   // Error round
+                _ => "\uE946"          // Info round
+            };
+
+            var iconBrush = type.ToLowerInvariant() switch
+            {
+                "success" => new SolidColorBrush(Color.Parse("#10B981")),
+                "error" => new SolidColorBrush(Color.Parse("#EF4444")),
+                _ => new SolidColorBrush(Color.Parse("#3B82F6"))
+            };
+
+            var icon = new TextBlock
+            {
+                Text = iconGlyph,
+                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontSize = 18,
+                Foreground = iconBrush,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            Grid.SetColumn(icon, 0);
+            grid.Children.Add(icon);
+
+            var textStack = new StackPanel
+            {
+                Spacing = 2,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            var titleText = type.ToLowerInvariant() switch
+            {
+                "success" => "Успешно",
+                "error" => "Ошибка",
+                _ => "Уведомление"
+            };
+
+            var title = new TextBlock
+            {
+                Text = titleText,
+                FontWeight = FontWeight.SemiBold,
+                FontSize = 12,
+                Foreground = (IBrush)Application.Current!.FindResource("TextPrimary")!
+            };
+            textStack.Children.Add(title);
+
+            var content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 11,
+                Foreground = (IBrush)Application.Current!.FindResource("TextSecondary")!
+            };
+            textStack.Children.Add(content);
+            Grid.SetColumn(textStack, 1);
+            grid.Children.Add(textStack);
+
+            var closeButton = new Button
+            {
+                Content = new TextBlock
+                {
+                    Text = "\uE711",
+                    FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                    FontSize = 10,
+                    Foreground = (IBrush)Application.Current!.FindResource("TextMuted")!
+                },
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(4),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+                Cursor = new Cursor(StandardCursorType.Hand)
+            };
+            Grid.SetColumn(closeButton, 2);
+            grid.Children.Add(closeButton);
+
+            toast.Child = grid;
+
+            // Close action
+            async void CloseToast()
+            {
+                toast.Classes.Remove("visible");
+                await Task.Delay(300);
+                container.Children.Remove(toast);
+            }
+
+            closeButton.Click += (_, _) => CloseToast();
+
+            container.Children.Add(toast);
+
+            // Trigger animation in next frame
+            Dispatcher.UIThread.Post(() => toast.Classes.Add("visible"));
+
+            // Auto dismiss after 5 seconds
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                CloseToast();
+            };
+            timer.Start();
+        }
+
+        private void EnsurePagesInitialized()
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            if (_dashboardPage == null)
+                _dashboardPage = new DashboardView();
+            _dashboardPage.DataContext = vm.Dashboard;
+
+            if (_failureAnalysisPage == null)
+                _failureAnalysisPage = new FailureAnalysisView();
+            _failureAnalysisPage.DataContext = vm;
+
+            if (_downtimeAnalysisPage == null)
+                _downtimeAnalysisPage = new DowntimeView();
+            _downtimeAnalysisPage.DataContext = vm.Downtime;
+
+            if (_reportsPage == null)
+                _reportsPage = new ReportsView();
+            _reportsPage.DataContext = vm.Reports;
+
+            if (_settingsPage == null)
+                _settingsPage = new SettingsView();
+            _settingsPage.DataContext = vm.Settings;
+
+            if (_employeeAnalysisPage == null)
+                _employeeAnalysisPage = new EmployeeAnalysisView();
+            _employeeAnalysisPage.DataContext = vm;
         }
 
         private T? FindNestedControl<T>(string name) where T : Control

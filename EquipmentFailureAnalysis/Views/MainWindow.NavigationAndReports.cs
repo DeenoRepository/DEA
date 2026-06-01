@@ -761,9 +761,30 @@ namespace EquipmentFailureAnalysis.Views
             _currentPage = AppPage.FailureAnalysis;
             UpdatePageVisibility();
         }
-
         private void UpdatePageVisibility()
         {
+            EnsurePagesInitialized();
+
+            var transitioner = FindNestedControl<TransitioningContentControl>("PageContentTransitioner");
+            if (transitioner != null)
+            {
+                Control? targetPage = _currentPage switch
+                {
+                    AppPage.Dashboard => _dashboardPage,
+                    AppPage.FailureAnalysis => _failureAnalysisPage,
+                    AppPage.DowntimeAnalysis => _downtimeAnalysisPage,
+                    AppPage.Reports => _reportsPage,
+                    AppPage.Settings => _settingsPage,
+                    AppPage.EmployeeAnalysis => _employeeAnalysisPage,
+                    _ => null
+                };
+
+                if (transitioner.Content != targetPage)
+                {
+                    transitioner.Content = targetPage;
+                }
+            }
+
             var isDashboardPage = _currentPage == AppPage.Dashboard;
             var isFailureAnalysisPage = _currentPage == AppPage.FailureAnalysis;
             var isDowntimeAnalysisPage = _currentPage == AppPage.DowntimeAnalysis;
@@ -771,45 +792,18 @@ namespace EquipmentFailureAnalysis.Views
             var isSettingsPage = _currentPage == AppPage.Settings;
             var isEmployeeAnalysisPage = _currentPage == AppPage.EmployeeAnalysis;
 
-            var dashboardPage = FindNestedControl<Control>("DashboardPage");
-            if (dashboardPage != null)
-                dashboardPage.IsVisible = isDashboardPage;
-
-            var failureAnalysisPage = FindNestedControl<Control>("FailureAnalysisPage");
-            if (failureAnalysisPage != null)
-                failureAnalysisPage.IsVisible = isFailureAnalysisPage;
-
-            var downtimeAnalysisPage = FindNestedControl<Control>("DowntimeAnalysisPage");
-            if (downtimeAnalysisPage != null)
-                downtimeAnalysisPage.IsVisible = isDowntimeAnalysisPage;
-
-            var reportsPage = FindNestedControl<Control>("ReportsPage");
-            if (reportsPage != null)
-                reportsPage.IsVisible = isReportsPage;
-
-            var settingsPage = FindNestedControl<Control>("SettingsPage");
-            if (settingsPage != null)
-                settingsPage.IsVisible = isSettingsPage;
-
-            var employeeAnalysisPage = FindNestedControl<Control>("EmployeeAnalysisPage");
-            if (employeeAnalysisPage != null)
-                employeeAnalysisPage.IsVisible = isEmployeeAnalysisPage;
-
             SetNavigationButtonSelected("DashboardNavButton", isDashboardPage);
             SetNavigationButtonSelected("DowntimeNavButton", isDowntimeAnalysisPage || isFailureAnalysisPage);
             SetNavigationButtonSelected("EmployeeNavButton", isEmployeeAnalysisPage);
             SetNavigationButtonSelected("ReportsNavButton", isReportsPage);
             SetNavigationButtonSelected("SettingsNavButton", isSettingsPage);
 
-            // Recalculate heatmap cell size when page visibility changes.
-            // Do it immediately and once more after layout pass so Bounds are actual.
             ApplyRightPanelState();
             OnWindowResized();
             Avalonia.Threading.Dispatcher.UIThread.Post(
                 OnWindowResized,
                 Avalonia.Threading.DispatcherPriority.Loaded);
         }
-
     }
 }
 

@@ -362,6 +362,38 @@
 				</ControlTemplate>
 			</Setter>
 		</Style>
+
+		<!-- Toast notifications -->
+		<Style Selector="Border.toastCard">
+			<Setter Property="Background" Value="{DynamicResource CardBackground}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Padding" Value="16,12" />
+			<Setter Property="Width" Value="320" />
+			<Setter Property="BoxShadow" Value="0 4 12 0 #20000000" />
+			<Setter Property="Opacity" Value="0" />
+			<Setter Property="RenderTransform" Value="translateY(20px)" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+					<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.toastCard.visible">
+			<Setter Property="Opacity" Value="1" />
+			<Setter Property="RenderTransform" Value="translateY(0)" />
+		</Style>
+		<Style Selector="Border.toastCard.success">
+			<Setter Property="BorderBrush" Value="#10B981" />
+		</Style>
+		<Style Selector="Border.toastCard.error">
+			<Setter Property="BorderBrush" Value="#EF4444" />
+		</Style>
+		<Style Selector="Border.toastCard.info">
+			<Setter Property="BorderBrush" Value="#3B82F6" />
+		</Style>
 	</Window.Styles>
 
 	<Grid x:Name="MainLayoutGrid">
@@ -472,12 +504,11 @@
 				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 			</Button>
 		</Grid>
-  <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:FailureAnalysisView x:Name="FailureAnalysisPage" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="True" />
-  <views:DowntimeView x:Name="DowntimeAnalysisPage" DataContext="{Binding Downtime}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:ReportsView x:Name="ReportsPage" DataContext="{Binding Reports}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:SettingsView x:Name="SettingsPage" DataContext="{Binding Settings}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
-  <views:EmployeeAnalysisView x:Name="EmployeeAnalysisPage" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0" IsVisible="False" />
+  <TransitioningContentControl x:Name="PageContentTransitioner" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0">
+    <TransitioningContentControl.PageTransition>
+      <CrossFade Duration="0:0:0.25" />
+    </TransitioningContentControl.PageTransition>
+  </TransitioningContentControl>
 		
 		<GridSplitter Grid.Column="2" Grid.Row="1" Width="4" Background="Transparent" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" VerticalAlignment="Stretch" HorizontalAlignment="Center" />
 
@@ -501,7 +532,7 @@
 		        BorderBrush="{DynamicResource BorderSubtleBrush}"
 		        BorderThickness="1,1,1,0"
 		        Padding="10,6">
-			<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+			<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
 				<TextBlock Grid.Column="0"
 				           Text="Статус:"
 				           FontSize="12"
@@ -514,8 +545,44 @@
 				           Foreground="{DynamicResource TextSecondary}"
 				           TextTrimming="CharacterEllipsis"
 				           VerticalAlignment="Center" />
+				<Button Grid.Column="2"
+				        Content="Журнал логов"
+				        FontSize="11"
+				        Padding="8,4"
+				        Background="{DynamicResource SurfaceBrush}"
+				        BorderBrush="{DynamicResource ControlBorderBrush}"
+				        BorderThickness="1"
+				        CornerRadius="4">
+					<Button.Flyout>
+						<Flyout Placement="TopEdgeAlignedRight">
+							<Border Width="450" Height="300" Padding="12" Background="{DynamicResource CardBackground}" CornerRadius="8">
+								<StackPanel Spacing="8">
+									<TextBlock Text="Журнал событий синхронизации" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4" />
+									<ListBox ItemsSource="{Binding SyncLogs}" Height="230" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6" ScrollViewer.VerticalScrollBarVisibility="Auto">
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<TextBlock Text="{Binding}" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Padding="2,4" />
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</StackPanel>
+							</Border>
+						</Flyout>
+					</Button.Flyout>
+				</Button>
 			</Grid>
 		</Border>
+		
+		<!-- Toast notifications container -->
+		<StackPanel x:Name="ToastContainer" 
+					Grid.Column="1" 
+					Grid.ColumnSpan="3" 
+					Grid.Row="1"
+					VerticalAlignment="Bottom" 
+					HorizontalAlignment="Right" 
+					Margin="0,0,24,24" 
+					Spacing="10" 
+					ZIndex="1000" />
 	</Grid>
 </Window>
 

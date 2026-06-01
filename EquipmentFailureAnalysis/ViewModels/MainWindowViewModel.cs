@@ -51,11 +51,15 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
         }
 
+        public ObservableCollection<string> SyncLogs { get; } = new ObservableCollection<string>();
+
         public void AddStatusEvent(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
                 return;
 
+            var logEntry = $"[{DateTime.Now:dd.MM.yyyy HH:mm:ss}] {message.Trim()}";
+            SyncLogs.Insert(0, logEntry);
             StatusMessage = $"[{DateTime.Now:HH:mm:ss}] {message.Trim()}";
         }
 

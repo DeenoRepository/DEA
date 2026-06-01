@@ -1,4 +1,4 @@
-﻿using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Models;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
@@ -27,10 +27,13 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _dashboardRiskEquipment = "-";
         private string _dashboardRiskEquipmentValue = "0 событий";
         private string _dashboardCurrentPeriodMttr = "00:00";
+        private string _dashboardCurrentPeriodMtbf = "00:00";
         private double _dashboardCurrentPeriodUnassignedSharePercent;
         private string _dashboardRecurringFailuresValue = "0 ед. / 0 событий";
         private ObservableCollection<SubdivisionRatingRow> _dashboardSubdivisionRatings = new();
         private ObservableCollection<DashboardTrendPoint> _dashboardMonthlyTrends = new();
+        private ObservableCollection<ParetoPoint> _dashboardParetoPoints = new();
+        private ObservableCollection<DataWarning> _dashboardDataWarnings = new();
 
         private bool _isRefreshingFilters;
         private string _selectedDashboardIssueTypeFilter = "Все типы";
@@ -112,6 +115,18 @@ namespace EquipmentFailureAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dashboardMonthlyTrends, value);
         }
 
+        public ObservableCollection<ParetoPoint> DashboardParetoPoints
+        {
+            get => _dashboardParetoPoints;
+            set => this.RaiseAndSetIfChanged(ref _dashboardParetoPoints, value);
+        }
+
+        public ObservableCollection<DataWarning> DashboardDataWarnings
+        {
+            get => _dashboardDataWarnings;
+            set => this.RaiseAndSetIfChanged(ref _dashboardDataWarnings, value);
+        }
+
         public int DashboardCurrentPeriodActiveEmployees
         {
             get => _dashboardCurrentPeriodActiveEmployees;
@@ -152,6 +167,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardCurrentPeriodMttr;
             set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodMttr, value);
+        }
+
+        public string DashboardCurrentPeriodMtbf
+        {
+            get => _dashboardCurrentPeriodMtbf;
+            set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodMtbf, value);
         }
 
         public double DashboardCurrentPeriodUnassignedSharePercent
