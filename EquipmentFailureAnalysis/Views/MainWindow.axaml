@@ -398,12 +398,11 @@
 
 	<Grid x:Name="MainLayoutGrid">
         <Grid.ColumnDefinitions>
-			<!-- Use star sizing so layout adapts when window is resized -->
-         <ColumnDefinition Width="Auto" />
-			<ColumnDefinition Width="7*" />
-			<ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="440" MinWidth="260" MaxWidth="600" />
-		</Grid.ColumnDefinitions>
+            <!-- Navigation panel -->
+            <ColumnDefinition Width="Auto" />
+            <!-- Main Content Area -->
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
@@ -411,7 +410,7 @@
 		</Grid.RowDefinitions>
 
  <!-- Top header -->
-  <Border Grid.ColumnSpan="4" Grid.Row="0" Background="{DynamicResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
+  <Border Grid.ColumnSpan="2" Grid.Row="0" Background="{DynamicResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
 		<Grid VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -504,29 +503,12 @@
 				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 			</Button>
 		</Grid>
-  <TransitioningContentControl x:Name="PageContentTransitioner" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Margin="8,0,0,0">
+  <TransitioningContentControl x:Name="PageContentTransitioner" Grid.Column="1" Grid.ColumnSpan="1" Grid.Row="1" Margin="8,0,12,0">
     <TransitioningContentControl.PageTransition>
       <CrossFade Duration="0:0:0.25" />
     </TransitioningContentControl.PageTransition>
   </TransitioningContentControl>
-		
-		<GridSplitter Grid.Column="2" Grid.Row="1" Width="4" Background="Transparent" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" VerticalAlignment="Stretch" HorizontalAlignment="Center" />
-
-		<Button x:Name="RightPanelToggleButton"
-		        Grid.Row="1"
-		        Grid.ColumnSpan="4"
-		        Classes="navToggle navEdgeToggle"
-		        HorizontalAlignment="Right"
-		        VerticalAlignment="Center"
-		        Margin="0"
-		        Opacity="1"
-		        BorderBrush="{DynamicResource AccentSoftBorder}"
-		        ZIndex="100"
-		        Click="ToggleRightPanelButton_Click"
-		        ToolTip.Tip="Свернуть/развернуть правую панель">
-			<TextBlock x:Name="RightPanelToggleGlyph" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-		</Button>
-		<Border Grid.ColumnSpan="4"
+		<Border Grid.ColumnSpan="2"
 		        Grid.Row="2"
 		        Background="{DynamicResource SurfaceBrush}"
 		        BorderBrush="{DynamicResource BorderSubtleBrush}"
@@ -576,7 +558,7 @@
 		<!-- Toast notifications container -->
 		<StackPanel x:Name="ToastContainer" 
 					Grid.Column="1" 
-					Grid.ColumnSpan="3" 
+					Grid.ColumnSpan="1" 
 					Grid.Row="1"
 					VerticalAlignment="Bottom" 
 					HorizontalAlignment="Right" 
