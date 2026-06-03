@@ -16,7 +16,7 @@
                       Grid.Column="0"
                       Margin="20,18,16,18"
                       HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Hidden">
             <StackPanel Spacing="14">
 
                 <!-- ============== PAGE HEADER ============== -->
@@ -41,7 +41,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <Grid ColumnDefinitions="Auto,*,12,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8"
+                        <Grid ColumnDefinitions="Auto,*,12,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="0"
                               VerticalAlignment="Center">
                             <TextBlock Grid.Column="0" Text="Сотрудник"
                                        FontSize="11" FontWeight="SemiBold"
@@ -55,16 +55,20 @@
                             <TextBlock Grid.Column="3" Text="Дата"
                                        FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,4,0" />
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
                             <Button Grid.Column="4" Classes="dateShift" Content="◀"
+                                    Margin="0,0,4,0"
                                     Click="EmployeeTimelinePrevDate_Click" />
                             <CalendarDatePicker Grid.Column="5" Width="150"
                                                 MinWidth="150" MaxWidth="180"
+                                                Margin="0,0,4,0"
                                                 HorizontalAlignment="Stretch"
                                                 SelectedDate="{Binding EmployeeTimelineDate, Mode=TwoWay}" />
                             <Button Grid.Column="6" Classes="dateShift" Content="▶"
+                                    Margin="0,0,8,0"
                                     Click="EmployeeTimelineNextDate_Click" />
                             <Button Grid.Column="7" Classes="soft" Padding="10,3" FontSize="10"
+                                    Height="34" VerticalContentAlignment="Center"
                                     Content="Сегодня" Click="EmployeeSetToday_Click" />
                         </Grid>
 
@@ -90,7 +94,7 @@
                         </StackPanel>
 
                         <Grid ColumnDefinitions="Auto,*,12,Auto,*,12,Auto,*"
-                              ColumnSpacing="8" VerticalAlignment="Center">
+                              ColumnSpacing="0" VerticalAlignment="Center">
                             <TextBlock Grid.Column="0" Text="Период"
                                        FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextMuted}"
@@ -298,7 +302,7 @@
                                         </Grid>
                                     </Border>
 
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                                   VerticalScrollBarVisibility="Auto"
                                                   MaxHeight="420">
                                         <ItemsControl ItemsSource="{Binding EmployeeAnalysisRows}">
@@ -489,7 +493,7 @@
                                                    VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Text="Лидер по числу событий" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentForeground}"
+                                               Foreground="{DynamicResource TextMuted}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding EmployeeTopByIssues}" FontSize="14" FontWeight="Bold"
@@ -512,7 +516,7 @@
                                                    VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Text="Максимальная занятость" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource WarningBrush}"
+                                               Foreground="{DynamicResource TextMuted}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding EmployeeTopByDuration}" FontSize="14" FontWeight="Bold"

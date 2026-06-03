@@ -265,14 +265,17 @@ namespace EquipmentFailureAnalysis.Views
         private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
             CapturePageFilters();
-            if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
-            {
-                vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
-            }
-
             _currentPage = AppPage.DowntimeAnalysis;
             UpdatePageVisibility();
             RestorePageFilters();
+
+            if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
+                }, DispatcherPriority.Background);
+            }
         }
 
         private void SettingsButton_Click(object? sender, RoutedEventArgs e)
