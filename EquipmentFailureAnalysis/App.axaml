@@ -172,6 +172,17 @@
 
     <Application.Styles>
         <FluentTheme />
+        
+        <Style Selector="FlyoutPresenter.syncLogsFlyout">
+            <Setter Property="Width" Value="480" />
+            <Setter Property="Height" Value="320" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="MaxWidth" Value="500" />
+        </Style>
 
         <!-- ====================================================
              TYPOGRAPHY UTILITIES (class selectors)
