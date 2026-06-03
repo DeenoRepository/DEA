@@ -45,5 +45,17 @@ namespace EquipmentFailureAnalysis.Views
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.ImportFromJiraButton_Click(sender, e);
         }
+
+        private void TestJiraConnectionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.TestJiraConnectionButton_Click(sender, e);
+        }
+
+        private void TestLdapConnectionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.TestLdapConnectionButton_Click(sender, e);
+        }
     }
 }

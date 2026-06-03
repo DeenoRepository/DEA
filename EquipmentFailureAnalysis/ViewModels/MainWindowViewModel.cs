@@ -63,9 +63,36 @@ namespace EquipmentFailureAnalysis.ViewModels
             StatusMessage = $"[{DateTime.Now:HH:mm:ss}] {message.Trim()}";
         }
 
+        private long _filtersResetCounter;
+        /// <summary>Monotonically increasing counter; increments on every filter reset.
+        /// Views observe it to show a confirmation toast.</summary>
+        public long FiltersResetCounter
+        {
+            get => _filtersResetCounter;
+            set => this.RaiseAndSetIfChanged(ref _filtersResetCounter, value);
+        }
+
         public ObservableCollection<Models.MonthRow> MonthRows { get; set; } = new ObservableCollection<Models.MonthRow>();
         public ObservableCollection<Models.MonthRow> DowntimeMonthRows => Downtime.DowntimeMonthRows;
         public ObservableCollection<Models.DowntimeEquipmentRow> DowntimeDayEquipmentRows => Downtime.DowntimeDayEquipmentRows;
+
+        public string HeatmapYearLabel
+        {
+            get
+            {
+                if (MonthRows == null || MonthRows.Count == 0) return "Год: —";
+                var first = MonthRows.First();
+                var last = MonthRows.Last();
+                if (first.Year == last.Year) return $"Год: {first.Year}";
+                var firstShort = System.Globalization.CultureInfo.GetCultureInfo("ru-RU")
+                    .DateTimeFormat.GetAbbreviatedMonthName(first.Month);
+                var lastShort = System.Globalization.CultureInfo.GetCultureInfo("ru-RU")
+                    .DateTimeFormat.GetAbbreviatedMonthName(last.Month);
+                firstShort = char.ToUpper(firstShort[0]) + firstShort.Substring(1);
+                lastShort = char.ToUpper(lastShort[0]) + lastShort.Substring(1);
+                return $"{firstShort} {first.Year} — {lastShort} {last.Year}";
+            }
+        }
         private ObservableCollection<Models.EmployeeAnalysisRow> _employeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>();
         public ObservableCollection<Models.EmployeeAnalysisRow> EmployeeAnalysisRows
         {
@@ -1235,12 +1262,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                 });
                 }
 
-                // build month rows for calendar year (January..December)
+                // build month rows — last 4 months (current + 3 previous)
                 MonthRows.Clear();
-                var year = DateTime.Now.Year;
-                for (int month = 1; month <= 12; month++)
+                var today = DateTime.Today;
+                for (int offset = 3; offset >= 0; offset--)
                 {
-                    var monthDate = new DateTime(year, month, 1);
+                    var monthDate = today.AddMonths(-offset);
                     var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
                     var name = monthDate.ToString("MMMM yyyy");
                     if (!string.IsNullOrEmpty(name))
@@ -1252,8 +1279,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                         MonthName = name
                     };
 
-                    int offset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
-                    for (int i = 0; i < offset; i++)
+                    int dowOffset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                    for (int i = 0; i < dowOffset; i++)
                     {
                         monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
                     }
@@ -1275,6 +1302,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                     MonthRows.Add(monthRow);
                 }
+                this.RaisePropertyChanged(nameof(HeatmapYearLabel));
 
                 // ensure ShowDayTimelineCommand still targets selected analysis date when a cell is clicked
                 ShowDayTimelineCommand = ReactiveCommand.Create<DateTime>(date => BuildTimelineForDate(date, SelectedEquipment));

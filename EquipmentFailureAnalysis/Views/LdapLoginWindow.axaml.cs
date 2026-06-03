@@ -214,6 +214,25 @@ namespace EquipmentFailureAnalysis.Views
             _errorText.IsVisible = true;
         }
 
+        private void TogglePasswordVisibility_Click(object? sender, RoutedEventArgs e)
+        {
+            if (this.FindControl<Avalonia.Controls.TextBox>("PasswordBox") is { } box &&
+                this.FindControl<Avalonia.Controls.TextBlock>("PasswordRevealGlyph") is { } glyph)
+            {
+                if (box.PasswordChar == '\0')
+                {
+                    box.PasswordChar = '*';
+                    glyph.Text = "\uE7B3"; // Eye (closed)
+                }
+                else
+                {
+                    box.PasswordChar = '\0';
+                    glyph.Text = "\uE7B3".Length > 0 ? "\uED1A" : "\uE7B3"; // Eye open
+                    glyph.Text = "\uED1A";
+                }
+            }
+        }
+
         private void HideError()
         {
             _errorText.Text = string.Empty;

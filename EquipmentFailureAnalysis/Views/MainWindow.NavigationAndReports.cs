@@ -167,34 +167,43 @@ namespace EquipmentFailureAnalysis.Views
                 return;
             }
 
-            var mainLayout = FindNestedControl<Grid>("MainLayoutGrid");
-            if (mainLayout == null || mainLayout.ColumnDefinitions.Count < 4)
+            // Anchor the toggle to the left edge of the active page's right column.
+            // The button lives inside the content area (Grid.Column="1" of MainLayoutGrid),
+            // so its margin is computed relative to the content area's left edge.
+            var rightColumn = ResolveRightColumnTarget();
+            var transitioner = FindNestedControl<Control>("PageContentTransitioner");
+            if (rightColumn == null || transitioner == null
+                || !rightColumn.IsVisible
+                || rightColumn.Bounds.Width <= 0)
             {
                 DockRightPanelToggleToWindowEdge(toggleButton);
                 return;
             }
 
-            var firstColumnWidth = mainLayout.ColumnDefinitions[0].ActualWidth;
-            var secondColumnWidth = mainLayout.ColumnDefinitions[1].ActualWidth;
-            var splitterColumnWidth = mainLayout.ColumnDefinitions[2].ActualWidth;
-            // Right panels have a left margin of 8px; align toggle with the panel's actual left border.
-            var anchorLeft = firstColumnWidth + secondColumnWidth + splitterColumnWidth + 8d;
-            if (double.IsNaN(anchorLeft) || double.IsInfinity(anchorLeft) || anchorLeft <= 0)
+            try
+            {
+                var contentPoint = rightColumn.TranslatePoint(new Avalonia.Point(0, 0), transitioner);
+                if (contentPoint == null)
+                {
+                    DockRightPanelToggleToWindowEdge(toggleButton);
+                    return;
+                }
+
+                const double toggleWidth = 18d;
+                var left = Math.Max(0, contentPoint.Value.X - (toggleWidth / 2d));
+                if (double.IsNaN(left) || double.IsInfinity(left))
+                {
+                    DockRightPanelToggleToWindowEdge(toggleButton);
+                    return;
+                }
+
+                toggleButton.HorizontalAlignment = HorizontalAlignment.Left;
+                toggleButton.Margin = new Thickness(left, 0, 0, 0);
+            }
+            catch
             {
                 DockRightPanelToggleToWindowEdge(toggleButton);
-                return;
             }
-
-            const double toggleWidth = 20d;
-            var left = Math.Max(0, anchorLeft - (toggleWidth / 2d));
-            if (double.IsNaN(left) || double.IsInfinity(left))
-            {
-                DockRightPanelToggleToWindowEdge(toggleButton);
-                return;
-            }
-
-            toggleButton.HorizontalAlignment = HorizontalAlignment.Left;
-            toggleButton.Margin = new Thickness(left, 0, 0, 0);
         }
 
         private void ScheduleRightPanelToggleReposition()
@@ -803,6 +812,156 @@ namespace EquipmentFailureAnalysis.Views
             Avalonia.Threading.Dispatcher.UIThread.Post(
                 OnWindowResized,
                 Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        internal void ToggleThemeButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (Avalonia.Application.Current == null)
+                return;
+
+            var current = Avalonia.Application.Current.RequestedThemeVariant;
+            var newTheme = current == Avalonia.Styling.ThemeVariant.Dark
+                ? Avalonia.Styling.ThemeVariant.Light
+                : Avalonia.Styling.ThemeVariant.Dark;
+
+            Avalonia.Application.Current.RequestedThemeVariant = newTheme;
+
+            var themeName = newTheme == Avalonia.Styling.ThemeVariant.Dark ? "Dark" : "Light";
+            EquipmentFailureAnalysis.Utility.PersistedDataStore.SaveTheme(themeName);
+
+            UpdateThemeGlyph();
+
+            // Sync with VM if available so Settings page reflects the change
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm &&
+                vm.Settings?.ThemeOptions is { } opts)
+            {
+                var match = System.Linq.Enumerable.FirstOrDefault(opts, t => string.Equals(t, themeName, System.StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    vm.Settings.SelectedTheme = match;
+                }
+            }
+
+            ShowToast(newTheme == Avalonia.Styling.ThemeVariant.Dark
+                ? "Тёмная тема включена"
+                : "Светлая тема включена", "Info");
+        }
+
+        /// <summary>Sets the selected Downtime analysis date (called by presets in DowntimeView).</summary>
+        public void SetDowntimeAnalysisDate(DateTime date)
+        {
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                vm.Downtime.DowntimeAnalysisDate = date.Date;
+                PublishStatus($"Выбрана дата: {date:dd.MM.yyyy}");
+            }
+        }
+
+        /// <summary>Sets the selected Employee timeline date (called by presets in EmployeeAnalysisView).</summary>
+        public void SetEmployeeTimelineDate(DateTime date)
+        {
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                vm.EmployeeTimelineDate = date.Date;
+                PublishStatus($"Выбрана дата: {date:dd.MM.yyyy}");
+            }
+        }
+
+        /// <summary>Probes the configured Jira API URL with a HEAD request to verify connectivity.</summary>
+        public async void TestJiraConnectionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm) return;
+            var url = vm.Settings?.JiraResourceUrl?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                ShowToast("Укажите URL Jira API для проверки.", "Error");
+                return;
+            }
+
+            PublishStatus("Проверка подключения к Jira…");
+            try
+            {
+                using var http = new System.Net.Http.HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(8)
+                };
+                // Some Jira endpoints reject HEAD, so do a manual HEAD with GET fallback.
+                using var head = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Head, url);
+                System.Net.Http.HttpResponseMessage resp = await http.SendAsync(head);
+                if (resp.StatusCode == System.Net.HttpStatusCode.MethodNotAllowed)
+                {
+                    using var get = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, url);
+                    resp = await http.SendAsync(get);
+                }
+                if (resp.IsSuccessStatusCode)
+                {
+                    ShowToast($"Jira доступна · HTTP {(int)resp.StatusCode}", "Success");
+                    PublishStatus($"Jira OK ({url}) — HTTP {(int)resp.StatusCode}");
+                }
+                else
+                {
+                    ShowToast($"Jira ответила: HTTP {(int)resp.StatusCode}", "Error");
+                    PublishStatus($"Jira недоступна ({url}) — HTTP {(int)resp.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToast($"Jira недоступна: {ex.Message}", "Error");
+                PublishStatus($"Jira недоступна — {ex.Message}");
+            }
+        }
+
+        /// <summary>Validates that the LDAP configuration parses correctly. Does not perform a real bind.</summary>
+        public void TestLdapConnectionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm) return;
+
+            if (vm.Settings?.LdapAuthEnabled != true)
+            {
+                ShowToast("LDAP-авторизация отключена. Включите её, чтобы проверить.", "Info");
+                return;
+            }
+
+            // We don't have a public LDAP test endpoint on MainWindow, so validate
+            // via the LdapConnectionSettingsWindow from the LoginWindow.
+            try
+            {
+                var request = new LdapLoginRequest
+                {
+                    Server = vm.Settings.LdapServer ?? string.Empty,
+                    Port = vm.Settings.LdapPort > 0 ? vm.Settings.LdapPort : 389,
+                    UseSsl = vm.Settings.LdapUseSsl,
+                    Domain = vm.Settings.LdapDomain ?? string.Empty,
+                    BaseDn = vm.Settings.LdapBaseDn ?? string.Empty
+                };
+
+                // Lightweight validation: server non-empty, port in range
+                if (string.IsNullOrWhiteSpace(request.Server))
+                {
+                    ShowToast("LDAP: укажите адрес сервера в окне входа", "Error");
+                    return;
+                }
+                if (request.Port < 1 || request.Port > 65535)
+                {
+                    ShowToast($"LDAP: некорректный порт ({request.Port})", "Error");
+                    return;
+                }
+
+                var protocol = request.UseSsl ? "LDAPS" : "LDAP";
+                ShowToast($"{protocol} {request.Server}:{request.Port} — параметры валидны. Тестовое подключение выполняйте в окне входа", "Success");
+                PublishStatus($"LDAP параметры OK ({protocol} {request.Server}:{request.Port})");
+            }
+            catch (Exception ex)
+            {
+                ShowToast($"LDAP ошибка: {ex.Message}", "Error");
+            }
+        }
+
+        /// <summary>Reset-button click hook. Invokes the bound command and shows a confirmation toast.</summary>
+        public void ResetFiltersWithToast_Click(object? sender, RoutedEventArgs e)
+        {
+            ShowToast("Фильтры сброшены", "Success");
+            PublishStatus("Фильтры сброшены");
         }
     }
 }

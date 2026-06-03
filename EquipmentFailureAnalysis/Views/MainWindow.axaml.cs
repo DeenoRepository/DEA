@@ -323,9 +323,9 @@ namespace EquipmentFailureAnalysis.Views
 
             var iconBrush = type.ToLowerInvariant() switch
             {
-                "success" => new SolidColorBrush(Color.Parse("#10B981")),
-                "error" => new SolidColorBrush(Color.Parse("#EF4444")),
-                _ => new SolidColorBrush(Color.Parse("#3B82F6"))
+                "success" => (IBrush)Application.Current!.FindResource("SuccessBrush")!,
+                "error" => (IBrush)Application.Current!.FindResource("DangerBrush")!,
+                _ => (IBrush)Application.Current!.FindResource("InfoBrush")!
             };
 
             var icon = new TextBlock
@@ -407,14 +407,17 @@ namespace EquipmentFailureAnalysis.Views
             // Trigger animation in next frame
             Dispatcher.UIThread.Post(() => toast.Classes.Add("visible"));
 
-            // Auto dismiss after 5 seconds
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-            timer.Tick += (s, e) =>
+            // Auto dismiss after 5 seconds (errors stay until manually closed)
+            if (!string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
             {
-                timer.Stop();
-                CloseToast();
-            };
-            timer.Start();
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+                timer.Tick += (s, e) =>
+                {
+                    timer.Stop();
+                    CloseToast();
+                };
+                timer.Start();
+            }
         }
 
         private void EnsurePagesInitialized()
@@ -533,12 +536,115 @@ namespace EquipmentFailureAnalysis.Views
             LoadJiraSettingsToUi();
             this.GetObservable<Rect>(BoundsProperty).Subscribe(_ => OnWindowResized());
             UpdatePageVisibility();
+
+            // Observe filter reset counter to show confirmation toast
+            this.DataContextChanged += (_, _) =>
+            {
+                if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
+                    vm.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.FiltersResetCounter))
+                        {
+                            ShowToast("Фильтры сброшены", "Success");
+                        }
+                        else if (args.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.IsLoading))
+                        {
+                            UpdateLiveStatusPill();
+                        }
+                    };
+                }
+            };
+
+            // Hot-keys (Ctrl+1..5 for navigation, Ctrl+B for sidebar, Ctrl+R for right panel,
+            // Ctrl+Shift+T for theme). F5 is wired through Window.KeyBindings in XAML.
+            KeyDown += MainWindow_KeyDown;
+
             Dispatcher.UIThread.Post(() =>
             {
                 ApplyNavigationPanelState();
                 ApplyRightPanelState();
+                UpdateThemeGlyph();
             }, DispatcherPriority.Loaded);
             PublishStatus("Приложение готово к работе.");
+        }
+
+        private void MainWindow_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+        {
+            var mods = e.KeyModifiers;
+            if ((mods & Avalonia.Input.KeyModifiers.Control) == 0)
+                return;
+
+            switch (e.Key)
+            {
+                case Avalonia.Input.Key.D1:
+                    DashboardButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.D2:
+                    DowntimeAnalysisButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.D3:
+                    EmployeeAnalysisButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.D4:
+                    ReportsButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.D5:
+                    SettingsButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.B:
+                    ToggleNavigationButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.R:
+                    ToggleRightPanelButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Avalonia.Input.Key.T when (mods & Avalonia.Input.KeyModifiers.Shift) != 0:
+                    ToggleThemeButton_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void UpdateThemeGlyph()
+        {
+            if (this.FindControl<Avalonia.Controls.TextBlock>("ThemeToggleGlyph") is { } glyph &&
+                Avalonia.Application.Current is { } app)
+            {
+                glyph.Text = app.RequestedThemeVariant == Avalonia.Styling.ThemeVariant.Dark
+                    ? "\uE7E8"  // Sun — currently dark, click to go light
+                    : "\uE708"; // Moon — currently light, click to go dark
+            }
+        }
+
+        private void UpdateLiveStatusPill()
+        {
+            if (this.FindControl<Avalonia.Controls.TextBlock>("LiveStatusText") is not { } txt ||
+                this.FindControl<Avalonia.Controls.Border>("LiveStatusPill") is not { } pill ||
+                this.FindControl<Avalonia.Controls.TextBlock>("LiveStatusIcon") is not { } icon)
+                return;
+
+            bool isLoading = DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm && vm.IsLoading;
+            if (isLoading)
+            {
+                txt.Text = "Импорт…";
+                pill.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2A1F0A"));
+                pill.BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#5A4515"));
+                icon.Text = "\uE895"; // Sync
+            }
+            else
+            {
+                txt.Text = "Online";
+                pill.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#11203D"));
+                pill.BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1F2A4A"));
+                icon.Text = "\uE73E"; // CheckMark
+            }
         }
 
         protected override void OnClosed(EventArgs e)

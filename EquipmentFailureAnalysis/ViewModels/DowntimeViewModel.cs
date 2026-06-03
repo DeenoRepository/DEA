@@ -56,6 +56,24 @@ namespace EquipmentFailureAnalysis.ViewModels
         public ObservableCollection<MonthRow> DowntimeMonthRows { get; } = new();
         public ObservableCollection<DowntimeEquipmentRow> DowntimeDayEquipmentRows { get; } = new();
 
+        public string DowntimeHeatmapYearLabel
+        {
+            get
+            {
+                if (DowntimeMonthRows == null || DowntimeMonthRows.Count == 0) return "Год: —";
+                var first = DowntimeMonthRows.First();
+                var last = DowntimeMonthRows.Last();
+                if (first.Year == last.Year) return $"Год: {first.Year}";
+                var firstShort = System.Globalization.CultureInfo.GetCultureInfo("ru-RU")
+                    .DateTimeFormat.GetAbbreviatedMonthName(first.Month);
+                var lastShort = System.Globalization.CultureInfo.GetCultureInfo("ru-RU")
+                    .DateTimeFormat.GetAbbreviatedMonthName(last.Month);
+                firstShort = char.ToUpper(firstShort[0]) + firstShort.Substring(1);
+                lastShort = char.ToUpper(lastShort[0]) + lastShort.Substring(1);
+                return $"{firstShort} {first.Year} — {lastShort} {last.Year}";
+            }
+        }
+
         public ReactiveCommand<Unit, Unit> ResetUniversalFiltersCommand { get; }
         public ReactiveCommand<DateTime, Unit> ShowDowntimeDayCommand { get; }
 
@@ -219,12 +237,13 @@ namespace EquipmentFailureAnalysis.ViewModels
         public void BuildHeatmap(IReadOnlyCollection<EquipmentInfo> sourceEquipment)
         {
             DowntimeMonthRows.Clear();
-            var year = DateTime.Now.Year;
+            var today = DateTime.Today;
             var filteredEquipment = FilterDowntimeEquipmentByQuery(sourceEquipment);
 
-            for (int month = 1; month <= 12; month++)
+            // last 4 months: current + 3 previous
+            for (int offset = 3; offset >= 0; offset--)
             {
-                var monthDate = new DateTime(year, month, 1);
+                var monthDate = today.AddMonths(-offset);
                 var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
                 var name = monthDate.ToString("MMMM yyyy");
                 if (!string.IsNullOrEmpty(name))
@@ -237,8 +256,8 @@ namespace EquipmentFailureAnalysis.ViewModels
                     MonthName = name
                 };
 
-                int offset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
-                for (int i = 0; i < offset; i++)
+                int dowOffset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                for (int i = 0; i < dowOffset; i++)
                 {
                     monthRow.Days.Add(new DayCell { DayNumber = 0, Index = 0, IsValid = false });
                 }
@@ -260,6 +279,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                 DowntimeMonthRows.Add(monthRow);
             }
+            this.RaisePropertyChanged(nameof(DowntimeHeatmapYearLabel));
         }
 
         public void BuildDayEquipmentRows(IReadOnlyCollection<EquipmentInfo> sourceEquipment, DateTime date)
@@ -447,6 +467,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             DowntimeEquipmentSearchQuery = string.Empty;
             _isRefreshingFilters = false;
 
+            // Signal to view for toast feedback
+            _shell.FiltersResetCounter += 1;
             OnFiltersChanged();
         }
 

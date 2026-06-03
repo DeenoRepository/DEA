@@ -2,6 +2,7 @@
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using System;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -33,6 +34,12 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.EmployeeAnalysisRow_PointerPressed(sender, e);
+        }
+
+        private void EmployeeSetToday_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.SetEmployeeTimelineDate(DateTime.Today);
         }
     }
 }

@@ -50,20 +50,20 @@ namespace EquipmentFailureAnalysis.ViewModels
                 }
             }
 
-            // build month rows for calendar year (January..December)
+            // build month rows — last 4 months (current + 3 previous)
             MonthRows.Clear();
-            var year = DateTime.Now.Year;
-            for (int month = 1; month <= 12; month++)
+            var today = DateTime.Today;
+            for (int offset = 3; offset >= 0; offset--)
             {
-                var monthDate = new DateTime(year, month, 1);
+                var monthDate = today.AddMonths(-offset);
                 var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
                 var name = monthDate.ToString("MMMM yyyy");
                 if (!string.IsNullOrEmpty(name))
                     name = char.ToUpper(name[0]) + name.Substring(1);
                 var monthRow = new Models.MonthRow { Month = monthDate.Month, Year = monthDate.Year, MonthName = name };
 
-                int offset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
-                for (int i = 0; i < offset; i++)
+                int dowOffset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                for (int i = 0; i < dowOffset; i++)
                 {
                     monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
                 }
@@ -84,6 +84,7 @@ namespace EquipmentFailureAnalysis.ViewModels
 
                 MonthRows.Add(monthRow);
             }
+            this.RaisePropertyChanged(nameof(HeatmapYearLabel));
         }
 
         // Called from view when user imports a new XML file. Sorts equipment by issue count and refreshes view.

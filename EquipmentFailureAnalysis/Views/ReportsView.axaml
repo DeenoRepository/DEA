@@ -2,141 +2,359 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.ReportsView">
+
     <Grid x:Name="ReportsLayoutRoot">
-        		<Grid.ColumnDefinitions>
-        			<ColumnDefinition Width="7*" />
-        			<ColumnDefinition Width="440" />
-        		</Grid.ColumnDefinitions>
-        
-        		<ScrollViewer x:Name="ReportsCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        			<StackPanel Spacing="10">
-                      <Grid>
-        					<Border Background="Transparent" CornerRadius="8" Margin="0,6,0,0" />
-                           <Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
-        						<StackPanel Spacing="10">
-        							<StackPanel Spacing="3">
-        								<TextBlock Text="Инструменты формирования отчета" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        								<TextBlock Text="Выберите период, параметры отбора и состав отчета, затем сформируйте HTML-файл" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        							</StackPanel>
-        
-        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        								<StackPanel Spacing="8">
-        									<TextBlock Text="Параметры периода и группировки" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        									<Grid ColumnDefinitions="Auto,150,Auto,150,Auto,180,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
-        										<TextBlock Grid.Column="0" Text="Период с:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
-										<CalendarDatePicker x:Name="ReportStartDatePicker"
-										                    Grid.Column="1"
-										                    MinWidth="140"
-										                    HorizontalAlignment="Stretch"
-										                    Foreground="{DynamicResource TextPrimary}"
-										                    Background="{DynamicResource SurfaceBrush}"
-										                    SelectedDate="{Binding ReportStartDate, Mode=TwoWay}" />
-        										<TextBlock Grid.Column="2" Text="по:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
-										<CalendarDatePicker x:Name="ReportEndDatePicker"
-										                    Grid.Column="3"
-										                    MinWidth="140"
-										                    HorizontalAlignment="Stretch"
-										                    Foreground="{DynamicResource TextPrimary}"
-										                    Background="{DynamicResource SurfaceBrush}"
-										                    SelectedDate="{Binding ReportEndDate, Mode=TwoWay}" />
-        										<TextBlock Grid.Column="4" Text="Группировка:" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
-										<ComboBox x:Name="ReportGroupByCombo" Grid.Column="5" SelectedIndex="{Binding ReportGroupByIndex, Mode=TwoWay}" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1">
-											<ComboBoxItem Tag="day" Content="По дням" />
-											<ComboBoxItem Tag="month" Content="По месяцам" />
-											<ComboBoxItem Tag="employee" Content="По сотрудникам" />
-											<ComboBoxItem Tag="equipment" Content="По оборудованию" />
-										</ComboBox>
-        									</Grid>
-        								</StackPanel>
-        							</Border>
-        
-        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        								<StackPanel Spacing="8">
-        									<TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        									<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="14" VerticalAlignment="Center">
-										<CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="0" Content="Раздел «Панель управления»" IsChecked="{Binding ReportIncludeDashboard, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" Content="Раздел «Анализ простоев»" IsChecked="{Binding ReportIncludeDowntime, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="2" Content="Раздел «Анализ сотрудников»" IsChecked="{Binding ReportIncludeEmployee, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="3" Content="Открыть после формирования" IsChecked="{Binding ReportOpenAfterGenerate, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Column="4" Content="Только задачи «в процессе»" IsChecked="{Binding ReportOnlyInProgress, Mode=TwoWay}" />
-        									</Grid>
-        									<Grid ColumnDefinitions="Auto,Auto,130,*" ColumnSpacing="8" VerticalAlignment="Center">
-										<CheckBox x:Name="ReportFilterByDurationCheckBox" Grid.Column="0" Content="Фильтр по длительности" IsChecked="{Binding ReportFilterByDuration, Mode=TwoWay}" VerticalAlignment="Center" />
-        										<TextBlock Grid.Column="1" Text="мин. ≥" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
-										<NumericUpDown x:Name="ReportMinDurationMinutesUpDown" Grid.Column="2" Minimum="0" Maximum="10080" Increment="5" FormatString="F0" Value="{Binding ReportMinDurationMinutes, Mode=TwoWay}" />
-        									</Grid>
-        								</StackPanel>
-        							</Border>
-        
-        							<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        								<StackPanel Spacing="8">
-        									<TextBlock Text="Поля детализации отчета" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        									<Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
-										<CheckBox x:Name="ReportFieldStartCheckBox" Grid.Row="0" Grid.Column="0" Content="Начало" IsChecked="{Binding ReportFieldStart, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldEndCheckBox" Grid.Row="0" Grid.Column="1" Content="Окончание / длительность" IsChecked="{Binding ReportFieldEnd, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldEquipmentCheckBox" Grid.Row="0" Grid.Column="2" Content="Оборудование" IsChecked="{Binding ReportFieldEquipment, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldSubdivisionCheckBox" Grid.Row="0" Grid.Column="3" Content="Группа" IsChecked="{Binding ReportFieldSubdivision, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldTypeCheckBox" Grid.Row="1" Grid.Column="0" Content="Тип" IsChecked="{Binding ReportFieldType, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldResponsibleCheckBox" Grid.Row="1" Grid.Column="1" Content="Ответственный" IsChecked="{Binding ReportFieldResponsible, Mode=TwoWay}" />
-										<CheckBox x:Name="ReportFieldDescriptionCheckBox" Grid.Row="1" Grid.Column="2" Content="Описание" IsChecked="{Binding ReportFieldDescription, Mode=TwoWay}" />
-        									</Grid>
-        								</StackPanel>
-        							</Border>
-        
-         							<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="8" ColumnSpacing="8" VerticalAlignment="Center">
-         								<Button Grid.Row="0" Grid.Column="0" Content="Экспорт HTML" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource InverseTextBrush}" BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1" Click="GenerateHtmlReportButton_Click" />
-         								<Button Grid.Row="0" Grid.Column="1" Content="Экспорт PDF" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ExportPdfButton_Click" />
-         								<Button Grid.Row="0" Grid.Column="2" Content="Экспорт CSV" Padding="10,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ExportCsvButton_Click" />
-								        <TextBox x:Name="ReportLastFilePathBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True" Text="{Binding ReportLastFilePath, Mode=TwoWay}" Watermark="Путь к экспортированному файлу" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-         							</Grid>
-        						</StackPanel>
-        					</Border>
-        				</Grid>
-        			</StackPanel>
-        		</ScrollViewer>
-        
-        		<Grid x:Name="ReportsRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
-        				<StackPanel Spacing="10">
-        					<TextBlock Text="Итоги отчета" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        					<TextBlock Text="Ключевые значения по надежности оборудования и эффективности команды" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel>
-        							<TextBlock Text="Активные сотрудники" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        						</StackPanel>
-        					</Border>
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel>
-        							<TextBlock Text="Средняя длительность" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        						</StackPanel>
-        					</Border>
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel>
-        							<TextBlock Text="Оборудование риска" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="WrapWithOverflow" />
-        							<TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="12" Foreground="{DynamicResource TextMuted}" />
-        						</StackPanel>
-        					</Border>
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel>
-        							<TextBlock Text="Лидер по эффективности" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-        							<TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="WrapWithOverflow" />
-        							<TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="12" Foreground="{DynamicResource TextMuted}" />
-        						</StackPanel>
-        					</Border>
-        				</StackPanel>
-        			</Border>
-        		</Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" />
+            <ColumnDefinition Width="*" MinWidth="320" MaxWidth="480" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ====================================================
+             CENTER COLUMN — Report builder
+             ==================================================== -->
+        <ScrollViewer x:Name="ReportsCenterColumn"
+                      Grid.Column="0"
+                      Margin="20,18,16,18"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+
+                <!-- ============== PAGE HEADER ============== -->
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="Отчёты" FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Формирование HTML / PDF / CSV отчётов по выбранному периоду"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextMuted}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="badge badge-info" VerticalAlignment="Center">
+                        <TextBlock Text="Период + группировка задаются ниже" FontSize="10" />
+                    </Border>
+                </Grid>
+
+                <!-- ============== REPORT BUILDER CARD ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="14">
+
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Инструменты формирования отчёта" Classes="sectionTitle" />
+                            <TextBlock Text="Выберите период, параметры отбора и состав отчёта, затем сформируйте HTML-файл"
+                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                        <!-- Period & grouping -->
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Width="24" Height="24" CornerRadius="6"
+                                        Background="{DynamicResource AccentSoftBackground}">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Параметры периода и группировки"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="Auto,*,12,Auto,*,12,Auto,*" ColumnSpacing="8"
+                                  VerticalAlignment="Center">
+                                <TextBlock Grid.Column="0" Text="Период с"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <CalendarDatePicker x:Name="ReportStartDatePicker"
+                                                    Grid.Column="1"
+                                                    HorizontalAlignment="Stretch"
+                                                    SelectedDate="{Binding ReportStartDate, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Column="3" Text="по"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <CalendarDatePicker x:Name="ReportEndDatePicker"
+                                                    Grid.Column="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    SelectedDate="{Binding ReportEndDate, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Column="6" Text="Группировка"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox x:Name="ReportGroupByCombo"
+                                          Grid.Column="7"
+                                          SelectedIndex="{Binding ReportGroupByIndex, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Tag="day" Content="По дням" />
+                                    <ComboBoxItem Tag="month" Content="По месяцам" />
+                                    <ComboBoxItem Tag="employee" Content="По сотрудникам" />
+                                    <ComboBoxItem Tag="equipment" Content="По оборудованию" />
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource InfoSoftBackground}">
+                                        <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource InfoBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Состав и фильтры" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,*,*"
+                                      RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="6" ColumnSpacing="20">
+                                    <CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Row="0" Grid.Column="0"
+                                              Content="Раздел «Панель управления»"
+                                              IsChecked="{Binding ReportIncludeDashboard, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Row="0" Grid.Column="1"
+                                              Content="Раздел «Анализ простоев»"
+                                              IsChecked="{Binding ReportIncludeDowntime, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Row="0" Grid.Column="2"
+                                              Content="Раздел «Анализ сотрудников»"
+                                              IsChecked="{Binding ReportIncludeEmployee, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Row="1" Grid.Column="0"
+                                              Content="Открыть после формирования"
+                                              IsChecked="{Binding ReportOpenAfterGenerate, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Row="1" Grid.Column="1"
+                                              Content="Только задачи «в процессе»"
+                                              IsChecked="{Binding ReportOnlyInProgress, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFilterByDurationCheckBox" Grid.Row="2" Grid.Column="0"
+                                              Content="Фильтр по длительности"
+                                              IsChecked="{Binding ReportFilterByDuration, Mode=TwoWay}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,Auto,160" ColumnSpacing="8"
+                                      VerticalAlignment="Center">
+                                    <TextBlock Grid.Column="1" Text="Минимум, мин"
+                                               FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <NumericUpDown x:Name="ReportMinDurationMinutesUpDown"
+                                                   Grid.Column="2"
+                                                   Minimum="0" Maximum="10080" Increment="5" FormatString="F0"
+                                                   Value="{Binding ReportMinDurationMinutes, Mode=TwoWay}"
+                                                   HorizontalAlignment="Stretch" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource SuccessSoftBackground}">
+                                        <TextBlock Text="&#xE8FD;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SuccessBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Поля детализации отчёта" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,*,*,*"
+                                      RowDefinitions="Auto,Auto"
+                                      RowSpacing="6" ColumnSpacing="20">
+                                    <CheckBox x:Name="ReportFieldStartCheckBox" Grid.Row="0" Grid.Column="0"
+                                              Content="Начало" IsChecked="{Binding ReportFieldStart, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldEndCheckBox" Grid.Row="0" Grid.Column="1"
+                                              Content="Окончание / длительность" IsChecked="{Binding ReportFieldEnd, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldEquipmentCheckBox" Grid.Row="0" Grid.Column="2"
+                                              Content="Оборудование" IsChecked="{Binding ReportFieldEquipment, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldSubdivisionCheckBox" Grid.Row="0" Grid.Column="3"
+                                              Content="Группа" IsChecked="{Binding ReportFieldSubdivision, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldTypeCheckBox" Grid.Row="1" Grid.Column="0"
+                                              Content="Тип" IsChecked="{Binding ReportFieldType, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldResponsibleCheckBox" Grid.Row="1" Grid.Column="1"
+                                              Content="Ответственный" IsChecked="{Binding ReportFieldResponsible, Mode=TwoWay}" />
+                                    <CheckBox x:Name="ReportFieldDescriptionCheckBox" Grid.Row="1" Grid.Column="2"
+                                              Content="Описание" IsChecked="{Binding ReportFieldDescription, Mode=TwoWay}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Export actions -->
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                            <Button Grid.Column="0" Classes="primary"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Click="GenerateHtmlReportButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Экспорт HTML" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="1"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Click="ExportPdfButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Экспорт PDF" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="2"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Click="ExportCsvButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Экспорт CSV" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <TextBox x:Name="ReportLastFilePathBox"
+                                 IsReadOnly="True"
+                                 Text="{Binding ReportLastFilePath, Mode=TwoWay}"
+                                 Watermark="Путь к экспортированному файлу" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ====================================================
+             RIGHT COLUMN — Report preview / KPI summary
+             ==================================================== -->
+        <Grid x:Name="ReportsRightColumn" Grid.Column="1"
+              MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1,0,0,0"
+                    Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="14">
+
+                        <!-- Section header -->
+                        <StackPanel Spacing="2">
+                            <TextBlock Classes="eyebrow" Text="ИТОГИ ОТЧЁТА" />
+                            <TextBlock Text="Ключевые показатели" Classes="sectionTitle" />
+                            <TextBlock Text="Надёжность оборудования и эффективность команды за выбранный период"
+                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- KPI 2x2 -->
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                              RowSpacing="12" ColumnSpacing="12">
+                            <Border Grid.Row="0" Grid.Column="0" Classes="kpi">
+                                <StackPanel Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="6"
+                                                Background="{DynamicResource AccentSoftBackground}">
+                                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource AccentForeground}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="Активные сотрудники" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}"
+                                               FontSize="20" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Row="0" Grid.Column="1" Classes="kpi">
+                                <StackPanel Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="6"
+                                                Background="{DynamicResource InfoSoftBackground}">
+                                            <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource InfoBrush}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="Ср. длительность" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}"
+                                               FontSize="20" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Risk equipment card -->
+                        <Border Background="{DynamicResource DangerSoftBackground}"
+                                BorderBrush="{DynamicResource DangerSoftBorder}"
+                                BorderThickness="1" CornerRadius="10" Padding="14">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource DangerBrush}">
+                                        <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Оборудование риска" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource DangerBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Top performer card -->
+                        <Border Background="{DynamicResource SuccessSoftBackground}"
+                                BorderBrush="{DynamicResource SuccessSoftBorder}"
+                                BorderThickness="1" CornerRadius="10" Padding="14">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource SuccessBrush}">
+                                        <TextBlock Text="&#xEA86;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Лидер по эффективности" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding DashboardTopPerformer}" FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
-
-
-
-
-

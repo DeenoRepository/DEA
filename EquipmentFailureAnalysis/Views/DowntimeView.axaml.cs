@@ -2,6 +2,7 @@
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using System;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -27,6 +28,24 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.DowntimeEquipmentButton_Click(sender, e);
+        }
+
+        private void DowntimeSetToday_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.SetDowntimeAnalysisDate(DateTime.Today);
+        }
+
+        private void DowntimeSetYesterday_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.SetDowntimeAnalysisDate(DateTime.Today.AddDays(-1));
+        }
+
+        /// <summary>Reset-button click hook. The toast is shown by MainWindow via FiltersResetCounter.</summary>
+        public void ResetFiltersWithToast_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // No-op: toast is triggered by MainWindow observing FiltersResetCounter.
         }
     }
 }

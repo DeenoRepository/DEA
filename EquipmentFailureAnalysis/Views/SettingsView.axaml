@@ -2,133 +2,366 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.SettingsView">
+
     <Grid x:Name="SettingsLayoutRoot">
-        		<Grid.ColumnDefinitions>
-        			<ColumnDefinition Width="7*" />
-        			<ColumnDefinition Width="440" />
-        		</Grid.ColumnDefinitions>
-        
-        		<ScrollViewer x:Name="SettingsCenterColumn" Grid.Column="0" Margin="0,12,8,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        			<StackPanel Spacing="10">
-        				<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14" HorizontalAlignment="Stretch">
-        					<StackPanel Spacing="10">
-        						<StackPanel Spacing="3">
-        							<TextBlock Text="Параметры интеграции Jira" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        							<TextBlock Text="Настройте источник данных, фильтры и учетные данные для импорта задач в приложение." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        						</StackPanel>
-        
-        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        							<StackPanel Spacing="8">
-        								<TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        								<StackPanel Spacing="4">
-        									<TextBlock Text="URL Jira API (search)" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
-									<TextBox x:Name="JiraResourceUrlBox" Text="{Binding JiraResourceUrl, Mode=TwoWay}" Watermark="https://your-jira/rest/api/2/search" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        								</StackPanel>
-        								<StackPanel Spacing="4">
-        									<TextBlock Text="JQL (опционально)" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
-									<TextBox x:Name="JiraJqlBox" Text="{Binding JiraJql, Mode=TwoWay}" Watermark="statusCategory = Done ORDER BY resolved DESC" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        								</StackPanel>
-        							</StackPanel>
-        						</Border>
-        
-        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        							<StackPanel Spacing="8">
-        								<TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-									<TextBox x:Name="JiraFilterIdBox" Grid.Column="0" Text="{Binding JiraFilterIdInput, Mode=TwoWay}" Watermark="10422" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        									<Button Grid.Column="1" Content="Добавить" Padding="10,6" Background="{DynamicResource AccentSoftBackground}" Foreground="{DynamicResource AccentForeground}" BorderBrush="{DynamicResource AccentSoftBorder}" BorderThickness="1" Click="JiraFilterIdAddButton_Click" />
-        								</Grid>
-								<ListBox x:Name="JiraFilterIdsList" ItemsSource="{Binding JiraFilterIds}" SelectedItem="{Binding JiraSelectedFilterId, Mode=TwoWay}" MinHeight="90" MaxHeight="170" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        								<Button Content="Удалить выбранный" HorizontalAlignment="Left" Padding="10,6" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="JiraFilterIdRemoveButton_Click" />
-        							</StackPanel>
-        						</Border>
-        
-        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        							<StackPanel Spacing="8">
-        								<TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-        									<StackPanel Grid.Column="0" Spacing="4">
-        										<TextBlock Text="Логин Jira" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
-										<TextBox x:Name="JiraUsernameBox" Text="{Binding JiraUsername, Mode=TwoWay}" Watermark="user@company.com" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        									</StackPanel>
-        									<StackPanel Grid.Column="1" Spacing="4">
-        										<TextBlock Text="API Token / пароль" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
-										<TextBox x:Name="JiraTokenBox" Text="{Binding JiraToken, Mode=TwoWay}" PasswordChar="*" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        									</StackPanel>
-        								</Grid>
-        							</StackPanel>
-        						</Border>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" />
+            <ColumnDefinition Width="*" MinWidth="320" MaxWidth="480" />
+        </Grid.ColumnDefinitions>
 
-        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        							<StackPanel Spacing="6">
-        								<TextBlock Text="LDAP вход в приложение" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        								<CheckBox Content="Включить LDAP авторизацию при запуске" IsChecked="{Binding LdapAuthEnabled, Mode=TwoWay}" />
-        								<TextBlock Text="Параметры LDAP (сервер/порт/SSL/домен) настраиваются через кнопку ... в окне входа."
-        								           FontSize="11"
-        								           Foreground="{DynamicResource TextMuted}"
-        								           TextWrapping="Wrap" />
-        							</StackPanel>
-        						</Border>
-        					</StackPanel>
-        				</Border>
+        <!-- ====================================================
+             CENTER COLUMN — Jira / Appearance settings
+             ==================================================== -->
+        <ScrollViewer x:Name="SettingsCenterColumn"
+                      Grid.Column="0"
+                      Margin="20,18,16,18"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
 
-        				<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="16" Padding="14" HorizontalAlignment="Stretch">
-        					<StackPanel Spacing="10">
-        						<StackPanel Spacing="3">
-        							<TextBlock Text="Внешний вид и оформление" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        							<TextBlock Text="Настройте цветовую схему интерфейса приложения." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        						</StackPanel>
-        
-        						<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        							<StackPanel Spacing="8">
-        								<TextBlock Text="Тема оформления" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        								<ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" CornerRadius="6" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
-        							</StackPanel>
-        						</Border>
-        					</StackPanel>
-        				</Border>
-        
-        			</StackPanel>
-        		</ScrollViewer>
-        
-        	   <Grid x:Name="SettingsRightColumn" Grid.Column="1" Margin="8,0,0,0" MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-        			<Border Background="{DynamicResource CardBackground}" BoxShadow="0 4 20 0 #0A000000" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0" CornerRadius="0" Padding="14">
-        				<StackPanel Spacing="10">
-        					<TextBlock Text="Действия и обслуживание" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-        					<TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении." FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel Spacing="8">
-        							<Button Content="Импорт из XML" MinWidth="160" Padding="12,8" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" Click="ImportButton_Click" />
-        							<Button Content="Импорт из Jira" MinWidth="160" Padding="12,8" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource InverseTextBrush}" BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1" Click="ImportFromJiraButton_Click" />
-        						</StackPanel>
-        					</Border>
+                <!-- ============== PAGE HEADER ============== -->
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="Настройки" FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Интеграция с Jira, LDAP, оформление и параметры приложения"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextMuted}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource SuccessSoftBackground}"
+                            BorderBrush="{DynamicResource SuccessSoftBorder}"
+                            BorderThickness="1" CornerRadius="999" Padding="10,4"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Автосохранение" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel Spacing="8">
-        							<TextBlock Text="Фоновый автоимпорт Jira" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        							<CheckBox Content="Включить циклический импорт в фоне" IsChecked="{Binding JiraAutoImportEnabled, Mode=TwoWay}" />
-        							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        								<TextBlock Grid.Column="0" Text="Интервал (мин):" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
-        								<NumericUpDown Grid.Column="1" Minimum="1" Maximum="1440" Increment="1" FormatString="F0" Value="{Binding JiraAutoImportPeriodMinutes, Mode=TwoWay}" />
-        							</Grid>
-        						</StackPanel>
-        					</Border>
-        
-        					<Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-        						<StackPanel Spacing="4">
-        							<TextBlock Text="Рекомендации" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-        							<TextBlock Text="• Проверьте URL и JQL перед импортом из Jira." FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        							<TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа." FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-        						</StackPanel>
-        					</Border>
-        				</StackPanel>
-        			</Border>
-        		</Grid>
+                <!-- ============== JIRA INTEGRATION CARD ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="14">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Параметры интеграции Jira" Classes="sectionTitle" />
+                            <TextBlock Text="Настройте источник данных, фильтры и учётные данные для импорта задач в приложение"
+                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                        <!-- Connection -->
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="24" Height="24" CornerRadius="6"
+                                            Background="{DynamicResource InfoSoftBackground}">
+                                        <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource InfoBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Подключение" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="soft"
+                                        ToolTip.Tip="Проверить доступность URL Jira API"
+                                        Click="TestJiraConnectionButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE701;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                                   Foreground="{DynamicResource AccentForeground}"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="Проверить" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AccentForeground}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="URL Jira API (search)" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
+                                <TextBox x:Name="JiraResourceUrlBox"
+                                         Text="{Binding JiraResourceUrl, Mode=TwoWay}"
+                                         Watermark="https://your-jira/rest/api/2/search" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="JQL (опционально)" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
+                                <TextBox x:Name="JiraJqlBox"
+                                         Text="{Binding JiraJql, Mode=TwoWay}"
+                                         Watermark="statusCategory = Done ORDER BY resolved DESC" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Filters -->
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource AccentSoftBackground}">
+                                        <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource AccentForeground}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Фильтры Jira для парсинга" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <TextBox x:Name="JiraFilterIdBox" Grid.Column="0"
+                                             Text="{Binding JiraFilterIdInput, Mode=TwoWay}"
+                                             Watermark="10422" />
+                                    <Button Grid.Column="1" Classes="soft"
+                                            Content="Добавить"
+                                            Click="JiraFilterIdAddButton_Click" />
+                                </Grid>
+
+                                <ListBox x:Name="JiraFilterIdsList"
+                                         ItemsSource="{Binding JiraFilterIds}"
+                                         SelectedItem="{Binding JiraSelectedFilterId, Mode=TwoWay}"
+                                         MinHeight="90" MaxHeight="170" />
+
+                                <Button Content="Удалить выбранный"
+                                        HorizontalAlignment="Left"
+                                        Click="JiraFilterIdRemoveButton_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Auth -->
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource WarningSoftBackground}">
+                                        <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource WarningBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Авторизация (опционально)" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <StackPanel Grid.Column="0" Spacing="6">
+                                        <TextBlock Text="Логин Jira" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                        <TextBox x:Name="JiraUsernameBox"
+                                                 Text="{Binding JiraUsername, Mode=TwoWay}"
+                                                 Watermark="user@company.com" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="6">
+                                        <TextBlock Text="API Token / пароль" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                        <TextBox x:Name="JiraTokenBox"
+                                                 Text="{Binding JiraToken, Mode=TwoWay}"
+                                                 PasswordChar="*" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- LDAP toggle -->
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="6"
+                                                Background="{DynamicResource SuccessSoftBackground}">
+                                            <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SuccessBrush}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="LDAP вход в приложение" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Classes="soft"
+                                            ToolTip.Tip="Проверить параметры LDAP (валидация без подключения)"
+                                            Click="TestLdapConnectionButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="&#xE701;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                                       Foreground="{DynamicResource AccentForeground}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="Проверить" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource AccentForeground}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                                <CheckBox Content="Включить LDAP авторизацию при запуске"
+                                          IsChecked="{Binding LdapAuthEnabled, Mode=TwoWay}" />
+                                <TextBlock Text="Параметры LDAP (сервер/порт/SSL/домен) настраиваются через кнопку ... в окне входа. Реальная проверка bind выполняется при попытке входа."
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== APPEARANCE CARD ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="14">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Внешний вид и оформление" Classes="sectionTitle" />
+                            <TextBlock Text="Настройте цветовую схему интерфейса приложения"
+                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Width="22" Height="22" CornerRadius="6"
+                                        Background="{DynamicResource AccentSoftBackground}">
+                                    <TextBlock Text="&#xE790;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Тема оформления" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <ComboBox ItemsSource="{Binding ThemeOptions}"
+                                      SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ====================================================
+             RIGHT COLUMN — Actions / Auto-import / Tips
+             ==================================================== -->
+        <Grid x:Name="SettingsRightColumn" Grid.Column="1"
+              MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1,0,0,0"
+                    Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="14">
+
+                        <!-- Section header -->
+                        <StackPanel Spacing="2">
+                            <TextBlock Classes="eyebrow" Text="ДЕЙСТВИЯ И ОБСЛУЖИВАНИЕ" />
+                            <TextBlock Text="Импорт и обновления" Classes="sectionTitle" />
+                            <TextBlock Text="Запускайте импорт данных и обновляйте состояние аналитики в приложении"
+                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Import actions -->
+                        <StackPanel Spacing="10">
+                            <Button Classes="soft"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Click="ImportButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE8E5;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Импорт из XML" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="primary"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Click="ImportFromJiraButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                               Foreground="White"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Импорт из Jira" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="White"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Auto-import card -->
+                        <Border Classes="well">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource InfoSoftBackground}">
+                                        <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource InfoBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Фоновый автоимпорт Jira" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <CheckBox Content="Включить циклический импорт в фоне"
+                                          IsChecked="{Binding JiraAutoImportEnabled, Mode=TwoWay}" />
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalAlignment="Center">
+                                    <TextBlock Grid.Column="0" Text="Интервал, мин"
+                                               FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="1" Maximum="1440" Increment="1" FormatString="F0"
+                                                   Value="{Binding JiraAutoImportPeriodMinutes, Mode=TwoWay}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tips card -->
+                        <Border Background="{DynamicResource AccentSoftBackground}"
+                                BorderBrush="{DynamicResource AccentSoftBorder}"
+                                BorderThickness="1" CornerRadius="10" Padding="14">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="22" Height="22" CornerRadius="6"
+                                            Background="{DynamicResource AccentBrush}">
+                                        <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="11"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Рекомендации" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="• Проверьте URL и JQL перед импортом из Jira."
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="• После изменения диапазона карты тепла оцените цвета на страницах анализа."
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
-
-
-
-
-

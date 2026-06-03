@@ -2,6 +2,7 @@ using EquipmentFailureAnalysis.Models;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive;
 
@@ -190,7 +191,63 @@ namespace EquipmentFailureAnalysis.ViewModels
         public ObservableCollection<SubdivisionRatingRow> DashboardSubdivisionRatings
         {
             get => _dashboardSubdivisionRatings;
-            set => this.RaiseAndSetIfChanged(ref _dashboardSubdivisionRatings, value);
+            set
+            {
+                if (ReferenceEquals(_dashboardSubdivisionRatings, value))
+                    return;
+                var old = _dashboardSubdivisionRatings;
+                _dashboardSubdivisionRatings = value;
+                if (old != null)
+                    old.CollectionChanged -= OnSubdivisionsChanged;
+                if (value != null)
+                    value.CollectionChanged += OnSubdivisionsChanged;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        private void OnSubdivisionsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            this.RaisePropertyChanged(nameof(VisibleSubdivisionRatings));
+            this.RaisePropertyChanged(nameof(SubdivisionRatingsCanCollapse));
+            this.RaisePropertyChanged(nameof(SubdivisionRatingsShowAllVisible));
+        }
+
+        private bool _showAllSubdivisions;
+        public bool ShowAllSubdivisions
+        {
+            get => _showAllSubdivisions;
+            set
+            {
+                if (this.RaiseAndSetIfChanged(ref _showAllSubdivisions, value))
+                {
+                    this.RaisePropertyChanged(nameof(VisibleSubdivisionRatings));
+                    this.RaisePropertyChanged(nameof(SubdivisionRatingsCollapsed));
+                    this.RaisePropertyChanged(nameof(SubdivisionRatingsShowAllVisible));
+                }
+            }
+        }
+
+        /// <summary>True when the subdivision list is collapsed (showing top-5 only).</summary>
+        public bool SubdivisionRatingsCollapsed => !_showAllSubdivisions;
+
+        /// <summary>True when there are more than 5 subdivisions (i.e. collapse is meaningful).</summary>
+        public bool SubdivisionRatingsCanCollapse => _dashboardSubdivisionRatings.Count > 5;
+
+        /// <summary>True when the "Show all" button should be visible.</summary>
+        public bool SubdivisionRatingsShowAllVisible => SubdivisionRatingsCollapsed && SubdivisionRatingsCanCollapse;
+
+        /// <summary>Top-5 when collapsed, full list when expanded.</summary>
+        public System.Collections.Generic.IEnumerable<SubdivisionRatingRow> VisibleSubdivisionRatings
+        {
+            get
+            {
+                if (_showAllSubdivisions || _dashboardSubdivisionRatings.Count <= 5)
+                    return _dashboardSubdivisionRatings;
+                var top = new System.Collections.Generic.List<SubdivisionRatingRow>(5);
+                for (int i = 0; i < 5 && i < _dashboardSubdivisionRatings.Count; i++)
+                    top.Add(_dashboardSubdivisionRatings[i]);
+                return top;
+            }
         }
 
         public string SelectedDashboardIssueTypeFilter
@@ -286,6 +343,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             SelectedDashboardSubdivisionFilter = "Все группы";
             _isRefreshingFilters = false;
             _shell.HandleDashboardFilterChanged();
+            _shell.FiltersResetCounter += 1;
         }
 
         private void OnDashboardFiltersChanged()

@@ -47,5 +47,11 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
         }
+
+        /// <summary>Reset-button click hook. The toast is shown by MainWindow via FiltersResetCounter.</summary>
+        public void ResetFiltersWithToast_Click(object? sender, RoutedEventArgs e)
+        {
+            // No-op: toast is triggered by MainWindow observing FiltersResetCounter.
+        }
     }
 }

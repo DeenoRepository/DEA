@@ -1,578 +1,447 @@
 <Window xmlns="https://github.com/avaloniaui"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
-		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:effects="clr-namespace:Avalonia.Media.Effects;assembly=Avalonia.Visuals"
-		xmlns:utility="using:EquipmentFailureAnalysis.Utility"
-		xmlns:views="using:EquipmentFailureAnalysis.Views"
-		mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
-     x:Class="EquipmentFailureAnalysis.Views.MainWindow"
-		x:DataType="vm:MainWindowViewModel"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:utility="using:EquipmentFailureAnalysis.Utility"
+        xmlns:views="using:EquipmentFailureAnalysis.Views"
+        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+        x:Class="EquipmentFailureAnalysis.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/dea-logo.ico"
-		Title="DEA - Equipment Failure Analysis"
-		Background="{DynamicResource PrimaryBackground}"
-		WindowState="Maximized">
+        Title="DEA — Equipment Failure Analysis"
+        Background="{DynamicResource PrimaryBackground}"
+        WindowState="Maximized">
 
-	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-		to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-		<vm:MainWindowViewModel/>
-	</Design.DataContext>
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
 
     <Window.Resources>
-     <utility:ValueToColorConverter x:Key="ColorConverter"/>
+        <utility:ValueToColorConverter x:Key="ColorConverter"/>
         <utility:DayCellToBrushConverter x:Key="DayCellConverter" />
         <utility:RepairsToBrushConverter x:Key="RepairsToBrushConverter" />
         <utility:RepairsToStatusConverter x:Key="RepairsToStatusConverter" />
         <utility:RepairsToForegroundConverter x:Key="RepairsToForegroundConverter" />
-		<utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
-		<utility:StatusToBrushConverter x:Key="StatusToBrush" />
-		<utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
-		<utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
-		<utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
-		<utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
+        <utility:BinaryToBrushConverter x:Key="BinaryConverter"/>
+        <utility:StatusToBrushConverter x:Key="StatusToBrush" />
+        <utility:SelectedToBackgroundConverter x:Key="SelectedToBackground" />
+        <utility:IndexToForegroundConverter x:Key="IndexToForegroundConverter" />
+        <utility:DateToTodayBorderBrushConverter x:Key="TodayBorderBrushConverter" />
+        <utility:DateToTodayBorderThicknessConverter x:Key="TodayBorderThicknessConverter" />
 
-        <!-- Typography / card styles using class selectors -->
-		<FontFamily x:Key="AppFont">Segoe UI Variable Text</FontFamily>
-        <Style x:Key="HeaderTitleStyle" Selector="TextBlock.headerTitle">
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-			<Setter Property="FontSize" Value="30" />
-			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="Foreground" Value="{DynamicResource HeaderTextBrush}" />
-			<Setter Property="Margin" Value="0,0,0,0" />
-		</Style>
-        <Style x:Key="SectionTitleStyle" Selector="TextBlock.sectionTitle">
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-			<Setter Property="FontSize" Value="14" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-        <Style x:Key="CardTitleStyle" Selector="TextBlock.cardTitle">
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-			<Setter Property="FontSize" Value="13" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-        <Style x:Key="CardValueStyle" Selector="TextBlock.cardValue">
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-			<Setter Property="FontSize" Value="20" />
-			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-        <Style x:Key="CardSubtextStyle" Selector="TextBlock.cardSubtext">
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-			<Setter Property="FontSize" Value="12" />
-			<Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
-		</Style>
-
-		<!-- Button tweaks -->
-        <Style x:Key="IconButtonStyle" Selector="Button.smallIcon">
-			<Setter Property="Width" Value="32" />
-			<Setter Property="Height" Value="28" />
-			<Setter Property="Padding" Value="0" />
-			<Setter Property="Background" Value="Transparent" />
-		</Style>
-		<Style x:Key="DateShiftButtonStyle" Selector="Button.dateShift">
-			<Setter Property="Width" Value="30" />
-			<Setter Property="Height" Value="30" />
-			<Setter Property="Padding" Value="0" />
-			<Setter Property="FontSize" Value="13" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
-			<Setter Property="CornerRadius" Value="6" />
-		</Style>
-		<Style x:Key="ResetFilterButtonStyle" Selector="Button.resetFilter">
-			<Setter Property="MinWidth" Value="86" />
-			<Setter Property="Padding" Value="12,6" />
-			<Setter Property="FontSize" Value="12" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
-			<Setter Property="CornerRadius" Value="6" />
-		</Style>
-
-        <!-- Legend brushes for heatmap (brighter stops) -->
-		<SolidColorBrush x:Key="HeatmapGreen" Color="#81C784" />
-		<SolidColorBrush x:Key="HeatmapYellow" Color="#FFEE58" />
-		<SolidColorBrush x:Key="HeatmapOrange" Color="#FFB74D" />
-		<SolidColorBrush x:Key="HeatmapRed" Color="#EF5350" />
-
-		<!-- Styles -->
-        <Style x:Key="SidebarButtonStyle" Selector="Button.navEntry">
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="10,8" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-			<Setter Property="VerticalContentAlignment" Value="Center" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-
-        <Style x:Key="DayButtonStyle" Selector="Button.Day">
-			<Setter Property="Width" Value="30" />
-			<Setter Property="Height" Value="30" />
-			<Setter Property="Padding" Value="0" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="FontSize" Value="12" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-
+        <!-- Heatmap legend stops (used by FailureAnalysisView) -->
+        <SolidColorBrush x:Key="HeatmapGreen"  Color="#81C784" />
+        <SolidColorBrush x:Key="HeatmapYellow" Color="#FFEE58" />
+        <SolidColorBrush x:Key="HeatmapOrange" Color="#FFB74D" />
+        <SolidColorBrush x:Key="HeatmapRed"    Color="#EF5350" />
     </Window.Resources>
 
-	<Window.Styles>
-       <Style Selector="TextBlock">
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
+    <Window.KeyBindings>
+        <!-- F5 — refresh current page (Dashboard refreshes all KPIs/charts) -->
+        <KeyBinding Gesture="F5" Command="{Binding Dashboard.RefreshDashboardCommand}" />
+    </Window.KeyBindings>
 
-		<Style Selector="Button">
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="10,7" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-		</Style>
-		<Style Selector="Button.navEntry">
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="10,8" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="HorizontalContentAlignment" Value="Left" />
-			<Setter Property="VerticalContentAlignment" Value="Center" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-		<Style Selector="Button:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-		</Style>
-       <Style Selector="Button.navEntry:pointerover">
-			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-		</Style>
-		<Style Selector="Button.navEntry:selected">
-			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-		</Style>
-		<Style Selector="Button.navEntry.navCompact">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="CornerRadius" Value="8" />
-		</Style>
-		<Style Selector="Button.navEntry.navCompact:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-		</Style>
-		<Style Selector="Button.navEntry.navCompact:selected">
-			<Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-		</Style>
-		<Style Selector="TextBlock.navIcon">
-			<Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
-			<Setter Property="FontSize" Value="19" />
-			<Setter Property="FontWeight" Value="Normal" />
-		</Style>
-		<Style Selector="Button.navEntry.navCompact TextBlock.navIcon">
-			<Setter Property="FontSize" Value="24" />
-		</Style>
-		<Style Selector="Button.navEntry:selected TextBlock.navIcon">
-			<Setter Property="Foreground" Value="{DynamicResource AccentForeground}" />
-		</Style>
-		<Style Selector="Button.navToggle">
-			<Setter Property="Width" Value="30" />
-			<Setter Property="Height" Value="30" />
-			<Setter Property="Padding" Value="0" />
-			<Setter Property="CornerRadius" Value="6" />
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-		</Style>
-		<Style Selector="Button.navToggle.navEdgeToggle">
-			<Setter Property="Width" Value="20" />
-			<Setter Property="Height" Value="46" />
-			<Setter Property="CornerRadius" Value="12" />
-			<Setter Property="Margin" Value="0,0,-10,0" />
-			<Setter Property="Background" Value="{DynamicResource CardBackground}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
-			<Setter Property="Opacity" Value="0.86" />
-			<Setter Property="HorizontalAlignment" Value="Right" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="ZIndex" Value="10" />
-		</Style>
-		<Style Selector="Button.navToggle.navEdgeToggle.rightEdgeToggle">
-			<Setter Property="Margin" Value="-10,0,0,0" />
-			<Setter Property="HorizontalAlignment" Value="Left" />
-		</Style>
-		<Style Selector="Button.navToggle:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-			<Setter Property="Opacity" Value="1" />
-		</Style>
-		<Style Selector="Border.employeeAnalysisRow">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="6" />
-			<Setter Property="Cursor" Value="Hand" />
-		</Style>
-		<Style Selector="Border.employeeAnalysisRow:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-		</Style>
-		<Style Selector="Border.downtimeEquipmentRow">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="6" />
-			<Setter Property="Cursor" Value="Hand" />
-		</Style>
-		<Style Selector="Border.downtimeEquipmentRow:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentSoftBorder}" />
-		</Style>
-		<Style Selector="Button.downtimeRowLink">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-			<Setter Property="Padding" Value="0" />
-		</Style>
-		<Style Selector="Button.downtimeRowLink:pointerover">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-		</Style>
-		<Style Selector="Button.downtimeRowLink:pressed">
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="BorderThickness" Value="0" />
-		</Style>
-		<Style Selector="Button:pressed">
-			<Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
-		</Style>
-
-		<Style Selector="TextBox, ComboBox, CalendarDatePicker, NumericUpDown">
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-			<Setter Property="CornerRadius" Value="6" />
-			<Setter Property="Height" Value="32" />
-		</Style>
-		<Style Selector="ListBox">
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-		</Style>
-		<Style Selector="CalendarDatePicker TextBox">
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-			<Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-		</Style>
-
-		<!-- Status Badges styles -->
-		<Style Selector="Border.badge">
-			<Setter Property="CornerRadius" Value="12" />
-			<Setter Property="Padding" Value="8,2" />
-			<Setter Property="HorizontalAlignment" Value="Left" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="BorderThickness" Value="1" />
-		</Style>
-		<Style Selector="Border.badge TextBlock">
-			<Setter Property="FontSize" Value="10" />
-			<Setter Property="FontWeight" Value="SemiBold" />
-		</Style>
-		
-		<!-- Repair/Danger badge -->
-		<Style Selector="Border.badge-danger">
-			<Setter Property="Background" Value="#FEE2E2" />
-			<Setter Property="BorderBrush" Value="#FCA5A5" />
-		</Style>
-		<Style Selector="Border.badge-danger TextBlock">
-			<Setter Property="Foreground" Value="#991B1B" />
-		</Style>
-
-		<!-- Setup/Warning badge -->
-		<Style Selector="Border.badge-warning">
-			<Setter Property="Background" Value="#FEF3C7" />
-			<Setter Property="BorderBrush" Value="#FCD34D" />
-		</Style>
-		<Style Selector="Border.badge-warning TextBlock">
-			<Setter Property="Foreground" Value="#92400E" />
-		</Style>
-
-		<!-- Success/Completed badge -->
-		<Style Selector="Border.badge-success">
-			<Setter Property="Background" Value="#D1FAE5" />
-			<Setter Property="BorderBrush" Value="#6EE7B7" />
-		</Style>
-		<Style Selector="Border.badge-success TextBlock">
-			<Setter Property="Foreground" Value="#065F46" />
-		</Style>
-
-		<!-- Info/Normal badge -->
-		<Style Selector="Border.badge-info">
-			<Setter Property="Background" Value="#E0F2FE" />
-			<Setter Property="BorderBrush" Value="#7DD3FC" />
-		</Style>
-		<Style Selector="Border.badge-info TextBlock">
-			<Setter Property="Foreground" Value="#0369A1" />
-		</Style>
-
-		<Style Selector="ProgressBar">
-			<Setter Property="Height" Value="8" />
-			<Setter Property="Background" Value="{DynamicResource RowDividerBrush}" />
-		</Style>
-
-		<Style Selector="CheckBox">
-			<Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-			<Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-		</Style>
-
-		<Style Selector="ToolTip">
-			<Setter Property="Background" Value="{DynamicResource TooltipBackgroundBrush}" />
-			<Setter Property="Foreground" Value="{DynamicResource TooltipForegroundBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource TooltipBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Padding" Value="8,6" />
-		</Style>
-		<Style Selector="ToolTip TextBlock">
-			<Setter Property="Foreground" Value="{DynamicResource TooltipForegroundBrush}" />
-		</Style>
-
-		<!-- Implicit style to completely hide ScrollBar visuals while keeping scrolling behavior -->
-		<Style Selector="ScrollBar">
-			<Setter Property="Template">
-				<ControlTemplate>
-					<Border Background="Transparent" Width="0" Height="0" />
-				</ControlTemplate>
-			</Setter>
-		</Style>
-
-		<!-- Toast notifications -->
-		<Style Selector="Border.toastCard">
-			<Setter Property="Background" Value="{DynamicResource CardBackground}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="8" />
-			<Setter Property="Padding" Value="16,12" />
-			<Setter Property="Width" Value="320" />
-			<Setter Property="BoxShadow" Value="0 4 12 0 #20000000" />
-			<Setter Property="Opacity" Value="0" />
-			<Setter Property="RenderTransform" Value="translateY(20px)" />
-			<Setter Property="Transitions">
-				<Transitions>
-					<DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
-					<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
-				</Transitions>
-			</Setter>
-		</Style>
-		<Style Selector="Border.toastCard.visible">
-			<Setter Property="Opacity" Value="1" />
-			<Setter Property="RenderTransform" Value="translateY(0)" />
-		</Style>
-		<Style Selector="Border.toastCard.success">
-			<Setter Property="BorderBrush" Value="#10B981" />
-		</Style>
-		<Style Selector="Border.toastCard.error">
-			<Setter Property="BorderBrush" Value="#EF4444" />
-		</Style>
-		<Style Selector="Border.toastCard.info">
-			<Setter Property="BorderBrush" Value="#3B82F6" />
-		</Style>
-	</Window.Styles>
-
-	<Grid x:Name="MainLayoutGrid">
+    <!-- ============================================================
+         ROOT GRID
+         ============================================================ -->
+    <Grid x:Name="MainLayoutGrid">
         <Grid.ColumnDefinitions>
-            <!-- Navigation panel -->
             <ColumnDefinition Width="Auto" />
-            <!-- Main Content Area -->
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
- <!-- Top header -->
-  <Border Grid.ColumnSpan="2" Grid.Row="0" Background="{DynamicResource HeaderBackground}" Padding="12" CornerRadius="0" Margin="0">
-		<Grid VerticalAlignment="Center">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="Auto" />
-			</Grid.ColumnDefinitions>
-			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
-				<Image Source="/Assets/dea-logo.png" Width="120" Height="70" />
-				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
-					<TextBlock Classes="headerTitle" Text="Анализ неисправностей оборудования" Foreground="{DynamicResource HeaderTextBrush}" />
-					<TextBlock FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="{DynamicResource HeaderTextBrush}">Мониторинг рабочих смен и простоев</TextBlock>
-				</StackPanel>
-			</StackPanel>
-			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-				<Button Classes="smallIcon"
-				        ToolTip.Tip="Скриншот средней колонки"
-				        Click="CaptureMiddleColumnScreenshotButton_Click">
-					<TextBlock Text="&#xE722;"
-					           FontFamily="Segoe MDL2 Assets"
-					           FontSize="14"
-					           Foreground="{DynamicResource TextPrimary}"
-					           HorizontalAlignment="Center"
-					           VerticalAlignment="Center" />
-				</Button>
-			</StackPanel>
-		</Grid>
-	</Border>
+        <!-- ====================================================
+             TOP APP BAR
+             ==================================================== -->
+        <Border Grid.ColumnSpan="2" Grid.Row="0"
+                Background="{DynamicResource HeaderBackground}"
+                Padding="20,10"
+                BoxShadow="0 1 0 0 #00000000">
+            <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,Auto,*,Auto">
 
-    <Grid x:Name="NavigationHostGrid" Grid.Column="0" Grid.Row="1" Width="320" Margin="0,0,12,0" MinWidth="72" MaxWidth="340" HorizontalAlignment="Stretch">
-		   <Border Background="{DynamicResource CardBackground}" BoxShadow="0 1 3 0 #12000000" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="0,0,1,0" CornerRadius="0" Padding="10">
-                <StackPanel Spacing="8">
-					<StackPanel x:Name="NavigationHeaderPanel" Spacing="1" Margin="0,0,0,2">
-						<TextBlock Text="Навигация" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-						<TextBlock Text="Быстрый доступ к разделам приложения" FontSize="12" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-					</StackPanel>
-					<Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="0,1,0,4" />
+                <!-- Logo block -->
+                <Border Grid.Column="0"
+                        Width="40" Height="40"
+                        CornerRadius="10"
+                        Background="#1A2342"
+                        BorderBrush="#27325A"
+                        BorderThickness="1">
+                    <Image Source="/Assets/dea-logo.png" Width="34" Height="34" />
+                </Border>
 
-					<Button x:Name="DashboardNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="DashboardButton_Click" ToolTip.Tip="Панель управления">
-						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-							<TextBlock Classes="navIcon" Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
-							<StackPanel x:Name="DashboardNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Панель управления" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-								<TextBlock Text="Общие тренды по работам, простоям и эффективности сотрудников" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Button>
+                <!-- App identity -->
+                <StackPanel Grid.Column="1" Orientation="Vertical"
+                            Margin="14,0,0,0" Spacing="0" VerticalAlignment="Center">
+                    <TextBlock Classes="headerTitle" Text="DEA · Анализ неисправностей оборудования" />
+                    <TextBlock Classes="headerSubtitle" Text="Мониторинг рабочих смен, простоев и эффективности" />
+                </StackPanel>
 
-					<Button x:Name="DowntimeNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="DowntimeAnalysisButton_Click" ToolTip.Tip="Анализ простоев">
-						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-							<TextBlock Classes="navIcon" Text="&#xE823;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
-							<StackPanel x:Name="DowntimeNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Анализ простоев" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-								<TextBlock Text="Карта тепла, перечень оборудования с фиксацей простоев за день" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Button>
+                <!-- Center spacer (could host search later) -->
+                <Border Grid.Column="2" />
 
-					<Button x:Name="EmployeeNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="EmployeeAnalysisButton_Click" ToolTip.Tip="Анализ сотрудников">
-						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-							<TextBlock Classes="navIcon" Text="&#xE716;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
-							<StackPanel x:Name="EmployeeNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Анализ сотрудников" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-								<TextBlock Text="Эффективность, длительность работ и активность ответственных" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Button>
+                <!-- Right action cluster -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
 
-					<Button x:Name="ReportsNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="ReportsButton_Click" ToolTip.Tip="Отчеты">
-						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-							<TextBlock Classes="navIcon" Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
-							<StackPanel x:Name="ReportsNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Отчеты" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-								<TextBlock Text="Сводные отчеты по ключевым метрикам и качеству выполнения" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Button>
+                    <!-- Live status pill -->
+                    <Border x:Name="LiveStatusPill"
+                            Background="#11203D" BorderBrush="#1F2A4A" BorderThickness="1"
+                            CornerRadius="999" Padding="10,5" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="16" Height="16" CornerRadius="8"
+                                    Background="#22C55E" VerticalAlignment="Center">
+                                <TextBlock x:Name="LiveStatusIcon"
+                                           Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                           FontSize="10"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock x:Name="LiveStatusText"
+                                       Text="Online" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="#CBD5E1" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
 
-					<Button x:Name="SettingsNavButton" Classes="navEntry" HorizontalAlignment="Stretch" Click="SettingsButton_Click" ToolTip.Tip="Настройки">
-						<Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-							<TextBlock Classes="navIcon" Text="&#xE713;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" />
-							<StackPanel x:Name="SettingsNavTextPanel" Grid.Column="1" Spacing="2" HorizontalAlignment="Left">
-								<TextBlock Text="Настройки" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-								<TextBlock Text="Параметры отображения и конфигурация приложения" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Button>
-				</StackPanel>
-			</Border>
-			<Button x:Name="NavigationToggleButton" Classes="navToggle navEdgeToggle" Click="ToggleNavigationButton_Click" ToolTip.Tip="Свернуть/развернуть навигацию">
-				<TextBlock x:Name="NavigationToggleGlyph" Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-			</Button>
-		</Grid>
-  <TransitioningContentControl x:Name="PageContentTransitioner" Grid.Column="1" Grid.ColumnSpan="1" Grid.Row="1" Margin="8,0,12,0">
-    <TransitioningContentControl.PageTransition>
-      <CrossFade Duration="0:0:0.25" />
-    </TransitioningContentControl.PageTransition>
-  </TransitioningContentControl>
-		<Border Grid.ColumnSpan="2"
-		        Grid.Row="2"
-		        Background="{DynamicResource SurfaceBrush}"
-		        BorderBrush="{DynamicResource BorderSubtleBrush}"
-		        BorderThickness="1,1,1,0"
-		        Padding="10,6">
-			<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-				<TextBlock Grid.Column="0"
-				           Text="Статус:"
-				           FontSize="12"
-				           FontWeight="SemiBold"
-				           Foreground="{DynamicResource TextSecondary}"
-				           VerticalAlignment="Center" />
-				<TextBlock Grid.Column="1"
-				           Text="{Binding StatusMessage}"
-				           FontSize="12"
-				           Foreground="{DynamicResource TextSecondary}"
-				           TextTrimming="CharacterEllipsis"
-				           VerticalAlignment="Center" />
-				<Button Grid.Column="2"
-				        Content="Журнал логов"
-				        FontSize="11"
-				        Padding="8,4"
-				        Background="{DynamicResource SurfaceBrush}"
-				        BorderBrush="{DynamicResource ControlBorderBrush}"
-				        BorderThickness="1"
-				        CornerRadius="4">
-					<Button.Flyout>
-						<Flyout Placement="TopEdgeAlignedRight">
-							<Border Width="450" Height="300" Padding="12" Background="{DynamicResource CardBackground}" CornerRadius="8">
-								<StackPanel Spacing="8">
-									<TextBlock Text="Журнал событий синхронизации" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4" />
-									<ListBox ItemsSource="{Binding SyncLogs}" Height="230" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6" ScrollViewer.VerticalScrollBarVisibility="Auto">
-										<ListBox.ItemTemplate>
-											<DataTemplate>
-												<TextBlock Text="{Binding}" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Padding="2,4" />
-											</DataTemplate>
-										</ListBox.ItemTemplate>
-									</ListBox>
-								</StackPanel>
-							</Border>
-						</Flyout>
-					</Button.Flyout>
-				</Button>
-			</Grid>
-		</Border>
-		
-		<!-- Toast notifications container -->
-		<StackPanel x:Name="ToastContainer" 
-					Grid.Column="1" 
-					Grid.ColumnSpan="1" 
-					Grid.Row="1"
-					VerticalAlignment="Bottom" 
-					HorizontalAlignment="Right" 
-					Margin="0,0,24,24" 
-					Spacing="10" 
-					ZIndex="1000" />
-	</Grid>
+                    <!-- Theme quick toggle (Light/Dark) -->
+                    <Button x:Name="ThemeToggleButton"
+                            Classes="headerIcon"
+                            ToolTip.Tip="Сменить тему (Ctrl+Shift+T)"
+                            Click="ToggleThemeButton_Click">
+                        <TextBlock x:Name="ThemeToggleGlyph"
+                                   Text="&#xE793;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="14"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Button>
+
+                    <!-- Screenshot action (preserves original handler) -->
+                    <Button Classes="headerIcon"
+                            ToolTip.Tip="Сохранить скриншот текущей страницы (F5)"
+                            Click="CaptureMiddleColumnScreenshotButton_Click">
+                        <TextBlock Text="&#xE722;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="14"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ====================================================
+             SIDEBAR NAVIGATION
+             ==================================================== -->
+        <Grid x:Name="NavigationHostGrid"
+              Grid.Column="0" Grid.Row="1"
+              Width="290" Margin="0,0,0,0" MinWidth="72" MaxWidth="320"
+              HorizontalAlignment="Stretch">
+
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="0,0,1,0"
+                    Padding="12,16">
+                <StackPanel Spacing="4">
+
+                    <!-- Sidebar header -->
+                    <StackPanel x:Name="NavigationHeaderPanel" Spacing="2" Margin="6,0,6,10">
+                        <TextBlock Classes="eyebrow" Text="РАЗДЕЛЫ" />
+                        <TextBlock Text="Аналитика отказов"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Быстрый переход между разделами"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!-- Dashboard -->
+                    <Button x:Name="DashboardNavButton" Classes="navEntry"
+                            HorizontalAlignment="Stretch"
+                            Click="DashboardButton_Click"
+                            ToolTip.Tip="Панель управления">
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                            <TextBlock Classes="navIcon" Text="&#xE80F;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel x:Name="DashboardNavTextPanel" Grid.Column="1"
+                                        Spacing="1" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Панель управления"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Тренды, KPI, эффективность"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Downtime -->
+                    <Button x:Name="DowntimeNavButton" Classes="navEntry"
+                            HorizontalAlignment="Stretch"
+                            Click="DowntimeAnalysisButton_Click"
+                            ToolTip.Tip="Анализ простоев">
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                            <TextBlock Classes="navIcon" Text="&#xE823;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel x:Name="DowntimeNavTextPanel" Grid.Column="1"
+                                        Spacing="1" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Анализ простоев"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Карта тепла и детализация по дням"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Employees -->
+                    <Button x:Name="EmployeeNavButton" Classes="navEntry"
+                            HorizontalAlignment="Stretch"
+                            Click="EmployeeAnalysisButton_Click"
+                            ToolTip.Tip="Анализ сотрудников">
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                            <TextBlock Classes="navIcon" Text="&#xE716;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel x:Name="EmployeeNavTextPanel" Grid.Column="1"
+                                        Spacing="1" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Анализ сотрудников"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Нагрузка, SLA, активность"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Divider -->
+                    <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="10,12,10,6" />
+                    <TextBlock Classes="eyebrow" Text="УПРАВЛЕНИЕ" Margin="6,0,6,4" />
+
+                    <!-- Reports -->
+                    <Button x:Name="ReportsNavButton" Classes="navEntry"
+                            HorizontalAlignment="Stretch"
+                            Click="ReportsButton_Click"
+                            ToolTip.Tip="Отчёты">
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                            <TextBlock Classes="navIcon" Text="&#xE9D2;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel x:Name="ReportsNavTextPanel" Grid.Column="1"
+                                        Spacing="1" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Отчёты"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Экспорт HTML · PDF · CSV"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Settings -->
+                    <Button x:Name="SettingsNavButton" Classes="navEntry"
+                            HorizontalAlignment="Stretch"
+                            Click="SettingsButton_Click"
+                            ToolTip.Tip="Настройки">
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                            <TextBlock Classes="navIcon" Text="&#xE713;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel x:Name="SettingsNavTextPanel" Grid.Column="1"
+                                        Spacing="1" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Настройки"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Jira · LDAP · тема"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Collapse / expand sidebar -->
+            <Button x:Name="NavigationToggleButton"
+                    Classes="navToggle navEdgeToggle"
+                    Click="ToggleNavigationButton_Click"
+                    ToolTip.Tip="Свернуть/развернуть навигацию">
+                <TextBlock x:Name="NavigationToggleGlyph"
+                           Text="&#xE76B;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="10"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Button>
+        </Grid>
+
+        <!-- ====================================================
+             PAGE HOST
+             ==================================================== -->
+        <TransitioningContentControl x:Name="PageContentTransitioner"
+                                     Grid.Column="1" Grid.Row="1"
+                                     Margin="0">
+            <TransitioningContentControl.PageTransition>
+                <CrossFade Duration="0:0:0.25" />
+            </TransitioningContentControl.PageTransition>
+        </TransitioningContentControl>
+
+        <!-- Right-panel collapse toggle (placed on top of host so it floats on the seam) -->
+        <Button x:Name="RightPanelToggleButton"
+                Grid.Column="1" Grid.Row="1"
+                Classes="navToggle navEdgeToggle rightEdgeToggle"
+                Click="ToggleRightPanelButton_Click"
+                ToolTip.Tip="Свернуть/развернуть правую панель">
+            <TextBlock x:Name="RightPanelToggleGlyph"
+                       Text="&#xE76C;"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="10"
+                       Foreground="{DynamicResource TextMuted}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+        </Button>
+
+        <!-- ====================================================
+             BOTTOM STATUS BAR
+             ==================================================== -->
+        <Border Grid.ColumnSpan="2" Grid.Row="2"
+                Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,8">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+
+                <!-- Status indicator dot -->
+                <Ellipse Grid.Column="0"
+                         Width="8" Height="8"
+                         Fill="{DynamicResource AccentBrush}"
+                         VerticalAlignment="Center" />
+
+                <TextBlock Grid.Column="1"
+                           Text="Статус"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center" />
+
+                <TextBlock Grid.Column="2"
+                           Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondary}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center" />
+
+                <Button Grid.Column="3"
+                        FontSize="11"
+                        Padding="10,5"
+                        MinHeight="28"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource ControlBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="&#xE7C3;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Журнал событий" FontSize="11"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout Placement="TopEdgeAlignedRight">
+                            <Border Width="480" Height="320"
+                                    Padding="14"
+                                    Background="{DynamicResource CardBackground}"
+                                    CornerRadius="10"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1">
+                                <StackPanel Spacing="10">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Журнал событий синхронизации"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Последние операции импорта, экспорта и работы с данными"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+                                    <ListBox ItemsSource="{Binding SyncLogs}"
+                                             MinHeight="120"
+                                             MaxHeight="320"
+                                             Background="{DynamicResource SurfaceAlt}"
+                                             BorderBrush="{DynamicResource ControlBorderBrush}"
+                                             BorderThickness="1"
+                                             CornerRadius="8"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           Padding="4,5" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ====================================================
+             TOAST CONTAINER
+             ==================================================== -->
+        <StackPanel x:Name="ToastContainer"
+                    Grid.Column="1" Grid.Row="1"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,28,28"
+                    Spacing="10"
+                    ZIndex="1000" />
+    </Grid>
 </Window>
-
-
-
-
-
-
-
-
-
