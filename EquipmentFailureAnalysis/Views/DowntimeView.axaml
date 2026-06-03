@@ -4,17 +4,11 @@
              x:Class="EquipmentFailureAnalysis.Views.DowntimeView">
 
     <Grid x:Name="DowntimeLayoutRoot">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" />
-            <ColumnDefinition Width="*" MinWidth="320" MaxWidth="480" />
-        </Grid.ColumnDefinitions>
-
         <!-- ====================================================
              CENTER COLUMN — Filters / Heatmap / Equipment rows
              ==================================================== -->
         <ScrollViewer x:Name="DowntimeCenterColumn"
-                      Grid.Column="0"
-                      Margin="20,18,16,18"
+                      Margin="20,18,20,18"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Hidden">
             <StackPanel Spacing="14">
@@ -300,6 +294,90 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ============== SELECTED DAY SUMMARY DASHBOARD ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="12">
+                        <!-- Dashboard Header with Date and Presets -->
+                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Сводные показатели за день" Classes="sectionTitle" />
+                                <TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='Выбранная дата: {0:dd.MM.yyyy}'}"
+                                           Classes="sectionSubtitle" />
+                            </StackPanel>
+                            <!-- Date navigation presets -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Classes="soft" Content="Вчера" Click="DowntimeSetYesterday_Click" />
+                                <Button Classes="soft" Content="Сегодня" Click="DowntimeSetToday_Click" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- If there are incidents (HasDowntimeIssues = true) -->
+                        <Border Classes="well" IsVisible="{Binding HasDowntimeIssues}">
+                            <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12" RowDefinitions="Auto">
+                                <!-- События -->
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="Всего событий" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimeTotalIssues, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+
+                                <!-- Ремонты -->
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="Ремонты" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimeRepairsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" />
+                                </StackPanel>
+
+                                <!-- Настройки -->
+                                <StackPanel Grid.Column="2" Spacing="4">
+                                    <TextBlock Text="Настройки" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimeSetupsCount, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
+                                </StackPanel>
+
+                                <!-- Время простоев -->
+                                <StackPanel Grid.Column="3" Spacing="4">
+                                    <TextBlock Text="Время простоев" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimeTotalDuration}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+
+                                <!-- Охват -->
+                                <StackPanel Grid.Column="4" Spacing="4">
+                                    <TextBlock Text="Охват" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimeAffectedSharePercent, StringFormat='{}{0:0.0}%'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
+                                </StackPanel>
+
+                                <!-- Пиковый час -->
+                                <StackPanel Grid.Column="5" Spacing="4">
+                                    <TextBlock Text="Пиковый час" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding DowntimePeakHour}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- If there are NO incidents (HasDowntimeIssues = false) -->
+                        <Border Classes="well" IsVisible="{Binding !HasDowntimeIssues}" Background="{DynamicResource SuccessSoftBackground}" BorderBrush="{DynamicResource SuccessSoftBorder}">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" Margin="0,4">
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Width="24" Height="24" CornerRadius="6"
+                                            Background="{DynamicResource SuccessBrush}" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="12"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Неисправностей не зафиксировано"
+                                               FontSize="13" FontWeight="Bold"
+                                               Foreground="{DynamicResource SuccessStrongBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="За выбранный день отсутствуют простои, ремонты и перенастройки оборудования."
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <!-- ============== EQUIPMENT LIST CARD ============== -->
                 <Border Classes="panel">
                     <StackPanel Spacing="12">
@@ -307,7 +385,7 @@
                             <StackPanel Grid.Column="0" Spacing="2">
                                 <TextBlock Text="Оборудование с неисправностями за выбранный день"
                                            Classes="sectionTitle" />
-                                <TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='Дата: {0:dd.MM.yyyy}'}"
+                                <TextBlock Text="Детализированный список и графики работы оборудования"
                                            Classes="sectionSubtitle" />
                             </StackPanel>
                         </Grid>
@@ -317,10 +395,10 @@
                                 <StackPanel>
                                     <!-- Sticky header row -->
                                     <Border Background="{DynamicResource SurfaceBrush}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="0,0,0,1"
-                                            CornerRadius="10,10,0,0"
-                                            Padding="14,10">
+                                             BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                             BorderThickness="0,0,0,1"
+                                             CornerRadius="10,10,0,0"
+                                             Padding="14,10">
                                         <Grid ColumnDefinitions="2.2*,2.8*">
                                             <TextBlock Grid.Column="0" Text="Оборудование"
                                                        FontSize="11" FontWeight="SemiBold"
@@ -332,15 +410,15 @@
                                     </Border>
 
                                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  MaxHeight="420">
+                                                   VerticalScrollBarVisibility="Auto"
+                                                   MaxHeight="420">
                                         <ItemsControl ItemsSource="{Binding DowntimeDayEquipmentRows}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border Classes="downtimeEquipmentRow"
-                                                            BorderBrush="{DynamicResource RowDividerBrush}"
-                                                            BorderThickness="0,0,0,1"
-                                                            Margin="0" Padding="10,8">
+                                                             BorderBrush="{DynamicResource RowDividerBrush}"
+                                                             BorderThickness="0,0,0,1"
+                                                             Margin="0" Padding="10,8">
                                                         <Grid ColumnDefinitions="2.2*,2.8*" Margin="2,1">
                                                             <Border Grid.Column="0" Margin="0,0,8,0" Background="Transparent"
                                                                     PointerPressed="DowntimeEquipmentButton_Click">
@@ -363,10 +441,10 @@
                                                                     BorderThickness="1" CornerRadius="8" Padding="6"
                                                                     Background="{DynamicResource SurfaceBrush}">
                                                                 <views:TimelineControl Items="{Binding TimelinePoints}"
-                                                                                       RepairsItems="{Binding RepairsTimelinePoints}"
-                                                                                       SetupsItems="{Binding SetupsTimelinePoints}"
-                                                                                       Annotations="{Binding Annotations}"
-                                                                                       Height="56" ShowHourLabels="False" />
+                                                                                        RepairsItems="{Binding RepairsTimelinePoints}"
+                                                                                        SetupsItems="{Binding SetupsTimelinePoints}"
+                                                                                        Annotations="{Binding Annotations}"
+                                                                                        Height="56" ShowHourLabels="False" />
                                                             </Border>
                                                         </Grid>
                                                     </Border>
@@ -390,10 +468,10 @@
                                                        VerticalAlignment="Center" />
                                         </Border>
                                         <TextBlock Classes="emptyStateTitle" Text="Неисправностей не зафиксировано"
-                                                   HorizontalAlignment="Center" />
+                                                    HorizontalAlignment="Center" />
                                         <TextBlock Classes="emptyStateSubtitle"
-                                                   Text="За выбранный день нет событий по оборудованию"
-                                                   HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                                    Text="За выбранный день нет событий по оборудованию"
+                                                    HorizontalAlignment="Center" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -402,249 +480,5 @@
                 </Border>
             </StackPanel>
         </ScrollViewer>
-
-        <!-- ====================================================
-             RIGHT COLUMN — Day summary / KPIs / Peak insights
-             ==================================================== -->
-        <Grid x:Name="DowntimeRightColumn" Grid.Column="1"
-              MinWidth="260" MaxWidth="520" HorizontalAlignment="Stretch">
-            <Border Background="{DynamicResource CardBackground}"
-                    BorderBrush="{DynamicResource BorderSubtleBrush}"
-                    BorderThickness="1,0,0,0"
-                    Padding="18">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Spacing="14">
-
-                        <!-- Section header -->
-                        <StackPanel Spacing="2">
-                            <TextBlock Classes="eyebrow" Text="ВЫБРАННЫЙ ДЕНЬ" />
-                            <TextBlock Text="Сводка по простоям" Classes="sectionTitle" />
-                            <TextBlock Text="Сводные показатели и инциденты за выбранный день"
-                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <!-- Date + Coverage pair -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <Border Grid.Column="0" Classes="well">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <Border Width="20" Height="20" CornerRadius="6"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Дата" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DowntimeAnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                    <!-- Date preset buttons -->
-                                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
-                                        <Button Classes="soft" Padding="8,3" FontSize="10"
-                                                Click="DowntimeSetToday_Click" Content="Сегодня" />
-                                        <Button Classes="ghost" Padding="8,3" FontSize="10"
-                                                Click="DowntimeSetYesterday_Click" Content="Вчера" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="1" Classes="well">
-                                <StackPanel Spacing="4">
-                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <Border Width="20" Height="20" CornerRadius="6"
-                                                Background="{DynamicResource WarningSoftBackground}">
-                                            <TextBlock Text="&#xE9F9;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource WarningBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Охват" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DowntimeAffectedSharePercent, StringFormat='{}{0:0.0}%'}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource WarningBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <!-- KPI 2x3 grid -->
-                        <Border Classes="well">
-                            <StackPanel Spacing="14">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="Сводные показатели" Classes="cardTitle" />
-                                    <TextBlock Text="Оборудование, события и длительность"
-                                               Classes="cardSubtext" />
-                                </StackPanel>
-
-                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
-                                      RowSpacing="10" ColumnSpacing="10">
-
-                                    <!-- Оборудование -->
-                                    <Border Grid.Row="0" Grid.Column="0"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Оборудование" FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeAffectedEquipmentCount, StringFormat='{}{0} ед.'}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextPrimary}" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- События -->
-                                    <Border Grid.Row="0" Grid.Column="1"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="События" FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeTotalIssues, StringFormat='{}{0} шт.'}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextPrimary}" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Ремонты -->
-                                    <Border Grid.Row="1" Grid.Column="0"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Ремонты" FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeRepairsCount, StringFormat='{}{0} шт.'}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource DangerBrush}" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Настройки -->
-                                    <Border Grid.Row="1" Grid.Column="1"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Настройки" FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeSetupsCount, StringFormat='{}{0} шт.'}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource WarningBrush}" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Суммарный простой -->
-                                    <Border Grid.Row="2" Grid.Column="0"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Суммарный простой" FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeTotalDuration}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextPrimary}" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Ср. событий / ед. -->
-                                    <Border Grid.Row="2" Grid.Column="1"
-                                            Background="{DynamicResource CardBackground}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Padding="10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Ср. событий / ед." FontSize="11"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding DowntimeAvgIssuesPerEquipment}"
-                                                       FontSize="16" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource AccentForeground}" />
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Day insights: peak hour -->
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Время нагрузки" Classes="eyebrow" />
-                            <Border Classes="well">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="22" Height="22" CornerRadius="6"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Пиковый час" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="По количеству оборудования"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextMuted}" />
-                                    <TextBlock Text="{Binding DowntimePeakHour}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                    <TextBlock Text="—"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               IsVisible="{Binding DowntimePeakHour, Converter={StaticResource IsEmptyConverter}}" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Top equipment insight -->
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Анализ инцидентов" Classes="eyebrow" />
-                            <Border Background="{DynamicResource DangerSoftBackground}"
-                                    BorderBrush="{DynamicResource DangerSoftBorder}"
-                                    BorderThickness="1" CornerRadius="10" Padding="14">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="22" Height="22" CornerRadius="6"
-                                                Background="{DynamicResource DangerBrush}">
-                                            <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="White"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Максимум событий на оборудование"
-                                                   FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource DangerBrush}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DowntimeTopEquipment}"
-                                               FontSize="14" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="Нет инцидентов в выбранный день"
-                                               FontSize="12" FontStyle="Italic"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               IsVisible="{Binding DowntimeTopEquipment, Converter={StaticResource IsEmptyConverter}}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding DowntimeTopEquipmentIssues, StringFormat='{}{0} событий'}"
-                                               FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource DangerBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-        </Grid>
     </Grid>
 </UserControl>

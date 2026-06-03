@@ -130,8 +130,10 @@ namespace EquipmentFailureAnalysis.Views
                 glyph.Text = _isRightPanelCollapsed ? "\uE76B" : "\uE76C";
 
             var toggleButton = FindNestedControl<Button>("RightPanelToggleButton");
+            var rightColumn = ResolveRightColumnTarget();
             if (toggleButton != null)
             {
+                toggleButton.IsVisible = rightColumn != null;
                 ToolTip.SetTip(toggleButton, _isRightPanelCollapsed
                     ? "Развернуть правую панель"
                     : "Свернуть правую панель");

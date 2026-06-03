@@ -183,7 +183,11 @@ namespace EquipmentFailureAnalysis.ViewModels
         public int DowntimeTotalIssues
         {
             get => _downtimeTotalIssues;
-            set => this.RaiseAndSetIfChanged(ref _downtimeTotalIssues, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _downtimeTotalIssues, value);
+                this.RaisePropertyChanged(nameof(HasDowntimeIssues));
+            }
         }
 
         public int DowntimeRepairsCount
@@ -227,6 +231,8 @@ namespace EquipmentFailureAnalysis.ViewModels
             get => _downtimeTopEquipmentIssues;
             set => this.RaiseAndSetIfChanged(ref _downtimeTopEquipmentIssues, value);
         }
+
+        public bool HasDowntimeIssues => DowntimeTotalIssues > 0;
 
         public void Refresh(IReadOnlyCollection<EquipmentInfo> sourceEquipment, DateTime date)
         {
