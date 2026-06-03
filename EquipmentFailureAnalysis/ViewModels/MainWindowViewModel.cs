@@ -1262,12 +1262,25 @@ namespace EquipmentFailureAnalysis.ViewModels
                 });
                 }
 
-                // build month rows — last 4 months (current + 3 previous)
+                // build month rows dynamically based on the actual issue date range
                 MonthRows.Clear();
-                var today = DateTime.Today;
-                for (int offset = 3; offset >= 0; offset--)
+                DateTime minDate = DateTime.Today.AddMonths(-3);
+                DateTime maxDate = DateTime.Today;
+
+                if (filteredIssues != null && filteredIssues.Count > 0)
                 {
-                    var monthDate = today.AddMonths(-offset);
+                    var earliest = filteredIssues.Min(i => i.Start);
+                    var latest = filteredIssues.Max(i => i.Start);
+                    if (earliest < minDate) minDate = earliest;
+                    if (latest > maxDate) maxDate = latest;
+                }
+
+                var current = new DateTime(minDate.Year, minDate.Month, 1);
+                var endLimit = new DateTime(maxDate.Year, maxDate.Month, 1);
+
+                while (current <= endLimit)
+                {
+                    var monthDate = current;
                     var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
                     var name = monthDate.ToString("MMMM yyyy");
                     if (!string.IsNullOrEmpty(name))
@@ -1301,6 +1314,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                     }
 
                     MonthRows.Add(monthRow);
+                    current = current.AddMonths(1);
                 }
                 this.RaisePropertyChanged(nameof(HeatmapYearLabel));
 
