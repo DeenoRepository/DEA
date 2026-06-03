@@ -121,6 +121,24 @@ namespace EquipmentFailureAnalysis.Views
             set => SetValue(ShowHourLabelsProperty, value);
         }
 
+        public static readonly StyledProperty<string> YAxisTopLabelProperty =
+            AvaloniaProperty.Register<TimelineControl, string>(nameof(YAxisTopLabel), "Сбой");
+
+        public string YAxisTopLabel
+        {
+            get => GetValue(YAxisTopLabelProperty);
+            set => SetValue(YAxisTopLabelProperty, value);
+        }
+
+        public static readonly StyledProperty<string> YAxisBottomLabelProperty =
+            AvaloniaProperty.Register<TimelineControl, string>(nameof(YAxisBottomLabel), "OK");
+
+        public string YAxisBottomLabel
+        {
+            get => GetValue(YAxisBottomLabelProperty);
+            set => SetValue(YAxisBottomLabelProperty, value);
+        }
+
         private INotifyCollectionChanged? itemsChanged;
         private INotifyCollectionChanged? repairsItemsChanged;
         private INotifyCollectionChanged? setupsItemsChanged;
@@ -243,17 +261,17 @@ namespace EquipmentFailureAnalysis.Views
             double hour = (point.X - left) / (plotW / 24.0);
             hour = Math.Clamp(hour, 0.0, 24.0);
 
-            var repair = annSource
+            var repair = (RepairsItems != null && RepairsItems.Count > 0) ? annSource
                 .OfType<Models.Annotation>()
                 .Where(a => a.Type == Models.IssueType.Ремонт && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
                 .OrderBy(a => a.StartHour)
-                .FirstOrDefault();
+                .FirstOrDefault() : null;
 
-            var setup = annSource
+            var setup = (SetupsItems != null && SetupsItems.Count > 0) ? annSource
                 .OfType<Models.Annotation>()
                 .Where(a => a.Type == Models.IssueType.Настройка && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
                 .OrderBy(a => a.StartHour)
-                .FirstOrDefault();
+                .FirstOrDefault() : null;
 
             if (repair == null && setup == null)
                 return false;
@@ -322,6 +340,13 @@ namespace EquipmentFailureAnalysis.Views
             // Find an annotation that covers this hour.
             var matching = annSource.OfType<Models.Annotation>()
                 .Where(a => hour >= a.StartHour && hour <= Math.Max(a.EndHour, a.StartHour + 0.1))
+                .Where(a => {
+                    if (a.Type == Models.IssueType.Ремонт)
+                        return RepairsItems != null && RepairsItems.Count > 0;
+                    if (a.Type == Models.IssueType.Настройка)
+                        return SetupsItems != null && SetupsItems.Count > 0;
+                    return true;
+                })
                 .OrderBy(a => a.StartHour)
                 .FirstOrDefault();
 
@@ -511,8 +536,8 @@ namespace EquipmentFailureAnalysis.Views
             var labelBrushY = new SolidColorBrush(Color.Parse("#475569"));
             var tfY = UiTypeface;
             double labelFontSize = 11;
-            var ftTop = new FormattedText("Сбой", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
-            var ftBottom = new FormattedText("OK", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
+            var ftTop = new FormattedText(YAxisTopLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
+            var ftBottom = new FormattedText(YAxisBottomLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
             context.DrawText(ftTop, new Point(2, y1 - labelFontSize / 2));
             context.DrawText(ftBottom, new Point(2, y0 - labelFontSize / 2));
 

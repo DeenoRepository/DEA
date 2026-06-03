@@ -438,13 +438,19 @@
                                                             </Border>
                                                             <Border Grid.Column="1"
                                                                     BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                                                    BorderThickness="1" CornerRadius="8" Padding="6"
-                                                                    Background="{DynamicResource SurfaceBrush}">
-                                                                <views:TimelineControl Items="{Binding TimelinePoints}"
-                                                                                        RepairsItems="{Binding RepairsTimelinePoints}"
-                                                                                        SetupsItems="{Binding SetupsTimelinePoints}"
-                                                                                        Annotations="{Binding Annotations}"
-                                                                                        Height="56" ShowHourLabels="False" />
+                                                                    BorderThickness="1" CornerRadius="8" Padding="6,8"
+                                                                    Background="{DynamicResource SurfaceBrush}"
+                                                                    VerticalAlignment="Center">
+                                                                <Grid RowDefinitions="*,*" RowSpacing="6">
+                                                                    <views:TimelineControl Grid.Row="0" Height="28" ShowHourLabels="False"
+                                                                                           RepairsItems="{Binding RepairsTimelinePoints}"
+                                                                                           Annotations="{Binding Annotations}"
+                                                                                           YAxisTopLabel="Ремонт" />
+                                                                    <views:TimelineControl Grid.Row="1" Height="28" ShowHourLabels="False"
+                                                                                           SetupsItems="{Binding SetupsTimelinePoints}"
+                                                                                           Annotations="{Binding Annotations}"
+                                                                                           YAxisTopLabel="Настройка" />
+                                                                </Grid>
                                                             </Border>
                                                         </Grid>
                                                     </Border>
