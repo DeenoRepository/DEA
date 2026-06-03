@@ -179,14 +179,14 @@
                                                                VerticalAlignment="Center" />
                                                     <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
                                                                    Increment="1" FormatString="F0"
-                                                                   Value="{Binding HeatmapColorMin, Mode=TwoWay}"
+                                                                   Value="{Binding $parent[Window].DataContext.HeatmapColorMin, Mode=TwoWay}"
                                                                    HorizontalAlignment="Stretch" />
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
                                                                FontSize="12" Foreground="{DynamicResource TextSecondary}"
                                                                VerticalAlignment="Center" />
                                                     <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
                                                                    Increment="1" FormatString="F0"
-                                                                   Value="{Binding HeatmapColorMax, Mode=TwoWay}"
+                                                                   Value="{Binding $parent[Window].DataContext.HeatmapColorMax, Mode=TwoWay}"
                                                                    HorizontalAlignment="Stretch" />
                                                 </Grid>
                                             </StackPanel>
@@ -264,7 +264,7 @@
                                        VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
-                                <TextBlock Text="{Binding HeatmapColorMin, StringFormat='до {0}'}"
+                                <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMin, StringFormat='до {0}'}"
                                            FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -273,8 +273,8 @@
                                 <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="HeatmapColorMin" />
-                                            <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMin" />
+                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
                                         </MultiBinding>
                                     </TextBlock.Text>
                                 </TextBlock>
@@ -284,15 +284,15 @@
                                 <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
-                                            <Binding Path="HeatmapColorMax" />
+                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" />
                                         </MultiBinding>
                                     </TextBlock.Text>
                                 </TextBlock>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
-                                <TextBlock Text="{Binding HeatmapColorMax, StringFormat='от {0}'}"
+                                <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMax, StringFormat='от {0}'}"
                                            FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
