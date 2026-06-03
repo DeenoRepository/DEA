@@ -197,9 +197,21 @@
                         </Grid>
 
                         <Border Classes="well" Padding="0">
-                            <Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Carousel Scroll Left -->
+                                <Button Grid.Column="0"
+                                        Classes="ghost"
+                                        Width="32" Height="32"
+                                        VerticalAlignment="Center"
+                                        Margin="6,0"
+                                        Click="HeatmapScrollLeft_Click"
+                                        ToolTip.Tip="Предыдущие месяцы">
+                                    <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+
                                 <ScrollViewer x:Name="DowntimeHeatmapScroller"
-                                              HorizontalScrollBarVisibility="Auto"
+                                              Grid.Column="1"
+                                              HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Background="Transparent">
                                     <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
@@ -209,8 +221,20 @@
                                                              ConverterMode="DowntimeAnalysis" />
                                 </ScrollViewer>
 
+                                <!-- Carousel Scroll Right -->
+                                <Button Grid.Column="2"
+                                        Classes="ghost"
+                                        Width="32" Height="32"
+                                        VerticalAlignment="Center"
+                                        Margin="6,0"
+                                        Click="HeatmapScrollRight_Click"
+                                        ToolTip.Tip="Следующие месяцы">
+                                    <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+
                                 <!-- Empty state for heatmap -->
-                                <Border Classes="emptyState"
+                                <Border Grid.ColumnSpan="3"
+                                        Classes="emptyState"
                                         IsVisible="{Binding DowntimeMonthRows, Converter={StaticResource IsEmptyConverter}}">
                                     <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
                                         <Border Width="44" Height="44" CornerRadius="12"

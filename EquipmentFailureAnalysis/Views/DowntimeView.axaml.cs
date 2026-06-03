@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -46,6 +46,26 @@ namespace EquipmentFailureAnalysis.Views
         public void ResetFiltersWithToast_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             // No-op: toast is triggered by MainWindow observing FiltersResetCounter.
+        }
+
+        private void HeatmapScrollLeft_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var scroller = this.FindControl<ScrollViewer>("DowntimeHeatmapScroller");
+            if (scroller != null)
+            {
+                var offset = scroller.Offset;
+                scroller.Offset = new Avalonia.Vector(Math.Max(0, offset.X - 340), offset.Y);
+            }
+        }
+
+        private void HeatmapScrollRight_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var scroller = this.FindControl<ScrollViewer>("DowntimeHeatmapScroller");
+            if (scroller != null)
+            {
+                var offset = scroller.Offset;
+                scroller.Offset = new Avalonia.Vector(offset.X + 340, offset.Y);
+            }
         }
     }
 }
