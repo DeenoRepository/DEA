@@ -37,6 +37,19 @@
         <SolidColorBrush x:Key="HeatmapRed"    Color="#EF5350" />
     </Window.Resources>
 
+    <Window.Styles>
+        <Style Selector="FlyoutPresenter.syncLogsFlyout">
+            <Setter Property="Width" Value="480" />
+            <Setter Property="Height" Value="320" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="MaxWidth" Value="500" />
+        </Style>
+    </Window.Styles>
+
     <Window.KeyBindings>
         <!-- F5 — refresh current page (Dashboard refreshes all KPIs/charts) -->
         <KeyBinding Gesture="F5" Command="{Binding Dashboard.RefreshDashboardCommand}" />
@@ -388,45 +401,38 @@
                                    VerticalAlignment="Center" />
                     </StackPanel>
                     <Button.Flyout>
-                        <Flyout Placement="TopEdgeAlignedRight">
-                            <Border Width="480" Height="320"
-                                    Padding="14"
-                                    Background="{DynamicResource CardBackground}"
-                                    CornerRadius="10"
-                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                    BorderThickness="1">
-                                <StackPanel Spacing="10">
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="Журнал событий синхронизации"
-                                                   FontWeight="SemiBold"
-                                                   FontSize="13"
-                                                   Foreground="{DynamicResource TextPrimary}" />
-                                        <TextBlock Text="Последние операции импорта, экспорта и работы с данными"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-                                    <ListBox ItemsSource="{Binding SyncLogs}"
-                                             MinHeight="120"
-                                             MaxHeight="320"
-                                             Background="{DynamicResource SurfaceAlt}"
-                                             BorderBrush="{DynamicResource ControlBorderBrush}"
-                                             BorderThickness="1"
-                                             CornerRadius="8"
-                                             ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}"
-                                                           FontSize="11"
-                                                           TextWrapping="Wrap"
-                                                           Foreground="{DynamicResource TextSecondary}"
-                                                           Padding="4,5" />
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
+                        <Flyout Placement="TopEdgeAlignedRight" FlyoutPresenterClasses="syncLogsFlyout">
+                            <StackPanel Spacing="10">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Журнал событий синхронизации"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                    <TextBlock Text="Последние операции импорта, экспорта и работы с данными"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               TextWrapping="Wrap" />
                                 </StackPanel>
-                            </Border>
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+                                <ListBox ItemsSource="{Binding SyncLogs}"
+                                         MinHeight="120"
+                                         MaxHeight="320"
+                                         Background="{DynamicResource SurfaceAlt}"
+                                         BorderBrush="{DynamicResource ControlBorderBrush}"
+                                         BorderThickness="1"
+                                         CornerRadius="8"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Padding="4,5" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
                         </Flyout>
                     </Button.Flyout>
                 </Button>
