@@ -236,7 +236,7 @@
 
                                 <!-- Empty state for heatmap -->
                                 <Border Classes="emptyState"
-                                        IsVisible="{Binding MonthRows, Converter={StaticResource IsEmptyConverter}}">
+                                        IsVisible="{Binding MonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
                                     <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
                                         <Border Width="44" Height="44" CornerRadius="12"
                                                 Background="{DynamicResource AccentSoftBackground}">
