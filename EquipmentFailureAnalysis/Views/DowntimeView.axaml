@@ -376,7 +376,7 @@
 
                                 <!-- Empty state overlay — shown when list is empty -->
                                 <Border Classes="emptyState"
-                                        IsVisible="{Binding DowntimeDayEquipmentRows, Converter={StaticResource IsEmptyConverter}}"
+                                        IsVisible="{Binding DowntimeDayEquipmentRows.Count, Converter={StaticResource IsEmptyConverter}}"
                                         Margin="0,50,0,0">
                                     <StackPanel Spacing="6" HorizontalAlignment="Center">
                                         <Border Width="36" Height="36" CornerRadius="10"

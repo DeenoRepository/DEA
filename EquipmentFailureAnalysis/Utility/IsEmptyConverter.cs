@@ -16,6 +16,7 @@ namespace EquipmentFailureAnalysis.Utility
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null) return true;
+            if (value is int count) return count == 0;
             if (value is string s) return string.IsNullOrEmpty(s);
             if (value is ICollection col) return col.Count == 0;
             if (value is IEnumerable enumerable)
