@@ -777,8 +777,14 @@ namespace EquipmentFailureAnalysis.ViewModels
         public int FaultsForDay
         {
             get => _faultsForDay;
-            set => this.RaiseAndSetIfChanged(ref _faultsForDay, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _faultsForDay, value);
+                this.RaisePropertyChanged(nameof(HasFaultsForDay));
+            }
         }
+
+        public bool HasFaultsForDay => FaultsForDay > 0;
 
         private string _downtimePercent = "0%";
         public string DowntimePercent
