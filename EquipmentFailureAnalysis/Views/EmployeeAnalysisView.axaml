@@ -67,13 +67,20 @@
                         </Grid>
 
                         <Border Classes="well" Padding="10">
-                            <views:TimelineControl Items="{Binding EmployeeTimelinePoints}"
-                                                   RepairsItems="{Binding EmployeeRepairsTimelinePoints}"
-                                                   SetupsItems="{Binding EmployeeSetupsTimelinePoints}"
-                                                   Annotations="{Binding EmployeeTimelineAnnotations}"
-                                                   Height="180" ShowHourLabels="True"
-                                                   ShowAnnotations="False" EnableTooltips="True"
-                                                   VerticalAlignment="Top" />
+                            <StackPanel Spacing="10">
+                                <views:TimelineControl Height="90" ShowHourLabels="False"
+                                                       RepairsItems="{Binding EmployeeRepairsTimelinePoints}"
+                                                       Annotations="{Binding EmployeeTimelineAnnotations}"
+                                                       ShowAnnotations="False" EnableTooltips="True"
+                                                       YAxisTopLabel="Ремонт"
+                                                       VerticalAlignment="Top" />
+                                <views:TimelineControl Height="130" ShowHourLabels="True"
+                                                       SetupsItems="{Binding EmployeeSetupsTimelinePoints}"
+                                                       Annotations="{Binding EmployeeTimelineAnnotations}"
+                                                       ShowAnnotations="False" EnableTooltips="True"
+                                                       YAxisTopLabel="Настройка"
+                                                       VerticalAlignment="Top" />
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
