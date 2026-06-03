@@ -202,13 +202,13 @@
                                               HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Background="Transparent"
-                                              Margin="40,4">
+                                              Width="1040"
+                                              HorizontalAlignment="Center">
                                     <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
                                                              MonthRows="{Binding DowntimeMonthRows}"
                                                              CellCommand="{Binding ShowDowntimeDayCommand}"
                                                              SelectedDate="{Binding DowntimeAnalysisDate, Mode=TwoWay}"
-                                                             ConverterMode="DowntimeAnalysis"
-                                                             Margin="4" />
+                                                             ConverterMode="DowntimeAnalysis" />
                                 </ScrollViewer>
 
                                 <!-- Carousel Scroll Left (Floating) -->

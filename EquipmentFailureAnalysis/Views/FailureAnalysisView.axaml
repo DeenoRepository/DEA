@@ -201,13 +201,13 @@
                                               HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Background="Transparent"
-                                              Margin="40,4">
+                                              Width="1040"
+                                              HorizontalAlignment="Center">
                                     <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
                                                              MonthRows="{Binding MonthRows}"
                                                              CellCommand="{Binding ShowDayTimelineCommand}"
                                                              SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
-                                                             ConverterMode="FailureAnalysis"
-                                                             Margin="4" />
+                                                             ConverterMode="FailureAnalysis" />
                                 </ScrollViewer>
 
                                 <!-- Carousel Scroll Left (Floating) -->
