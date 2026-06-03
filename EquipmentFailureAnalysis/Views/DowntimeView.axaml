@@ -202,7 +202,7 @@
                                               HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Background="Transparent"
-                                              Width="1040"
+                                              Width="1024"
                                               HorizontalAlignment="Center">
                                     <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
                                                              MonthRows="{Binding DowntimeMonthRows}"
