@@ -196,20 +196,8 @@
                         </Grid>
 
                         <Border Classes="well" Padding="0">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <!-- Carousel Scroll Left -->
-                                <Button Grid.Column="0"
-                                        Classes="ghost"
-                                        Width="32" Height="32"
-                                        VerticalAlignment="Center"
-                                        Margin="6,0"
-                                        Click="HeatmapScrollLeft_Click"
-                                        ToolTip.Tip="Предыдущие месяцы">
-                                    <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Button>
-
+                            <Grid>
                                 <ScrollViewer x:Name="FailureHeatmapScroller"
-                                              Grid.Column="1"
                                               HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Background="Transparent">
@@ -217,23 +205,36 @@
                                                              MonthRows="{Binding MonthRows}"
                                                              CellCommand="{Binding ShowDayTimelineCommand}"
                                                              SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
-                                                             ConverterMode="FailureAnalysis" />
+                                                             ConverterMode="FailureAnalysis"
+                                                             Margin="36,8" />
                                 </ScrollViewer>
 
-                                <!-- Carousel Scroll Right -->
-                                <Button Grid.Column="2"
-                                        Classes="ghost"
+                                <!-- Carousel Scroll Left (Floating) -->
+                                <Button Classes="soft"
                                         Width="32" Height="32"
+                                        HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        Margin="6,0"
+                                        Margin="8,0"
+                                        CornerRadius="16"
+                                        Click="HeatmapScrollLeft_Click"
+                                        ToolTip.Tip="Предыдущие месяцы">
+                                    <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+
+                                <!-- Carousel Scroll Right (Floating) -->
+                                <Button Classes="soft"
+                                        Width="32" Height="32"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0"
+                                        CornerRadius="16"
                                         Click="HeatmapScrollRight_Click"
                                         ToolTip.Tip="Следующие месяцы">
-                                    <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Button>
 
                                 <!-- Empty state for heatmap -->
-                                <Border Grid.ColumnSpan="3"
-                                        Classes="emptyState"
+                                <Border Classes="emptyState"
                                         IsVisible="{Binding MonthRows, Converter={StaticResource IsEmptyConverter}}">
                                     <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
                                         <Border Width="44" Height="44" CornerRadius="12"
