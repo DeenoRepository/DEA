@@ -54,7 +54,7 @@ namespace EquipmentFailureAnalysis.Views
             if (scroller != null)
             {
                 var offset = scroller.Offset;
-                scroller.Offset = new Avalonia.Vector(Math.Max(0, offset.X - 340), offset.Y);
+                scroller.Offset = new Avalonia.Vector(Math.Max(0, offset.X - 256), offset.Y);
             }
         }
 
@@ -64,7 +64,7 @@ namespace EquipmentFailureAnalysis.Views
             if (scroller != null)
             {
                 var offset = scroller.Offset;
-                scroller.Offset = new Avalonia.Vector(offset.X + 340, offset.Y);
+                scroller.Offset = new Avalonia.Vector(offset.X + 256, offset.Y);
             }
         }
     }

@@ -237,13 +237,26 @@ namespace EquipmentFailureAnalysis.ViewModels
         public void BuildHeatmap(IReadOnlyCollection<EquipmentInfo> sourceEquipment)
         {
             DowntimeMonthRows.Clear();
-            var today = DateTime.Today;
             var filteredEquipment = FilterDowntimeEquipmentByQuery(sourceEquipment);
 
-            // last 4 months: current + 3 previous
-            for (int offset = 3; offset >= 0; offset--)
+            var allIssues = filteredEquipment.SelectMany(eq => eq.Issues).ToList();
+            DateTime minDate = DateTime.Today.AddMonths(-3);
+            DateTime maxDate = DateTime.Today;
+
+            if (allIssues.Count > 0)
             {
-                var monthDate = today.AddMonths(-offset);
+                var earliest = allIssues.Min(i => i.Start);
+                var latest = allIssues.Max(i => i.Start);
+                if (earliest < minDate) minDate = earliest;
+                if (latest > maxDate) maxDate = latest;
+            }
+
+            var current = new DateTime(minDate.Year, minDate.Month, 1);
+            var endLimit = new DateTime(maxDate.Year, maxDate.Month, 1);
+
+            while (current <= endLimit)
+            {
+                var monthDate = current;
                 var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
                 var name = monthDate.ToString("MMMM yyyy");
                 if (!string.IsNullOrEmpty(name))
@@ -278,6 +291,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 }
 
                 DowntimeMonthRows.Add(monthRow);
+                current = current.AddMonths(1);
             }
             this.RaisePropertyChanged(nameof(DowntimeHeatmapYearLabel));
         }
