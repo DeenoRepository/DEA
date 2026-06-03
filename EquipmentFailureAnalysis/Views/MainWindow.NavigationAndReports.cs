@@ -123,7 +123,6 @@ namespace EquipmentFailureAnalysis.Views
             ApplyRightPanelStateForLayout("DowntimeLayoutRoot", "DowntimeRightColumn");
             ApplyRightPanelStateForLayout("ReportsLayoutRoot", "ReportsRightColumn");
             ApplyRightPanelStateForLayout("SettingsLayoutRoot", "SettingsRightColumn");
-            ApplyRightPanelStateForLayout("EmployeeAnalysisLayoutRoot", "EmployeeAnalysisRightColumn");
 
             var glyph = FindNestedControl<TextBlock>("RightPanelToggleGlyph");
             if (glyph != null)
@@ -615,7 +614,6 @@ namespace EquipmentFailureAnalysis.Views
                 AppPage.DowntimeAnalysis => "DowntimeRightColumn",
                 AppPage.Reports => "ReportsRightColumn",
                 AppPage.Settings => "SettingsRightColumn",
-                AppPage.EmployeeAnalysis => "EmployeeAnalysisRightColumn",
                 _ => null
             };
 
