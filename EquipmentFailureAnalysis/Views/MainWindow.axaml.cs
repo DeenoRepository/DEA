@@ -660,6 +660,7 @@ namespace EquipmentFailureAnalysis.Views
             HookSettingsPersistence();
             LoadJiraSettingsToUi();
             ConfigureJiraAutoImportLoop();
+            UpdatePageVisibility();
         }
 
         internal void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)
