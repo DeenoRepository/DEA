@@ -346,25 +346,25 @@
                             <StackPanel Spacing="10">
                                 <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
                                     <!-- Ремонты -->
-                                    <StackPanel Spacing="4">
+                                    <StackPanel Grid.Column="0" Spacing="4">
                                         <TextBlock Text="Ремонты" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
                                         <TextBlock Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" />
                                     </StackPanel>
 
                                     <!-- Настройки -->
-                                    <StackPanel Spacing="4">
+                                    <StackPanel Grid.Column="1" Spacing="4">
                                         <TextBlock Text="Настройки" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
                                         <TextBlock Text="{Binding SelectedDaySetups, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
                                     </StackPanel>
 
                                     <!-- Доля работы -->
-                                    <StackPanel Spacing="4">
+                                    <StackPanel Grid.Column="2" Spacing="4">
                                         <TextBlock Text="Доля работы" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
                                         <TextBlock Text="{Binding WorkPercent, StringFormat='{}{0:0.0}%'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource SuccessStrongBrush}" />
                                     </StackPanel>
 
                                     <!-- Ср. ремонт -->
-                                    <StackPanel Spacing="4">
+                                    <StackPanel Grid.Column="3" Spacing="4">
                                         <TextBlock Text="Ср. время ремонта" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
                                         <TextBlock Text="{Binding AvgRepairTime}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" />
                                     </StackPanel>
