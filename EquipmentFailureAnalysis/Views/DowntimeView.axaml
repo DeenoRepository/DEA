@@ -16,7 +16,7 @@
                       Grid.Column="0"
                       Margin="20,18,16,18"
                       HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Hidden">
             <StackPanel Spacing="14">
 
                 <!-- ============== PAGE HEADER ============== -->
