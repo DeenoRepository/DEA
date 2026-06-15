@@ -64,10 +64,15 @@
                                                     Width="26"
                                                     IsVisible="{Binding IsValid}"
                                                     CornerRadius="6"
-                                                    Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter={Binding ConverterMode, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     ToolTip.Tip="{Binding Index, StringFormat='Событий: {0}'}">
+                                                <Border.Background>
+                                                    <MultiBinding Converter="{StaticResource DayCellConverter}">
+                                                        <Binding Path="." />
+                                                        <Binding Path="ConverterMode" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.Background>
                                                 <Border.BorderBrush>
                                                     <MultiBinding Converter="{StaticResource SelectedBrushConverter}">
                                                         <Binding Path="Date" />
