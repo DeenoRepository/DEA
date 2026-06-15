@@ -48,7 +48,7 @@ namespace EquipmentFailureAnalysis.Views
 
                 scroller.GetObservable(Visual.BoundsProperty).Subscribe(_ =>
                 {
-                    TriggerScrollIfReady();
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
                 });
             }
         }
@@ -131,7 +131,7 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             _needsScrollToCurrentMonth = true;
-            TriggerScrollIfReady();
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -139,7 +139,7 @@ namespace EquipmentFailureAnalysis.Views
             base.OnPropertyChanged(change);
             if (change.Property == BoundsProperty)
             {
-                TriggerScrollIfReady();
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
             }
         }
 
