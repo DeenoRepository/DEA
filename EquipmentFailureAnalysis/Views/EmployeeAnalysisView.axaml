@@ -542,7 +542,7 @@
                                         <views:TimelineControl Height="54" ShowHourLabels="True"
                                                                RepairsItems="{Binding EmployeeRepairsTimelinePoints}"
                                                                SetupsItems="{Binding EmployeeSetupsTimelinePoints}"
-                                                               Annotations="{Binding EmployeeTimelineAnnotations}"
+                                                               Annotations="{Binding EmployeeTimelineAnnotations}" AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}"
                                                                ShowAnnotations="False" EnableTooltips="True"
                                                                VerticalAlignment="Top" />
                                     </Border>
