@@ -1,4 +1,4 @@
-﻿using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Models;
 using EquipmentFailureAnalysis.Utility;
 using System;
 using System.Collections.ObjectModel;
@@ -110,7 +110,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                     repairsIntervals.Add((sMin, eMin));
                 else if (issue.Type == IssueType.Настройка)
                     setupsIntervals.Add((sMin, eMin));
-                var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
+                var actualDuration = issue.End - issue.Start;
+                if (actualDuration < TimeSpan.Zero)
+                    actualDuration = TimeSpan.Zero;
+                var actHours = (int)actualDuration.TotalHours;
+                var formattedDuration = $"{actHours:00}:{actualDuration.Minutes:00}";
+
                 var desc = issue.Description ?? string.Empty;
                 var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
                 annList.Add(new Models.Annotation
@@ -120,9 +125,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                     EndHour = eMin / 60.0,
                     Description = desc,
                     Responsible = resp,
-                    StartDate = overlapStart,
-                    EndDate = overlapEnd,
-                    Duration = duration.ToString(@"hh\:mm"),
+                    StartDate = issue.Start,
+                    EndDate = issue.End,
+                    Duration = formattedDuration,
                     Type = issue.Type,
                     JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                     Reporter = issue.Reporter ?? string.Empty,

@@ -1219,7 +1219,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                         intervals.Add((sMin, eMin));
 
                         // add annotation at the start of the overlap
-                        var duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin));
+                        var actualDuration = issue.End - issue.Start;
+                        if (actualDuration < TimeSpan.Zero)
+                            actualDuration = TimeSpan.Zero;
+                        var actHours = (int)actualDuration.TotalHours;
+                        var formattedDuration = $"{actHours:00}:{actualDuration.Minutes:00}";
+
                         var desc = issue.Description ?? string.Empty;
                         var resp = string.IsNullOrEmpty(issue.Responsible) ? "-" : issue.Responsible;
                         dayAnnotations.Add(new Models.Annotation
@@ -1229,9 +1234,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                             EndHour = eMin / 60.0,
                             Description = desc,
                             Responsible = resp,
-                            StartDate = overlapStart,
-                            EndDate = overlapEnd,
-                            Duration = duration.ToString(@"hh\:mm"),
+                            StartDate = issue.Start,
+                            EndDate = issue.End,
+                            Duration = formattedDuration,
                             Type = issue.Type,
                             JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                             Reporter = issue.Reporter ?? string.Empty,

@@ -236,6 +236,12 @@ namespace EquipmentFailureAnalysis.ViewModels
                 else if (issue.Type == IssueType.Настройка)
                     setupsIntervals.Add((sMin, eMin));
 
+                var actualDuration = issue.End - issue.Start;
+                if (actualDuration < TimeSpan.Zero)
+                    actualDuration = TimeSpan.Zero;
+                var actHours = (int)actualDuration.TotalHours;
+                var formattedDuration = $"{actHours:00}:{actualDuration.Minutes:00}";
+
                 annotations.Add(new Models.Annotation
                 {
                     Hour = sMin / 60.0,
@@ -243,9 +249,9 @@ namespace EquipmentFailureAnalysis.ViewModels
                     EndHour = eMin / 60.0,
                     Description = issue.Description ?? string.Empty,
                     Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "-" : issue.Responsible,
-                    StartDate = overlapStart,
-                    EndDate = overlapEnd,
-                    Duration = TimeSpan.FromMinutes(Math.Max(0, eMin - sMin)).ToString(@"hh\:mm"),
+                    StartDate = issue.Start,
+                    EndDate = issue.End,
+                    Duration = formattedDuration,
                     Type = issue.Type,
                     JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
                     Reporter = issue.Reporter ?? string.Empty,
