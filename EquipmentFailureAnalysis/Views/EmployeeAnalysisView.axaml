@@ -522,7 +522,7 @@
                                                    FontSize="11" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource TextMuted}"
                                                    VerticalAlignment="Center" Margin="0,0,8,0" />
-                                        <Button Grid.Column="4" Classes="dateShift" Content="◀"
+                                        <Button Grid.Column="4" Classes="dateShift" Content="&#xE76B;"
                                                 Margin="0,0,4,0"
                                                 Click="EmployeeTimelinePrevDate_Click" />
                                         <CalendarDatePicker Grid.Column="5" Width="150"
@@ -530,7 +530,7 @@
                                                             Margin="0,0,4,0"
                                                             HorizontalAlignment="Stretch"
                                                             SelectedDate="{Binding EmployeeTimelineDate, Mode=TwoWay}" />
-                                        <Button Grid.Column="6" Classes="dateShift" Content="▶"
+                                        <Button Grid.Column="6" Classes="dateShift" Content="&#xE76C;"
                                                 Margin="0,0,8,0"
                                                 Click="EmployeeTimelineNextDate_Click" />
                                         <Button Grid.Column="7" Classes="soft" Padding="10,3" FontSize="10"
