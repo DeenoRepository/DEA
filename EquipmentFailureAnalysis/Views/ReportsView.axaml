@@ -10,11 +10,9 @@
              CENTER COLUMN — Report configurator
              ==================================================== -->
         <ScrollViewer x:Name="ReportsCenterColumn"
-                        Margin="24,20,24,20"
+                        Margin="20,18,20,18"
                         HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto"
-                        MaxWidth="1000"
-                        HorizontalAlignment="Center">
+                        VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
 
                 <!-- ============== PAGE HEADER ============== -->
