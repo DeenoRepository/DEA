@@ -347,6 +347,9 @@
             <Setter Property="Background" Value="#312E81" />
             <Setter Property="BorderBrush" Value="#6366F1" />
         </Style>
+        <Style Selector="Button.headerIcon TextBlock">
+            <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+        </Style>
 
 
         <!-- Date shift button (◀ ▶) -->
