@@ -6,19 +6,15 @@
              x:DataType="vm:ReportsViewModel">
 
     <Grid x:Name="ReportsLayoutRoot">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" />
-            <ColumnDefinition Width="*" MinWidth="320" MaxWidth="440" />
-        </Grid.ColumnDefinitions>
-
         <!-- ====================================================
              CENTER COLUMN — Report configurator
              ==================================================== -->
         <ScrollViewer x:Name="ReportsCenterColumn"
-                       Grid.Column="0"
-                       Margin="24,20,18,20"
-                       HorizontalScrollBarVisibility="Disabled"
-                       VerticalScrollBarVisibility="Auto">
+                        Margin="24,20,24,20"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        MaxWidth="900"
+                        HorizontalAlignment="Center">
             <StackPanel Spacing="16">
 
                 <!-- ============== PAGE HEADER ============== -->
@@ -341,180 +337,5 @@
                 </Border>
             </StackPanel>
         </ScrollViewer>
-
-        <!-- ====================================================
-             RIGHT COLUMN — PreviewCOVER & summary statistics
-             ==================================================== -->
-        <Grid x:Name="ReportsRightColumn" Grid.Column="1"
-              MinWidth="300" MaxWidth="440" HorizontalAlignment="Stretch">
-            <Border Background="{DynamicResource CardBackground}"
-                    BorderBrush="{DynamicResource BorderSubtleBrush}"
-                    BorderThickness="1,0,0,0"
-                    Padding="20">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Spacing="16">
-
-                        <!-- Section header -->
-                        <StackPanel Spacing="3">
-                            <TextBlock Classes="eyebrow" Text="ИТОГИ ПЕРИОДА (ОБЗОР)" />
-                            <TextBlock Text="Ключевые показатели" Classes="sectionTitle" />
-                            <TextBlock Text="Показатели эффективности и надежности за выбранный период"
-                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
-                        </StackPanel>
-                        
-                        <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-
-                        <!-- KPI summary layout -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <!-- Active Employees -->
-                            <Border Grid.Column="0" Classes="kpi" ToolTip.Tip="Количество сотрудников, участвовавших в инцидентах за выбранный диапазон дат.">
-                                <StackPanel Spacing="8">
-                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <Border Width="22" Height="22" CornerRadius="6"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Активные" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DashboardCurrentPeriodActiveEmployees, StringFormat='{}{0} чел.'}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Avg Duration -->
-                            <Border Grid.Column="1" Classes="kpi" ToolTip.Tip="Средняя длительность одного инцидента в системе.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общее время событий / Количество событий">
-                                <StackPanel Spacing="8">
-                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <Border Width="22" Height="22" CornerRadius="6"
-                                                Background="{DynamicResource InfoSoftBackground}">
-                                            <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource InfoBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Ср. время" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DashboardCurrentPeriodAvgDuration}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <!-- Risk equipment card with soft design and left-accent border -->
-                        <Border Background="{DynamicResource DangerSoftBackground}"
-                                BorderBrush="{DynamicResource DangerSoftBorder}"
-                                BorderThickness="4,1,1,1" CornerRadius="10" Padding="14">
-                            <StackPanel Spacing="6">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Border Width="22" Height="22" CornerRadius="6"
-                                            Background="{DynamicResource DangerBrush}">
-                                        <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets"
-                                                   FontSize="11"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="Оборудование риска" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource DangerBrush}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                                <TextBlock Text="{Binding DashboardRiskEquipment}" FontSize="13" FontWeight="Bold"
-                                           Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding DashboardRiskEquipmentValue}" FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}" />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Top performer card with soft design and left-accent border -->
-                        <Border Background="{DynamicResource SuccessSoftBackground}"
-                                BorderBrush="{DynamicResource SuccessSoftBorder}"
-                                BorderThickness="4,1,1,1" CornerRadius="10" Padding="14">
-                            <StackPanel Spacing="6">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Border Width="22" Height="22" CornerRadius="6"
-                                            Background="{DynamicResource SuccessBrush}">
-                                        <TextBlock Text="&#xEA86;" FontFamily="Segoe MDL2 Assets"
-                                                   FontSize="11"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="Лидер по эффективности" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource SuccessBrush}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                                <TextBlock Text="{Binding DashboardTopPerformer}" FontSize="13" FontWeight="Bold"
-                                           Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding DashboardTopPerformerValue}" FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}" />
-                            </StackPanel>
-                        </Border>
-                        
-                        <!-- Configuration Summary Widget (Live Preview) -->
-                        <Border Classes="panel" Padding="14">
-                            <StackPanel Spacing="10">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Border Width="22" Height="22" CornerRadius="6"
-                                            Background="{DynamicResource AccentSoftBackground}">
-                                        <TextBlock Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource AccentBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="Статус конфигурации" FontSize="12" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextPrimary}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                                
-                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-                                
-                                <StackPanel Spacing="8">
-                                    <!-- Period -->
-                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                        <TextBlock Text="Период отчета:" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                            <TextBlock Text="{Binding ReportStartDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-                                            <TextBlock Text="—" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Text="{Binding ReportEndDate, StringFormat='{}{0:dd.MM.yyyy}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-                                        </StackPanel>
-                                    </Grid>
-                                    
-                                    <!-- Grouping -->
-                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                        <TextBlock Text="Группировка:" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ReportGroupByRussian}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-                                    </Grid>
-                                    
-                                    <!-- Modules -->
-                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                        <TextBlock Text="Разделы отчета:" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ActiveModulesSummary}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" MaxWidth="160" TextTrimming="CharacterEllipsis"/>
-                                    </Grid>
-                                    
-                                    <!-- Columns -->
-                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                        <TextBlock Text="Полей таблицы:" FontSize="11" Foreground="{DynamicResource TextMuted}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ActiveColumnsCountSummary}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
-                                    </Grid>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-        </Grid>
     </Grid>
 </UserControl>
