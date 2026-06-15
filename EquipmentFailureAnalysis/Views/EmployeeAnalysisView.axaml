@@ -283,7 +283,7 @@
                             <!-- ============== BREAKDOWN WIDGETS ============== -->
                             <Grid ColumnDefinitions="1.2*,*,*" ColumnSpacing="12">
                                 <!-- Структура событий -->
-                                <Border Grid.Column="0" Classes="well">
+                                <Border Grid.Column="0" Classes="panel">
                                     <StackPanel Spacing="10">
                                         <TextBlock Text="Структура событий" Classes="cardTitle" />
                                         <Grid ColumnDefinitions="100,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="10">
@@ -293,6 +293,7 @@
                                             <ProgressBar Grid.Row="0" Grid.Column="1" Minimum="0"
                                                          Maximum="{Binding EmployeeTotalIssues}"
                                                          Value="{Binding EmployeeRepairsTotal}"
+                                                         Foreground="{DynamicResource DangerBrush}"
                                                          VerticalAlignment="Center" />
                                             <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding EmployeeRepairsTotal}"
                                                        FontSize="11" FontWeight="SemiBold"
@@ -305,6 +306,7 @@
                                             <ProgressBar Grid.Row="1" Grid.Column="1" Minimum="0"
                                                          Maximum="{Binding EmployeeTotalIssues}"
                                                          Value="{Binding EmployeeSetupsTotal}"
+                                                         Foreground="{DynamicResource WarningBrush}"
                                                          VerticalAlignment="Center" />
                                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding EmployeeSetupsTotal}"
                                                        FontSize="11" FontWeight="SemiBold"
@@ -315,7 +317,7 @@
                                 </Border>
 
                                 <!-- Лидер по событиям -->
-                                <Border Grid.Column="1" Classes="well">
+                                <Border Grid.Column="1" Classes="panel">
                                     <StackPanel Spacing="8">
                                         <TextBlock Text="Лидер по числу событий" Classes="cardTitle" />
                                         <TextBlock Text="{Binding EmployeeTopByIssues}" FontSize="13" FontWeight="Bold"
@@ -326,7 +328,7 @@
                                 </Border>
 
                                 <!-- Максимальная занятость -->
-                                <Border Grid.Column="2" Classes="well">
+                                <Border Grid.Column="2" Classes="panel">
                                     <StackPanel Spacing="8">
                                         <TextBlock Text="Максимальная занятость" Classes="cardTitle" />
                                         <TextBlock Text="{Binding EmployeeTopByDuration}" FontSize="13" FontWeight="Bold"

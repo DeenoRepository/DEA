@@ -394,7 +394,7 @@
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" Margin="0,2,0,0">
                                     <!-- ProgressBar for WorkPercent -->
                                     <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                                        <ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="6" CornerRadius="3" />
+                                        <ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="6" CornerRadius="3" Foreground="{DynamicResource SuccessBrush}" />
                                     </StackPanel>
                                     
                                     <!-- 30-Day Totals -->
