@@ -201,7 +201,7 @@
                             <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
 
                             <Border Classes="well" Padding="0">
-                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Center">
+                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
                                     <Button x:Name="FailureHeatmapScrollLeftButton"
                                             Grid.Column="0"
                                             Classes="soft"
@@ -221,7 +221,7 @@
                                                   HorizontalScrollBarVisibility="Hidden"
                                                   VerticalScrollBarVisibility="Disabled"
                                                   Background="Transparent"
-                                                  HorizontalAlignment="Stretch"
+                                                  HorizontalAlignment="Center"
                                                   ClipToBounds="True">
                                         <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
                                                                  MonthRows="{Binding MonthRows}"

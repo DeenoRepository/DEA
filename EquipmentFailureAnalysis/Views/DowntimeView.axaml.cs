@@ -113,7 +113,36 @@ namespace EquipmentFailureAnalysis.Views
         private void TriggerScrollIfReady()
         {
             var scroller = this.FindControl<ScrollViewer>("DowntimeHeatmapScroller");
-            if (scroller == null || scroller.Bounds.Width <= 0)
+            if (scroller == null)
+                return;
+
+            Border? wellBorder = null;
+            var parent = scroller.Parent;
+            while (parent != null)
+            {
+                if (parent is Border b && b.Classes.Contains("well"))
+                {
+                    wellBorder = b;
+                    break;
+                }
+                parent = parent.Parent;
+            }
+
+            if (wellBorder != null && wellBorder.Bounds.Width > 0)
+            {
+                double wellWidth = wellBorder.Bounds.Width;
+                double availableWidthForScroller = wellWidth - 96.0;
+                int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
+                int targetCount = Math.Max(1, maxFits);
+                double targetWidth = targetCount * 256.0;
+                if (Math.Abs(scroller.Width - targetWidth) > 0.001)
+                {
+                    scroller.Width = targetWidth;
+                    return;
+                }
+            }
+
+            if (scroller.Bounds.Width <= 0)
                 return;
 
             var leftBtn = this.FindControl<Button>("DowntimeHeatmapScrollLeftButton");

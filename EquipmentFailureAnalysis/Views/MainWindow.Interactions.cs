@@ -201,13 +201,13 @@ namespace EquipmentFailureAnalysis.Views
                             double wellWidth = wellBorder.Bounds.Width;
                             double availableWidthForScroller = wellWidth - 96.0;
                             int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
-                            int targetCount = Math.Max(1, maxFits - 1);
+                            int targetCount = Math.Max(1, maxFits);
                             double targetWidth = targetCount * 256.0;
                             failureScroller.Width = targetWidth;
                         }
                     }
 
-                    // Dynamically adjust width for DowntimeHeatmapScroller (always show 1 calendar less than fits)
+                    // Dynamically adjust width for DowntimeHeatmapScroller
                     var downtimeScroller = FindNestedControl<ScrollViewer>("DowntimeHeatmapScroller");
                     if (downtimeScroller != null)
                     {
@@ -228,7 +228,7 @@ namespace EquipmentFailureAnalysis.Views
                             double wellWidth = wellBorder.Bounds.Width;
                             double availableWidthForScroller = wellWidth - 96.0;
                             int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
-                            int targetCount = Math.Max(1, maxFits - 1);
+                            int targetCount = Math.Max(1, maxFits);
                             double targetWidth = targetCount * 256.0;
                             downtimeScroller.Width = targetWidth;
                         }
