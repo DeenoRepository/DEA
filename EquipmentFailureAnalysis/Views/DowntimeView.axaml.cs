@@ -38,7 +38,7 @@ namespace EquipmentFailureAnalysis.Views
                             int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
                             int targetCount = Math.Max(1, maxFits);
                             double targetWidth = targetCount * 256.0;
-                            if (Math.Abs(scroller.Width - targetWidth) > 0.001)
+                            if (double.IsNaN(scroller.Width) || Math.Abs(scroller.Width - targetWidth) > 0.001)
                             {
                                 scroller.Width = targetWidth;
                             }
