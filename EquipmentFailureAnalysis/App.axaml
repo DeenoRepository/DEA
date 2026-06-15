@@ -27,6 +27,7 @@
             <utility:IsEmptyConverter x:Key="IsEmptyConverter" />
             <utility:InvertBoolConverter x:Key="InvertBoolConverter" />
             <utility:HeatmapMidValueConverter x:Key="HeatmapMidValueConverter" />
+            <utility:EqualityToBoolConverter x:Key="EqualityToBoolConverter" />
 
             <!--
                 ============================================================

@@ -61,5 +61,22 @@ namespace EquipmentFailureAnalysis.Tests
             Assert.Equal(50.0, row.SlaCompliancePercent);
             Assert.Equal(1.0, row.EquipmentCount); // 1 unique equipment
         }
+
+        [Theory]
+        [InlineData(79.9, true, false, false)]
+        [InlineData(80.0, false, true, false)]
+        [InlineData(94.9, false, true, false)]
+        [InlineData(95.0, false, false, true)]
+        public void EmployeeAnalysisRow_SlaStatusFlags_ShouldBeCorrect(
+            double compliance, bool expectedDanger, bool expectedWarning, bool expectedSuccess)
+        {
+            // Arrange
+            var row = new EmployeeAnalysisRow { SlaCompliancePercent = compliance };
+
+            // Act & Assert
+            Assert.Equal(expectedDanger, row.IsSlaDanger);
+            Assert.Equal(expectedWarning, row.IsSlaWarning);
+            Assert.Equal(expectedSuccess, row.IsSlaSuccess);
+        }
     }
 }

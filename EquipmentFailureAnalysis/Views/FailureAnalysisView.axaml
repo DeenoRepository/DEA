@@ -131,166 +131,173 @@
                 </Border>
 
                 <!-- ============== HEATMAP CARD ============== -->
-                <Border Classes="panel">
-                    <StackPanel Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="Карта тепла" Classes="sectionTitle" />
-                                <TextBlock Text="Ежедневная интенсивность неисправностей по месяцам"
-                                           Classes="sectionSubtitle" />
-                            </StackPanel>
-                            <Button Grid.Column="1"
-                                    Classes="smallIcon"
-                                    ToolTip.Tip="Настройки градации"
-                                    Click="FailureHeatmapSettingsButton_Click">
-                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
-                                           FontSize="13"
-                                           Foreground="{DynamicResource TextSecondary}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                                <Button.Flyout>
-                                    <Flyout Placement="BottomEdgeAlignedRight">
-                                        <Border Background="{DynamicResource CardBackground}"
-                                                BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="10" Padding="14">
-                                            <StackPanel Spacing="10" MinWidth="320" MaxWidth="360">
-                                                <StackPanel Spacing="2">
-                                                    <TextBlock Text="Настройки градации карты"
-                                                               FontSize="13" FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource TextPrimary}" />
-                                                    <TextBlock Text="Диапазон значений для карты неисправностей"
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource TextMuted}"
-                                                               TextWrapping="Wrap" />
+                <Border Classes="panel" Padding="0">
+                    <Expander IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Expander.Header>
+                            <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Stretch">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Карта тепла" Classes="sectionTitle" />
+                                    <TextBlock Text="Ежедневная интенсивность неисправностей по месяцам"
+                                               Classes="sectionSubtitle" />
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Classes="smallIcon"
+                                        ToolTip.Tip="Настройки градации"
+                                        Click="FailureHeatmapSettingsButton_Click"
+                                        Margin="0,0,16,0">
+                                    <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedRight">
+                                            <Border Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10" Padding="14">
+                                                <StackPanel Spacing="10" MinWidth="320" MaxWidth="360">
+                                                    <StackPanel Spacing="2">
+                                                        <TextBlock Text="Настройки градации карты"
+                                                                   FontSize="13" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextPrimary}" />
+                                                        <TextBlock Text="Диапазон значений для карты неисправностей"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource TextMuted}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto"
+                                                          ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding HeatmapColorMin, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding HeatmapColorMax, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
                                                 </StackPanel>
-                                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-                                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto"
-                                                      ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум"
-                                                               FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                               VerticalAlignment="Center" />
-                                                    <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
-                                                                   Increment="1" FormatString="F0"
-                                                                   Value="{Binding HeatmapColorMin, Mode=TwoWay}"
-                                                                   HorizontalAlignment="Stretch" />
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
-                                                               FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                               VerticalAlignment="Center" />
-                                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
-                                                                   Increment="1" FormatString="F0"
-                                                                   Value="{Binding HeatmapColorMax, Mode=TwoWay}"
-                                                                   HorizontalAlignment="Stretch" />
-                                                </Grid>
-                                            </StackPanel>
-                                        </Border>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                        </Grid>
-
-                        <Border Classes="well" Padding="0">
-                            <Grid>
-                                <ScrollViewer x:Name="FailureHeatmapScroller"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Disabled"
-                                              Background="Transparent"
-                                              Width="1024"
-                                              HorizontalAlignment="Center">
-                                    <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
-                                                             MonthRows="{Binding MonthRows}"
-                                                             CellCommand="{Binding ShowDayTimelineCommand}"
-                                                             SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
-                                                             ConverterMode="FailureAnalysis" />
-                                </ScrollViewer>
-
-                                <!-- Carousel Scroll Left (Floating) -->
-                                <Button Classes="soft"
-                                        Width="32" Height="32"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Margin="8,0"
-                                        CornerRadius="16"
-                                        Click="HeatmapScrollLeft_Click"
-                                        ToolTip.Tip="Предыдущие месяцы">
-                                    <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Flyout>
+                                    </Button.Flyout>
                                 </Button>
-
-                                <!-- Carousel Scroll Right (Floating) -->
-                                <Button Classes="soft"
-                                        Width="32" Height="32"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Margin="8,0"
-                                        CornerRadius="16"
-                                        Click="HeatmapScrollRight_Click"
-                                        ToolTip.Tip="Следующие месяцы">
-                                    <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Button>
-
-                                <!-- Empty state for heatmap -->
-                                <Border Classes="emptyState"
-                                        IsVisible="{Binding MonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
-                                    <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
-                                        <Border Width="44" Height="44" CornerRadius="12"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="22"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Classes="emptyStateTitle" Text="Нет данных для отображения"
-                                                   HorizontalAlignment="Center" />
-                                        <TextBlock Classes="emptyStateSubtitle"
-                                                   Text="Импортируйте данные из XML или Jira, чтобы увидеть карту неисправностей"
-                                                   HorizontalAlignment="Center" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Border>
                             </Grid>
-                        </Border>
+                        </Expander.Header>
 
-                        <!-- Legend (reactive to HeatmapColorMin/Max) -->
-                        <StackPanel Orientation="Horizontal" Spacing="14" Margin="2,2,0,0">
-                            <TextBlock Text="Градация:" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" />
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
-                                <TextBlock Text="{Binding HeatmapColorMin, StringFormat='до {0}'}"
-                                           FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                        <StackPanel Spacing="12" Margin="0,8,0,0">
+                            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                            <Border Classes="well" Padding="0">
+                                <Grid>
+                                    <ScrollViewer x:Name="FailureHeatmapScroller"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Background="Transparent"
+                                                  Width="1024"
+                                                  HorizontalAlignment="Center">
+                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                                 MonthRows="{Binding MonthRows}"
+                                                                 CellCommand="{Binding ShowDayTimelineCommand}"
+                                                                 SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
+                                                                 ConverterMode="FailureAnalysis" />
+                                    </ScrollViewer>
+
+                                    <!-- Carousel Scroll Left (Floating) -->
+                                    <Button Classes="soft"
+                                            Width="32" Height="32"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollLeft_Click"
+                                            ToolTip.Tip="Предыдущие месяцы">
+                                        <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Carousel Scroll Right (Floating) -->
+                                    <Button Classes="soft"
+                                            Width="32" Height="32"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollRight_Click"
+                                            ToolTip.Tip="Следующие месяцы">
+                                        <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Empty state for heatmap -->
+                                    <Border Classes="emptyState"
+                                            IsVisible="{Binding MonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
+                                            <Border Width="44" Height="44" CornerRadius="12"
+                                                    Background="{DynamicResource AccentSoftBackground}">
+                                                <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="22"
+                                                           Foreground="{DynamicResource AccentForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Classes="emptyStateTitle" Text="Нет данных для отображения"
+                                                       HorizontalAlignment="Center" />
+                                            <TextBlock Classes="emptyStateSubtitle"
+                                                       Text="Импортируйте данные из XML или Jira, чтобы увидеть карту неисправностей"
+                                                       HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Legend (reactive to HeatmapColorMin/Max) -->
+                            <StackPanel Orientation="Horizontal" Spacing="14" Margin="2,2,0,0">
+                                <TextBlock Text="Градация:" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
                                            VerticalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapYellow}" CornerRadius="4" />
-                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="HeatmapColorMin" />
-                                            <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapOrange}" CornerRadius="4" />
-                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
-                                            <Binding Path="HeatmapColorMax" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
-                                <TextBlock Text="{Binding HeatmapColorMax, StringFormat='от {0}'}"
-                                           FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                                           VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding HeatmapColorMin, StringFormat='до {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapYellow}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="HeatmapColorMin" />
+                                                <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapOrange}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                                <Binding Path="HeatmapColorMax" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding HeatmapColorMax, StringFormat='от {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Expander>
                 </Border>
 
                 <!-- ============== SELECTED EQUIPMENT & DAY SUMMARY DASHBOARD ============== -->
@@ -433,20 +440,12 @@
 
                         <Border Classes="well" Padding="10">
                             <Grid>
-                                <StackPanel Spacing="10">
-                                    <views:TimelineControl Height="90" ShowHourLabels="False"
-                                                           RepairsItems="{Binding RepairsTimelinePoints}"
-                                                           Annotations="{Binding Annotations}"
-                                                           AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}"
-                                                           YAxisTopLabel="Ремонт"
-                                                           VerticalAlignment="Top" />
-                                    <views:TimelineControl Height="130" ShowHourLabels="True"
-                                                           SetupsItems="{Binding SetupsTimelinePoints}"
-                                                           Annotations="{Binding Annotations}"
-                                                           AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}"
-                                                           YAxisTopLabel="Настройка"
-                                                           VerticalAlignment="Top" />
-                                </StackPanel>
+                                 <views:TimelineControl Height="54" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True"
+                                                       RepairsItems="{Binding RepairsTimelinePoints}"
+                                                       SetupsItems="{Binding SetupsTimelinePoints}"
+                                                       Annotations="{Binding Annotations}"
+                                                       AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}"
+                                                       VerticalAlignment="Top" />
 
                                 <Border HorizontalAlignment="Right" VerticalAlignment="Top"
                                         Margin="0,8,8,0"
@@ -462,6 +461,127 @@
                                             <Border Width="14" Height="3" Background="{DynamicResource LegendSetupBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Настройка" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
                                         </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== DAILY EVENTS LIST CARD ============== -->
+                <Border Classes="panel" IsVisible="{Binding HasFaultsForDay}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Список событий за день" Classes="sectionTitle" />
+                            <TextBlock Text="Все зарегистрированные инциденты и настройки по оборудованию за выбранную дату" Classes="sectionSubtitle" />
+                        </StackPanel>
+
+                        <Border Classes="well" Padding="0">
+                            <Grid>
+                                <StackPanel>
+                                    <!-- Sticky header row -->
+                                    <Border Background="{DynamicResource SurfaceBrush}"
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                            BorderThickness="0,0,0,1"
+                                            CornerRadius="10,10,0,0"
+                                            Padding="14,10">
+                                        <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Тип" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="1" Text="Код Jira" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="2" Text="Интервал" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="3" Text="Описание" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="4" Text="Длительность" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                    </Border>
+
+                                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                        <ItemsControl ItemsSource="{Binding Annotations}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Classes="employeeEventRow"
+                                                            BorderBrush="{DynamicResource RowDividerBrush}"
+                                                            BorderThickness="0,0,0,1"
+                                                            Padding="14,10"
+                                                            PointerPressed="FailureEventRow_PointerPressed">
+                                                        <Border.Tag>
+                                                            <MultiBinding Converter="{StaticResource EqualityToBoolConverter}">
+                                                                <Binding />
+                                                                <Binding Path="DataContext.SelectedTimelineAnnotation" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                            </MultiBinding>
+                                                        </Border.Tag>
+                                                        <Border.Styles>
+                                                            <!-- Style for event row hover state -->
+                                                            <Style Selector="Border.employeeEventRow">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Setter Property="Cursor" Value="Hand" />
+                                                            </Style>
+                                                            <Style Selector="Border.employeeEventRow:pointerover">
+                                                                <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+                                                            </Style>
+                                                            <!-- Style for selected state -->
+                                                            <Style Selector="Border.employeeEventRow[Tag=True]">
+                                                                <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                                <Setter Property="BorderThickness" Value="4,0,0,1" />
+                                                                <Setter Property="Padding" Value="10,10,14,10" />
+                                                            </Style>
+                                                            <Style Selector="Border.employeeEventRow[Tag=True]:pointerover">
+                                                                <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                            </Style>
+                                                        </Border.Styles>
+                                                        <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                                            <!-- Column 0: Type Badge -->
+                                                            <Border Grid.Column="0" HorizontalAlignment="Left" Padding="6,2" CornerRadius="4" BorderThickness="1"
+                                                                    Classes.repair-badge="{Binding IsRepair}"
+                                                                    Classes.setup-badge="{Binding IsSetup}">
+                                                                <Border.Styles>
+                                                                    <Style Selector="Border.repair-badge">
+                                                                        <Setter Property="Background" Value="{DynamicResource DangerSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource DangerSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.repair-badge TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.setup-badge">
+                                                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource WarningSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.setup-badge TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                    </Style>
+                                                                </Border.Styles>
+                                                                <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" />
+                                                            </Border>
+
+                                                            <!-- Column 1: Jira code -->
+                                                            <TextBlock Grid.Column="1" Text="{Binding JiraIssueKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+
+                                                            <!-- Column 2: Time Interval -->
+                                                            <TextBlock Grid.Column="2" Text="{Binding TimeInterval}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+
+                                                            <!-- Column 3: Description -->
+                                                            <TextBlock Grid.Column="3" Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxLines="1" />
+
+                                                            <!-- Column 4: Duration -->
+                                                            <TextBlock Grid.Column="4" Text="{Binding Duration}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                            
+                                                            <!-- Column 5: Chevron -->
+                                                            <TextBlock Grid.Column="5" Text="&#xE76C;" Classes="rowChevron" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </StackPanel>
+
+                                <!-- Empty state overlay if no events for day -->
+                                <Border Classes="emptyState"
+                                        IsVisible="{Binding Annotations, Converter={StaticResource IsEmptyConverter}}"
+                                        Margin="0,40,0,0">
+                                    <StackPanel Spacing="6" HorizontalAlignment="Center" MaxWidth="320">
+                                        <TextBlock Classes="emptyStateTitle" Text="События не найдены" HorizontalAlignment="Center" />
+                                        <TextBlock Classes="emptyStateSubtitle" Text="На выбранную дату по оборудованию нет зарегистрированных событий." HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -501,125 +621,118 @@
                         </Border>
 
                         <!-- Event details body — shown only when a timeline event has data -->
-                        <Border Classes="well" IsVisible="{Binding SelectedTimelineHasData}" Padding="14">
-                            <StackPanel Spacing="12">
-                                <!-- Группа: Основное -->
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="ОСНОВНЫЕ СВЕДЕНИЯ" Classes="eyebrow" />
+                        <Border Classes="well detailsPanel"
+                                Classes.repair-border="{Binding IsSelectedTimelineRepair}"
+                                Classes.setup-border="{Binding IsSelectedTimelineSetup}"
+                                IsVisible="{Binding SelectedTimelineHasData}"
+                                BorderThickness="4,0,0,0" Padding="16">
+                            <Border.Styles>
+                                <Style Selector="Border.detailsPanel">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+                                </Style>
+                                <Style Selector="Border.repair-border">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+                                </Style>
+                                <Style Selector="Border.setup-border">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+                                </Style>
+                            </Border.Styles>
 
-                                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Тип события"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-                                            <Border Classes="badge badge-danger"
-                                                    Classes.badge-danger="{Binding IsSelectedTimelineRepair}"
-                                                    Classes.badge-warning="{Binding IsSelectedTimelineSetup}"
-                                                    Classes.badge-info="{Binding !SelectedTimelineHasData}"
-                                                    IsVisible="{Binding SelectedTimelineHasData}">
-                                                <TextBlock Text="{Binding SelectedTimelineType}" />
-                                            </Border>
+                            <StackPanel Spacing="14">
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <!-- Column 0: Сведения -->
+                                    <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,16,0">
+                                        <TextBlock Text="ОСНОВНЫЕ СВЕДЕНИЯ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Тип события" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <Border Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="badge badge-danger"
+                                                        Classes.badge-danger="{Binding IsSelectedTimelineRepair}"
+                                                        Classes.badge-warning="{Binding IsSelectedTimelineSetup}"
+                                                        Classes.badge-info="{Binding !SelectedTimelineHasData}">
+                                                    <TextBlock Text="{Binding SelectedTimelineType}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Статус" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <Border Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="badge badge-warning"
+                                                        Classes.badge-warning="{Binding IsSelectedTimelineInProgress}"
+                                                        Classes.badge-success="{Binding IsSelectedTimelineCompleted}">
+                                                    <TextBlock Text="{Binding SelectedTimelineStatus}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Код Jira" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding SelectedTimelineJiraKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                                    <Button Classes="smallIcon" Width="22" Height="22" Padding="0"
+                                                            ToolTip.Tip="Скопировать ключ задачи"
+                                                            Click="CopyJiraKeyButton_Click"
+                                                            Background="Transparent" BorderThickness="0">
+                                                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
                                         </StackPanel>
+                                    </StackPanel>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Статус"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                                            <Border Classes="badge badge-warning"
-                                                    Classes.badge-warning="{Binding IsSelectedTimelineInProgress}"
-                                                    Classes.badge-success="{Binding IsSelectedTimelineCompleted}"
-                                                    IsVisible="{Binding SelectedTimelineHasData}">
-                                                <TextBlock Text="{Binding SelectedTimelineStatus}" />
-                                            </Border>
+                                    <!-- Column 1: Временные показатели -->
+                                    <StackPanel Grid.Column="1" Spacing="10" Margin="0,0,16,0">
+                                        <TextBlock Text="ВРЕМЕННЫЕ ПОКАЗАТЕЛИ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Начало" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineStart}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Завершение" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineEnd}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Длительность" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineDuration}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" VerticalAlignment="Center" />
+                                            </Grid>
                                         </StackPanel>
+                                    </StackPanel>
 
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Код Jira"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto">
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding SelectedTimelineJiraKey}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextPrimary}"
-                                                       VerticalAlignment="Center" />
-                                            <Button Grid.Column="1"
-                                                    Classes="smallIcon" Width="26" Height="26" Padding="0" Margin="4,0,0,0"
-                                                    ToolTip.Tip="Скопировать ключ задачи"
-                                                    Click="CopyJiraKeyButton_Click"
-                                                    Background="Transparent" BorderThickness="0">
-                                                <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets"
-                                                           FontSize="11"
-                                                           Foreground="{DynamicResource TextMuted}" />
-                                            </Button>
-                                        </Grid>
-                                    </Grid>
-                                </StackPanel>
+                                    <!-- Column 2: Исполнители -->
+                                    <StackPanel Grid.Column="2" Spacing="10">
+                                        <TextBlock Text="ИСПОЛНЕНИЕ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="Ответственный" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                <TextBlock Text="{Binding SelectedTimelineResponsible}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="Заявитель" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                <TextBlock Text="{Binding SelectedTimelineReporter}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
 
                                 <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
 
-                                <!-- Группа: Время -->
+                                <!-- Описание и комментарии -->
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="ВРЕМЕННЫЕ ПОКАЗАТЕЛИ" Classes="eyebrow" />
+                                    <TextBlock Text="ПОДРОБНОЕ ОПИСАНИЕ И КОММЕНТАРИИ" Classes="eyebrow" />
 
-                                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Начало"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineStart}"
-                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                   VerticalAlignment="Center" />
+                                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Описание" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Завершение"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineEnd}"
-                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                   VerticalAlignment="Center" />
-
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Длительность"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedTimelineDuration}"
-                                                   FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource AccentForeground}"
-                                                   VerticalAlignment="Center" />
-                                    </Grid>
-                                </StackPanel>
-
-                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-
-                                <!-- Группа: Исполнители и детали -->
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="ИСПОЛНЕНИЕ И ОПИСАНИЕ" Classes="eyebrow" />
-
-                                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Ответственный"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Top" />
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineResponsible}"
-                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                   TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Заявитель"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Top" />
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineReporter}"
-                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                   TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Описание"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Top" />
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedTimelineDescription}"
-                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                   TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Комментарии"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Top" />
-                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedTimelineComments}"
-                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                   TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Комментарии" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineComments}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
                                     </Grid>
                                 </StackPanel>
                             </StackPanel>

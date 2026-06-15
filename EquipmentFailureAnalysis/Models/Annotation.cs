@@ -32,5 +32,8 @@ namespace EquipmentFailureAnalysis.Models
         public string Comments { get; set; } = string.Empty;
         // marker that the task is still in progress
         public bool IsInProgress { get; set; }
+
+        public bool IsRepair => Type == IssueType.Ремонт;
+        public bool IsSetup => Type == IssueType.Настройка;
     }
 }

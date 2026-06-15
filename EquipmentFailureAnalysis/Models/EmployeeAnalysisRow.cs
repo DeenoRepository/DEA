@@ -22,5 +22,9 @@ namespace EquipmentFailureAnalysis.Models
         public string PerformanceSummary { get; set; } = "0.0 (C)";
         public DateTime LastIssueDate { get; set; }
         public string LastIssueDateText { get; set; } = "-";
+
+        public bool IsSlaDanger => SlaCompliancePercent < 80.0;
+        public bool IsSlaWarning => SlaCompliancePercent >= 80.0 && SlaCompliancePercent < 95.0;
+        public bool IsSlaSuccess => SlaCompliancePercent >= 95.0;
     }
 }

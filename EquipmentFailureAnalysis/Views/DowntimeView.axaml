@@ -132,166 +132,173 @@
                 </Border>
 
                 <!-- ============== HEATMAP CARD ============== -->
-                <Border Classes="panel">
-                    <StackPanel Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="Карта тепла" Classes="sectionTitle" />
-                                <TextBlock Text="Значение ячейки — количество единиц оборудования с неисправностями за день"
-                                           Classes="sectionSubtitle" />
-                            </StackPanel>
-                            <Button Grid.Column="1"
-                                    Classes="smallIcon"
-                                    ToolTip.Tip="Настройки градации"
-                                    Click="DowntimeHeatmapSettingsButton_Click">
-                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
-                                           FontSize="13"
-                                           Foreground="{DynamicResource TextSecondary}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                                <Button.Flyout>
-                                    <Flyout Placement="BottomEdgeAlignedRight">
-                                        <Border Background="{DynamicResource CardBackground}"
-                                                BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="10" Padding="14">
-                                            <StackPanel Spacing="10" MinWidth="320" MaxWidth="360">
-                                                <StackPanel Spacing="2">
-                                                    <TextBlock Text="Настройки градации карты"
-                                                               FontSize="13" FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource TextPrimary}" />
-                                                    <TextBlock Text="Диапазон значений для карты простоев"
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource TextMuted}"
-                                                               TextWrapping="Wrap" />
+                <Border Classes="panel" Padding="0">
+                    <Expander IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Expander.Header>
+                            <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Stretch">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Карта тепла" Classes="sectionTitle" />
+                                    <TextBlock Text="Значение ячейки — количество единиц оборудования с неисправностями за день"
+                                               Classes="sectionSubtitle" />
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Classes="smallIcon"
+                                        ToolTip.Tip="Настройки градации"
+                                        Click="DowntimeHeatmapSettingsButton_Click"
+                                        Margin="0,0,16,0">
+                                    <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedRight">
+                                            <Border Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10" Padding="14">
+                                                <StackPanel Spacing="10" MinWidth="320" MaxWidth="360">
+                                                    <StackPanel Spacing="2">
+                                                        <TextBlock Text="Настройки градации карты"
+                                                                   FontSize="13" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextPrimary}" />
+                                                        <TextBlock Text="Диапазон значений для карты простоев"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource TextMuted}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto"
+                                                          ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding $parent[Window].DataContext.HeatmapColorMin, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding $parent[Window].DataContext.HeatmapColorMax, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
                                                 </StackPanel>
-                                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
-                                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto"
-                                                      ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум"
-                                                               FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                               VerticalAlignment="Center" />
-                                                    <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
-                                                                   Increment="1" FormatString="F0"
-                                                                   Value="{Binding $parent[Window].DataContext.HeatmapColorMin, Mode=TwoWay}"
-                                                                   HorizontalAlignment="Stretch" />
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
-                                                               FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                               VerticalAlignment="Center" />
-                                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
-                                                                   Increment="1" FormatString="F0"
-                                                                   Value="{Binding $parent[Window].DataContext.HeatmapColorMax, Mode=TwoWay}"
-                                                                   HorizontalAlignment="Stretch" />
-                                                </Grid>
-                                            </StackPanel>
-                                        </Border>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                        </Grid>
-
-                        <Border Classes="well" Padding="0">
-                            <Grid>
-                                <ScrollViewer x:Name="DowntimeHeatmapScroller"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Disabled"
-                                              Background="Transparent"
-                                              Width="1024"
-                                              HorizontalAlignment="Center">
-                                    <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
-                                                             MonthRows="{Binding DowntimeMonthRows}"
-                                                             CellCommand="{Binding ShowDowntimeDayCommand}"
-                                                             SelectedDate="{Binding DowntimeAnalysisDate, Mode=TwoWay}"
-                                                             ConverterMode="DowntimeAnalysis" />
-                                </ScrollViewer>
-
-                                <!-- Carousel Scroll Left (Floating) -->
-                                <Button Classes="soft"
-                                        Width="32" Height="32"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Margin="8,0"
-                                        CornerRadius="16"
-                                        Click="HeatmapScrollLeft_Click"
-                                        ToolTip.Tip="Предыдущие месяцы">
-                                    <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Flyout>
+                                    </Button.Flyout>
                                 </Button>
-
-                                <!-- Carousel Scroll Right (Floating) -->
-                                <Button Classes="soft"
-                                        Width="32" Height="32"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Margin="8,0"
-                                        CornerRadius="16"
-                                        Click="HeatmapScrollRight_Click"
-                                        ToolTip.Tip="Следующие месяцы">
-                                    <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Button>
-
-                                <!-- Empty state for heatmap -->
-                                <Border Classes="emptyState"
-                                        IsVisible="{Binding DowntimeMonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
-                                    <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
-                                        <Border Width="44" Height="44" CornerRadius="12"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="22"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Classes="emptyStateTitle" Text="Нет данных для отображения"
-                                                   HorizontalAlignment="Center" />
-                                        <TextBlock Classes="emptyStateSubtitle"
-                                                   Text="Импортируйте данные из XML или Jira, чтобы увидеть карту простоев"
-                                                   HorizontalAlignment="Center" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Border>
                             </Grid>
-                        </Border>
+                        </Expander.Header>
 
-                        <!-- Legend (reactive to HeatmapColorMin/Max) -->
-                        <StackPanel Orientation="Horizontal" Spacing="14" Margin="2,2,0,0">
-                            <TextBlock Text="Градация:" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" />
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
-                                <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMin, StringFormat='до {0}'}"
-                                           FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                        <StackPanel Spacing="12" Margin="0,8,0,0">
+                            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                            <Border Classes="well" Padding="0">
+                                <Grid>
+                                    <ScrollViewer x:Name="DowntimeHeatmapScroller"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Background="Transparent"
+                                                  Width="1024"
+                                                  HorizontalAlignment="Center">
+                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                                 MonthRows="{Binding DowntimeMonthRows}"
+                                                                 CellCommand="{Binding ShowDowntimeDayCommand}"
+                                                                 SelectedDate="{Binding DowntimeAnalysisDate, Mode=TwoWay}"
+                                                                 ConverterMode="DowntimeAnalysis" />
+                                    </ScrollViewer>
+
+                                    <!-- Carousel Scroll Left (Floating) -->
+                                    <Button Classes="soft"
+                                            Width="32" Height="32"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollLeft_Click"
+                                            ToolTip.Tip="Предыдущие месяцы">
+                                        <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Carousel Scroll Right (Floating) -->
+                                    <Button Classes="soft"
+                                            Width="32" Height="32"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollRight_Click"
+                                            ToolTip.Tip="Следующие месяцы">
+                                        <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Empty state for heatmap -->
+                                    <Border Classes="emptyState"
+                                            IsVisible="{Binding DowntimeMonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
+                                            <Border Width="44" Height="44" CornerRadius="12"
+                                                    Background="{DynamicResource AccentSoftBackground}">
+                                                <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="22"
+                                                           Foreground="{DynamicResource AccentForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Classes="emptyStateTitle" Text="Нет данных для отображения"
+                                                       HorizontalAlignment="Center" />
+                                            <TextBlock Classes="emptyStateSubtitle"
+                                                       Text="Импортируйте данные из XML или Jira, чтобы увидеть карту простоев"
+                                                       HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Legend (reactive to HeatmapColorMin/Max) -->
+                            <StackPanel Orientation="Horizontal" Spacing="14" Margin="2,2,0,0">
+                                <TextBlock Text="Градация:" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
                                            VerticalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapYellow}" CornerRadius="4" />
-                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMin" />
-                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapOrange}" CornerRadius="4" />
-                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0}–{1}">
-                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
-                                            <Binding Path="$parent[Window].DataContext.HeatmapColorMax" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
-                                <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMax, StringFormat='от {0}'}"
-                                           FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                                           VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMin, StringFormat='до {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapYellow}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="$parent[Window].DataContext.HeatmapColorMin" />
+                                                <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapOrange}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="$parent[Window].DataContext.HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                                <Binding Path="$parent[Window].DataContext.HeatmapColorMax" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding $parent[Window].DataContext.HeatmapColorMax, StringFormat='от {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Expander>
                 </Border>
 
                 <!-- ============== SELECTED DAY SUMMARY DASHBOARD ============== -->
@@ -441,7 +448,7 @@
                                                                     BorderThickness="1" CornerRadius="8" Padding="6,8"
                                                                     Background="{DynamicResource SurfaceBrush}"
                                                                     VerticalAlignment="Center">
-                                                                <views:TimelineControl Height="28" ShowHourLabels="False"
+                                                                <views:TimelineControl Height="48" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True"
                                                                                        RepairsItems="{Binding RepairsTimelinePoints}"
                                                                                        SetupsItems="{Binding SetupsTimelinePoints}"
                                                                                        Annotations="{Binding Annotations}" />

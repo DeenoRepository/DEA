@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
@@ -46,6 +47,20 @@ namespace EquipmentFailureAnalysis.Views
                     await topLevel.Clipboard.SetTextAsync(vm.SelectedTimelineJiraKey);
                     vm.StatusMessage = $"Ключ Jira скопирован: {vm.SelectedTimelineJiraKey}";
                 }
+            }
+        }
+
+        private void FailureEventRow_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (sender is not Control control)
+                return;
+
+            if (control.DataContext is not Models.Annotation annotation)
+                return;
+
+            if (DataContext is ViewModels.MainWindowViewModel vm)
+            {
+                vm.SelectedTimelineAnnotation = annotation;
             }
         }
 

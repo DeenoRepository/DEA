@@ -3,10 +3,58 @@
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.EmployeeAnalysisView">
 
+    <UserControl.Styles>
+        <!-- Styles for TabControl/TabItem headers to make them look premium -->
+        <Style Selector="TabControl.modernTabs">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="TabControl.modernTabs TabItem">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style Selector="TabControl.modernTabs TabItem:selected">
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+        </Style>
+
+        <!-- Styles for SLA Circular Progress Ring -->
+        <Style Selector="Arc.danger">
+            <Setter Property="Stroke" Value="{DynamicResource DangerBrush}" />
+        </Style>
+        <Style Selector="Arc.warning">
+            <Setter Property="Stroke" Value="{DynamicResource WarningBrush}" />
+        </Style>
+        <Style Selector="Arc.success">
+            <Setter Property="Stroke" Value="{DynamicResource SuccessBrush}" />
+        </Style>
+        <Style Selector="TextBlock.dangerText">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+        </Style>
+        <Style Selector="TextBlock.warningText">
+            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+        </Style>
+        <Style Selector="TextBlock.successText">
+            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+        </Style>
+
+        <!-- SLA Row indicator colors -->
+        <Style Selector="Ellipse.danger">
+            <Setter Property="Fill" Value="{DynamicResource DangerBrush}" />
+        </Style>
+        <Style Selector="Ellipse.warning">
+            <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
+        </Style>
+        <Style Selector="Ellipse.success">
+            <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid x:Name="EmployeeAnalysisLayoutRoot">
-        <!-- ====================================================
-             CENTER COLUMN — Timeline / Period filters / Detail table
-             ==================================================== -->
         <ScrollViewer x:Name="EmployeeCenterColumn"
                       Margin="20,18,20,18"
                       HorizontalScrollBarVisibility="Disabled"
@@ -24,455 +72,791 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- ============== EMPLOYEE TIMELINE CARD ============== -->
-                <Border Classes="panel">
-                    <StackPanel Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="События сотрудника за день" Classes="sectionTitle" />
-                                <TextBlock Text="Выберите сотрудника и дату, чтобы увидеть timeline его событий"
-                                           Classes="sectionSubtitle" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Grid>
-
-                        <Grid ColumnDefinitions="Auto,*,12,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="0"
-                              VerticalAlignment="Center">
-                            <TextBlock Grid.Column="0" Text="Сотрудник"
-                                       FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding EmployeeTimelineEmployees}"
-                                      SelectedItem="{Binding SelectedEmployeeTimelineEmployee, Mode=TwoWay}"
-                                      HorizontalAlignment="Stretch" />
-
-                            <TextBlock Grid.Column="3" Text="Дата"
-                                       FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <Button Grid.Column="4" Classes="dateShift" Content="◀"
-                                    Margin="0,0,4,0"
-                                    Click="EmployeeTimelinePrevDate_Click" />
-                            <CalendarDatePicker Grid.Column="5" Width="150"
-                                                MinWidth="150" MaxWidth="180"
-                                                Margin="0,0,4,0"
-                                                HorizontalAlignment="Stretch"
-                                                SelectedDate="{Binding EmployeeTimelineDate, Mode=TwoWay}" />
-                            <Button Grid.Column="6" Classes="dateShift" Content="▶"
-                                    Margin="0,0,8,0"
-                                    Click="EmployeeTimelineNextDate_Click" />
-                            <Button Grid.Column="7" Classes="soft" Padding="10,3" FontSize="10"
-                                    Height="34" VerticalContentAlignment="Center"
-                                    Content="Сегодня" Click="EmployeeSetToday_Click" />
-                        </Grid>
-
-                        <Border Classes="well" Padding="10">
-                            <StackPanel Spacing="10">
-                                <views:TimelineControl Height="90" ShowHourLabels="False"
-                                                       RepairsItems="{Binding EmployeeRepairsTimelinePoints}"
-                                                       Annotations="{Binding EmployeeTimelineAnnotations}"
-                                                       ShowAnnotations="False" EnableTooltips="True"
-                                                       YAxisTopLabel="Ремонт"
-                                                       VerticalAlignment="Top" />
-                                <views:TimelineControl Height="130" ShowHourLabels="True"
-                                                       SetupsItems="{Binding EmployeeSetupsTimelinePoints}"
-                                                       Annotations="{Binding EmployeeTimelineAnnotations}"
-                                                       ShowAnnotations="False" EnableTooltips="True"
-                                                       YAxisTopLabel="Настройка"
-                                                       VerticalAlignment="Top" />
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <!-- ============== PERIOD ANALYSIS CARD ============== -->
-                <Border Classes="panel">
-                    <StackPanel Spacing="12">
-                        <StackPanel Spacing="2">
-                            <TextBlock Text="Анализ работы сотрудников" Classes="sectionTitle" />
-                            <TextBlock Text="Сводная оценка нагрузки, длительности работ и распределения задач по ответственным"
-                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <Grid ColumnDefinitions="Auto,*,12,Auto,*,12,Auto,*"
-                              ColumnSpacing="0" VerticalAlignment="Center">
-                            <TextBlock Grid.Column="0" Text="Период"
-                                       FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding EmployeeAnalysisMonthOptions}"
-                                      SelectedItem="{Binding SelectedEmployeeAnalysisMonth, Mode=TwoWay}"
-                                      HorizontalAlignment="Stretch" />
-
-                            <TextBlock Grid.Column="3" Text="Группа"
-                                       FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <ComboBox Grid.Column="4"
-                                      ItemsSource="{Binding EmployeeSubdivisionFilters}"
-                                      SelectedItem="{Binding SelectedEmployeeSubdivisionFilter, Mode=TwoWay}"
-                                      HorizontalAlignment="Stretch" />
-
-                            <TextBlock Grid.Column="6" Text="SLA, мин"
-                                       FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <NumericUpDown Grid.Column="7"
-                                           Minimum="30" Maximum="1440" Increment="5" FormatString="F0"
-                                           Value="{Binding SlaTargetMinutes, Mode=TwoWay}" />
-                        </Grid>
-
-                        <TextBlock Text="{Binding EmployeeAnalysisPeriodDescription, StringFormat='Период анализа: {0}'}"
-                                   FontSize="11" Foreground="{DynamicResource TextMuted}" />
-
-                        <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12">
-                            <!-- Исполнители -->
-                            <Border Grid.Column="0" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Исполнители" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
+                <!-- ============== TAB CONTROL ============== -->
+                <TabControl x:Name="EmployeeAnalysisTabs" Classes="modernTabs" Margin="0,4,0,0">
+                    
+                    <!-- ====================================================
+                         TAB 1: Сводная аналитика (Период)
+                         ==================================================== -->
+                    <TabItem Header="Сводная аналитика (Период)">
+                        <StackPanel Spacing="14" Margin="0,12,0,0">
+                            
+                            <!-- ============== FILTERS PANEL ============== -->
+                            <Border Classes="panel">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Параметры анализа" Classes="sectionTitle" />
+                                        <TextBlock Text="Сводная оценка нагрузки, длительности работ и распределения задач по ответственным"
+                                                   Classes="sectionSubtitle" TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeTotalCount, StringFormat='{}{0} чел.'}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                </StackPanel>
-                            </Border>
 
-                            <!-- События -->
-                            <Border Grid.Column="1" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource InfoSoftBackground}">
-                                            <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource InfoBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="События" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeTotalIssues, StringFormat='{}{0} шт.'}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Ср. длительность -->
-                            <Border Grid.Column="2" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SuccessSoftBackground}">
-                                            <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource SuccessBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Ср. длительность" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeAvgDuration}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Покрытие -->
-                            <Border Grid.Column="3" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Покрытие" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeCoveragePercent, StringFormat='{}{0:0.0}%'}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource AccentForeground}" />
-                                    <ProgressBar Minimum="0" Maximum="100" Height="4"
-                                                 Value="{Binding EmployeeCoveragePercent}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- SLA по событиям -->
-                            <Border Grid.Column="4" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SuccessSoftBackground}">
-                                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource SuccessBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="SLA по событиям" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeSlaCompliancePercent, StringFormat='{}{0:0.0}%'}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource SuccessBrush}" />
-                                    <TextBlock Text="{Binding EmployeeSlaBreaches, StringFormat='Нарушено: {0}'}"
-                                               FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource DangerBrush}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Охват оборудования -->
-                            <Border Grid.Column="5" Classes="kpi">
-                                <StackPanel Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource InfoSoftBackground}">
-                                            <TextBlock Text="&#xE950;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="13"
-                                                       Foreground="{DynamicResource InfoBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Охват обор." FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding EmployeeAvgEquipmentPerEmployee, StringFormat='{}{0} ед./сотр.'}"
-                                               FontSize="20" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                    <TextBlock Text="{Binding EmployeeUnassignedIssues, StringFormat='Нераспр.: {0}'}"
-                                               FontSize="11" Foreground="{DynamicResource WarningBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <Grid ColumnDefinitions="1.2*,*,*" ColumnSpacing="12">
-                            <!-- Структура событий -->
-                            <Border Grid.Column="0" Classes="well">
-                                <StackPanel Spacing="10">
-                                    <TextBlock Text="Структура событий" Classes="cardTitle" />
-                                    <Grid ColumnDefinitions="100,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="10">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Ремонты"
-                                                   FontSize="11" Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                        <ProgressBar Grid.Row="0" Grid.Column="1" Minimum="0"
-                                                     Maximum="{Binding EmployeeTotalIssues}"
-                                                     Value="{Binding EmployeeRepairsTotal}"
-                                                     VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding EmployeeRepairsTotal}"
+                                    <Grid ColumnDefinitions="Auto,*,12,Auto,*,12,Auto,*"
+                                          ColumnSpacing="0" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="Период"
                                                    FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimary}"
-                                                   VerticalAlignment="Center" />
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding EmployeeAnalysisMonthOptions}"
+                                                  SelectedItem="{Binding SelectedEmployeeAnalysisMonth, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch" />
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Настройки"
-                                                   FontSize="11" Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center" />
-                                        <ProgressBar Grid.Row="1" Grid.Column="1" Minimum="0"
-                                                     Maximum="{Binding EmployeeTotalIssues}"
-                                                     Value="{Binding EmployeeSetupsTotal}"
-                                                     VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding EmployeeSetupsTotal}"
+                                        <TextBlock Grid.Column="3" Text="Группа"
                                                    FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimary}"
-                                                   VerticalAlignment="Center" />
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox Grid.Column="4"
+                                                  ItemsSource="{Binding EmployeeSubdivisionFilters}"
+                                                  SelectedItem="{Binding SelectedEmployeeSubdivisionFilter, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch" />
+
+                                        <TextBlock Grid.Column="6" Text="SLA, мин"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <NumericUpDown Grid.Column="7"
+                                                       Minimum="30" Maximum="1440" Increment="5" FormatString="F0"
+                                                       Value="{Binding SlaTargetMinutes, Mode=TwoWay}" />
                                     </Grid>
-                                </StackPanel>
-                            </Border>
 
-                            <!-- Лидер по событиям -->
-                            <Border Grid.Column="1" Classes="well">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Лидер по числу событий" Classes="cardTitle" />
-                                    <TextBlock Text="{Binding EmployeeTopByIssues}" FontSize="13" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding EmployeeTopByIssuesValue}" FontSize="11"
-                                               Foreground="{DynamicResource TextMuted}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Максимальная занятость -->
-                            <Border Grid.Column="2" Classes="well">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Максимальная занятость" Classes="cardTitle" />
-                                    <TextBlock Text="{Binding EmployeeTopByDuration}" FontSize="13" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding EmployeeTopByDurationValue, StringFormat='Суммарно: {0}'}"
+                                    <TextBlock Text="{Binding EmployeeAnalysisPeriodDescription, StringFormat='Период анализа: {0}'}"
                                                FontSize="11" Foreground="{DynamicResource TextMuted}" />
                                 </StackPanel>
                             </Border>
-                        </Grid>
-                    </StackPanel>
-                </Border>
 
-                <!-- ============== DETAIL TABLE CARD ============== -->
-                <Border Classes="panel">
-                    <StackPanel Spacing="12">
-                        <StackPanel Spacing="2">
-                            <TextBlock Text="Детализация по сотрудникам" Classes="sectionTitle" />
-                            <TextBlock Text="Полный список исполнителей с показателями"
-                                       Classes="sectionSubtitle" />
-                        </StackPanel>
-
-                        <Border Classes="well" Padding="0">
-                            <Grid>
-                                <StackPanel>
-                                    <!-- Sticky header row -->
-                                    <Border Background="{DynamicResource SurfaceBrush}"
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                            BorderThickness="0,0,0,1"
-                                            CornerRadius="10,10,0,0"
-                                            Padding="14,10">
-                                        <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.85*,Auto">
-                                            <TextBlock Grid.Column="0" Text="Сотрудник"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" />
-                                            <TextBlock Grid.Column="1" Text="Группа"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" Margin="6,0,8,0" />
-                                            <TextBlock Grid.Column="2" Text="Доля"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="3" Text="SLA"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="4" Text="Итог"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="5" Text="События"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="6" Text="Ремонт"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="7" Text="Настройка"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="8" Text="Ср. время"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="9" Text="Сумма"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="10" Text="Ед. обор."
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
-                                            <TextBlock Grid.Column="11" Text="Последнее"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                            <!-- ============== KPI GRID ============== -->
+                            <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12">
+                                <!-- Исполнители -->
+                                <Border Grid.Column="0" Classes="kpi">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Исполнители" Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource AccentSoftBackground}">
+                                                <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource AccentForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
                                         </Grid>
-                                    </Border>
+                                        <TextBlock Text="{Binding EmployeeTotalCount, StringFormat='{}{0} чел.'}"
+                                                   FontSize="28" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="в выбранной группе" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                    </StackPanel>
+                                </Border>
 
-                                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  MaxHeight="420">
-                                        <ItemsControl ItemsSource="{Binding EmployeeAnalysisRows}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Classes="employeeAnalysisRow"
-                                                            BorderBrush="{DynamicResource RowDividerBrush}"
-                                                            BorderThickness="0,0,0,1"
-                                                            Margin="0" Padding="10,8"
-                                                            PointerPressed="EmployeeAnalysisRow_PointerPressed">
-                                                        <Grid ColumnDefinitions="2.8*,2.3*,0.7*,0.7*,0.85*,0.75*,0.75*,0.75*,0.85*,0.85*,0.75*,0.85*,Auto"
-                                                              Margin="2,1">
-                                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12"
-                                                                       FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource TextPrimary}"
-                                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
-                                                            <TextBlock Grid.Column="1" Text="{Binding Subdivision}" FontSize="12"
-                                                                       Foreground="{DynamicResource TextSecondary}"
-                                                                       TextTrimming="CharacterEllipsis" MaxLines="1"
-                                                                       Margin="6,0,8,0" />
-                                                            <TextBlock Grid.Column="2" Text="{Binding EventSharePercent, StringFormat='{}{0:0.#}%'}"
-                                                                       FontSize="12" FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource AccentForeground}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="3" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}"
-                                                                       FontSize="12" FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource SuccessBrush}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="4" Text="{Binding PerformanceSummary}"
-                                                                       FontSize="12" FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="5" Text="{Binding IssuesCount}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="6" Text="{Binding RepairsCount}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="7" Text="{Binding SetupsCount}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="8" Text="{Binding AvgDurationText}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="9" Text="{Binding TotalDurationText}"
-                                                                       FontSize="12" FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="10" Text="{Binding EquipmentCount}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextPrimary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="11" Text="{Binding LastIssueDateText}"
-                                                                       FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                                       HorizontalAlignment="Right" />
-                                                            <TextBlock Grid.Column="12" Text="&#xE76C;"
-                                                                       Classes="rowChevron"
-                                                                       Margin="6,0,0,0" />
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
-                                </StackPanel>
+                                <!-- События -->
+                                <Border Grid.Column="1" Classes="kpi">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="События" Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource InfoSoftBackground}">
+                                                <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource InfoBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Text="{Binding EmployeeTotalIssues, StringFormat='{}{0} шт.'}"
+                                                   FontSize="28" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="за выбранный период" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                    </StackPanel>
+                                </Border>
 
-                                <!-- Empty state overlay — shown when list is empty -->
-                                <Border Classes="emptyState"
-                                        IsVisible="{Binding EmployeeAnalysisRows, Converter={StaticResource IsEmptyConverter}}"
-                                        Margin="0,50,0,0">
-                                    <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
-                                        <Border Width="44" Height="44" CornerRadius="12"
-                                                Background="{DynamicResource AccentSoftBackground}">
-                                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="22"
-                                                       Foreground="{DynamicResource AccentForeground}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Classes="emptyStateTitle" Text="Сотрудники не найдены"
-                                                   HorizontalAlignment="Center" />
-                                        <TextBlock Classes="emptyStateSubtitle"
-                                                   Text="За выбранный период нет данных по исполнителям. Попробуйте изменить период или группу"
-                                                   HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                <!-- Ср. длительность -->
+                                <Border Grid.Column="2" Classes="kpi">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Ср. длительность" Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource SurfaceAlt}">
+                                                <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Text="{Binding EmployeeAvgDuration}"
+                                                   FontSize="28" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="на одно событие" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Покрытие (Radial progress ring with standard header) -->
+                                <Border Grid.Column="3" Classes="kpi" ToolTip.Tip="Процент сотрудников, вовлеченных в выполнение задач за выбранный период">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Покрытие" Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource AccentSoftBackground}">
+                                                <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource AccentForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding EmployeeCoveragePercent, StringFormat='{}{0:0.0}%'}" 
+                                                           FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" />
+                                                <TextBlock Text="Задействовано" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                            </StackPanel>
+                                            <Grid Grid.Column="1" Width="48" Height="48" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <Ellipse Stroke="{DynamicResource BorderSubtleBrush}" StrokeThickness="4" Width="42" Height="42" />
+                                                <Arc Stroke="{DynamicResource AccentBrush}" StrokeThickness="4" StartAngle="-90" 
+                                                     SweepAngle="{Binding EmployeeCoverageSweepAngle}" Width="42" Height="42" 
+                                                     StrokeJoin="Round" StrokeLineCap="Round" />
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- SLA по событиям (Radial progress ring with standard header) -->
+                                <Border Grid.Column="4" Classes="kpi" ToolTip.Tip="Доля задач, выполненных без нарушения установленного норматива SLA">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="SLA по событиям" Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource SuccessSoftBackground}">
+                                                <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource SuccessBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding EmployeeSlaCompliancePercent, StringFormat='{}{0:0.0}%'}" 
+                                                           FontSize="28" FontWeight="Bold" 
+                                                           Classes.dangerText="{Binding IsEmployeeSlaDanger}"
+                                                           Classes.warningText="{Binding IsEmployeeSlaWarning}"
+                                                           Classes.successText="{Binding IsEmployeeSlaSuccess}" />
+                                                <TextBlock Text="{Binding EmployeeSlaBreaches, StringFormat='Нарушено: {0}'}"
+                                                           FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource DangerBrush}" />
+                                            </StackPanel>
+                                            <Grid Grid.Column="1" Width="48" Height="48" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <Ellipse Stroke="{DynamicResource BorderSubtleBrush}" StrokeThickness="4" Width="42" Height="42" />
+                                                <Arc StrokeThickness="4" StartAngle="-90" 
+                                                     SweepAngle="{Binding EmployeeSlaSweepAngle}" Width="42" Height="42" 
+                                                     StrokeJoin="Round" StrokeLineCap="Round"
+                                                     Classes.danger="{Binding IsEmployeeSlaDanger}"
+                                                     Classes.warning="{Binding IsEmployeeSlaWarning}"
+                                                     Classes.success="{Binding IsEmployeeSlaSuccess}" />
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Охват оборудования -->
+                                <Border Grid.Column="5" Classes="kpi">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Охват обор." Classes="cardSubtext" />
+                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                                    Background="{DynamicResource InfoSoftBackground}">
+                                                <TextBlock Text="&#xE950;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource InfoBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Text="{Binding EmployeeAvgEquipmentPerEmployee, StringFormat='{}{0} ед.'}"
+                                                   FontSize="28" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="{Binding EmployeeUnassignedIssues, StringFormat='Нераспределено: {0} шт.'}"
+                                                   FontSize="11" Foreground="{DynamicResource WarningBrush}" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                        </Border>
-                    </StackPanel>
-                </Border>
+
+                            <!-- ============== BREAKDOWN WIDGETS ============== -->
+                            <Grid ColumnDefinitions="1.2*,*,*" ColumnSpacing="12">
+                                <!-- Структура событий -->
+                                <Border Grid.Column="0" Classes="well">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Структура событий" Classes="cardTitle" />
+                                        <Grid ColumnDefinitions="100,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="10">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Ремонты"
+                                                       FontSize="11" Foreground="{DynamicResource TextMuted}"
+                                                       VerticalAlignment="Center" />
+                                            <ProgressBar Grid.Row="0" Grid.Column="1" Minimum="0"
+                                                         Maximum="{Binding EmployeeTotalIssues}"
+                                                         Value="{Binding EmployeeRepairsTotal}"
+                                                         VerticalAlignment="Center" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding EmployeeRepairsTotal}"
+                                                       FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       VerticalAlignment="Center" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Настройки"
+                                                       FontSize="11" Foreground="{DynamicResource TextMuted}"
+                                                       VerticalAlignment="Center" />
+                                            <ProgressBar Grid.Row="1" Grid.Column="1" Minimum="0"
+                                                         Maximum="{Binding EmployeeTotalIssues}"
+                                                         Value="{Binding EmployeeSetupsTotal}"
+                                                         VerticalAlignment="Center" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding EmployeeSetupsTotal}"
+                                                       FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Лидер по событиям -->
+                                <Border Grid.Column="1" Classes="well">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Лидер по числу событий" Classes="cardTitle" />
+                                        <TextBlock Text="{Binding EmployeeTopByIssues}" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding EmployeeTopByIssuesValue}" FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Максимальная занятость -->
+                                <Border Grid.Column="2" Classes="well">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Максимальная занятость" Classes="cardTitle" />
+                                        <TextBlock Text="{Binding EmployeeTopByDuration}" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding EmployeeTopByDurationValue, StringFormat='Суммарно: {0}'}"
+                                                   FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- ============== COMPARATIVE TABLE ============== -->
+                            <Border Classes="panel">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Детализация по сотрудникам" Classes="sectionTitle" />
+                                        <TextBlock Text="Полный список исполнителей с показателями"
+                                                   Classes="sectionSubtitle" />
+                                    </StackPanel>
+
+                                    <Border Classes="well" Padding="0">
+                                        <Grid>
+                                            <StackPanel>
+                                                <!-- Sticky header row -->
+                                                <Border Background="{DynamicResource SurfaceBrush}"
+                                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                        BorderThickness="0,0,0,1"
+                                                        CornerRadius="10,10,0,0"
+                                                        Padding="14,10">
+                                                    <Grid ColumnDefinitions="3*,2.2*,1.2*,1.5*,1.2*,1.2*,Auto">
+                                                        <TextBlock Grid.Column="0" Text="Сотрудник"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" />
+                                                        <TextBlock Grid.Column="1" Text="Задачи"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" Margin="6,0,8,0" />
+                                                        <TextBlock Grid.Column="2" Text="SLA"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                                        <TextBlock Grid.Column="3" Text="Время"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                                        <TextBlock Grid.Column="4" Text="Ед. обор."
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                                        <TextBlock Grid.Column="5" Text="Последнее"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                                    </Grid>
+                                                </Border>
+
+                                                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                                              VerticalScrollBarVisibility="Auto"
+                                                              MaxHeight="420">
+                                                    <ItemsControl ItemsSource="{Binding EmployeeAnalysisRows}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Classes="employeeAnalysisRow"
+                                                                        BorderBrush="{DynamicResource RowDividerBrush}"
+                                                                        BorderThickness="0,0,0,1"
+                                                                        Margin="0" Padding="12,10"
+                                                                        PointerPressed="EmployeeAnalysisRow_PointerPressed">
+                                                                    <Grid ColumnDefinitions="3*,2.2*,1.2*,1.5*,1.2*,1.2*,Auto"
+                                                                          Margin="2,1">
+                                                                        
+                                                                        <!-- Column 0: Сотрудник (SLA dot + Name + Subdivision) -->
+                                                                        <Grid Grid.Column="0" ColumnDefinitions="Auto,*" Margin="0,2">
+                                                                            <Ellipse Grid.Column="0" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                                                     Classes.danger="{Binding IsSlaDanger}"
+                                                                                     Classes.warning="{Binding IsSlaWarning}"
+                                                                                     Classes.success="{Binding IsSlaSuccess}" />
+                                                                            <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                                                                                <TextBlock Text="{Binding Name}" FontSize="13"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Foreground="{DynamicResource TextPrimary}"
+                                                                                           TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                                                                <TextBlock Text="{Binding Subdivision}" FontSize="11"
+                                                                                           Foreground="{DynamicResource TextSecondary}"
+                                                                                           TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                        
+                                                                        <!-- Column 1: Задачи (Count + ratio ProgressBar) -->
+                                                                        <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center" Margin="6,0,8,0">
+                                                                            <TextBlock Text="{Binding IssuesCount, StringFormat='{}{0} задач'}" FontSize="12"
+                                                                                       Foreground="{DynamicResource TextPrimary}" />
+                                                                            <ProgressBar Minimum="0" Maximum="100" Height="4"
+                                                                                         Value="{Binding RepairsSharePercent}"
+                                                                                         Foreground="{DynamicResource DangerBrush}"
+                                                                                         Background="{DynamicResource WarningBrush}"
+                                                                                         ToolTip.Tip="Соотношение: Ремонты (Красный) / Настройки (Оранжевый)" />
+                                                                        </StackPanel>
+                                                                        
+                                                                        <!-- Column 2: SLA compliance percent -->
+                                                                        <TextBlock Grid.Column="2" Text="{Binding SlaCompliancePercent, StringFormat='{}{0:0.#}%'}"
+                                                                                   FontSize="12" FontWeight="SemiBold"
+                                                                                   Classes.dangerText="{Binding IsSlaDanger}"
+                                                                                   Classes.warningText="{Binding IsSlaWarning}"
+                                                                                   Classes.successText="{Binding IsSlaSuccess}"
+                                                                                   HorizontalAlignment="Right"
+                                                                                   VerticalAlignment="Center" />
+                                                                        
+                                                                        <!-- Column 3: Время (Total + Average) -->
+                                                                        <StackPanel Grid.Column="3" Spacing="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                            <TextBlock Text="{Binding TotalDurationText}" FontSize="12" FontWeight="SemiBold"
+                                                                                       Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" />
+                                                                            <TextBlock Text="{Binding AvgDurationText, StringFormat='Ср: {0}'}" FontSize="10"
+                                                                                       Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" />
+                                                                        </StackPanel>
+                                                                        
+                                                                        <!-- Column 4: Ед. обор. -->
+                                                                        <TextBlock Grid.Column="4" Text="{Binding EquipmentCount}"
+                                                                                   FontSize="12" Foreground="{DynamicResource TextPrimary}"
+                                                                                   HorizontalAlignment="Right"
+                                                                                   VerticalAlignment="Center" />
+                                                                        
+                                                                        <!-- Column 5: Последнее -->
+                                                                        <TextBlock Grid.Column="5" Text="{Binding LastIssueDateText}"
+                                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                                   HorizontalAlignment="Right"
+                                                                                   VerticalAlignment="Center" />
+                                                                        
+                                                                        <!-- Column 6: Chevron -->
+                                                                        <TextBlock Grid.Column="6" Text="&#xE76C;"
+                                                                                   Classes="rowChevron"
+                                                                                   Margin="6,0,0,0"
+                                                                                   VerticalAlignment="Center" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+
+                                            <!-- Empty state overlay -->
+                                            <Border Classes="emptyState"
+                                                    IsVisible="{Binding EmployeeAnalysisRows, Converter={StaticResource IsEmptyConverter}}"
+                                                    Margin="0,50,0,0">
+                                                <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
+                                                    <Border Width="44" Height="44" CornerRadius="12"
+                                                            Background="{DynamicResource AccentSoftBackground}">
+                                                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets"
+                                                                   FontSize="22"
+                                                                   Foreground="{DynamicResource AccentForeground}"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Classes="emptyStateTitle" Text="Сотрудники не найдены"
+                                                               HorizontalAlignment="Center" />
+                                                    <TextBlock Classes="emptyStateSubtitle"
+                                                               Text="За выбранный период нет данных по исполнителям. Попробуйте изменить период или группу"
+                                                               HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+                    
+                    <!-- ====================================================
+                         TAB 2: Индивидуальный трек (День)
+                         ==================================================== -->
+                    <TabItem Header="Индивидуальный трек (День)">
+                        <StackPanel Spacing="14" Margin="0,12,0,0">
+                            
+                            <!-- ============== DAILY TIMELINE CARD ============== -->
+                            <Border Classes="panel">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="События сотрудника за день" Classes="sectionTitle" />
+                                            <TextBlock Text="Выберите сотрудника и дату, чтобы увидеть timeline его событий"
+                                                       Classes="sectionSubtitle" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto,*,12,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="0"
+                                          VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="Сотрудник"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding EmployeeTimelineEmployees}"
+                                                  SelectedItem="{Binding SelectedEmployeeTimelineEmployee, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch" />
+
+                                        <TextBlock Grid.Column="3" Text="Дата"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <Button Grid.Column="4" Classes="dateShift" Content="◀"
+                                                Margin="0,0,4,0"
+                                                Click="EmployeeTimelinePrevDate_Click" />
+                                        <CalendarDatePicker Grid.Column="5" Width="150"
+                                                            MinWidth="150" MaxWidth="180"
+                                                            Margin="0,0,4,0"
+                                                            HorizontalAlignment="Stretch"
+                                                            SelectedDate="{Binding EmployeeTimelineDate, Mode=TwoWay}" />
+                                        <Button Grid.Column="6" Classes="dateShift" Content="▶"
+                                                Margin="0,0,8,0"
+                                                Click="EmployeeTimelineNextDate_Click" />
+                                        <Button Grid.Column="7" Classes="soft" Padding="10,3" FontSize="10"
+                                                Height="34" VerticalContentAlignment="Center"
+                                                Content="Сегодня" Click="EmployeeSetToday_Click" />
+                                    </Grid>
+
+                                    <Border Classes="well" Padding="10">
+                                        <views:TimelineControl Height="54" ShowHourLabels="True"
+                                                               RepairsItems="{Binding EmployeeRepairsTimelinePoints}"
+                                                               SetupsItems="{Binding EmployeeSetupsTimelinePoints}"
+                                                               Annotations="{Binding EmployeeTimelineAnnotations}"
+                                                               ShowAnnotations="False" EnableTooltips="True"
+                                                               VerticalAlignment="Top" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- ============== DAILY EVENTS LIST CARD ============== -->
+                            <Border Classes="panel">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Список событий за день" Classes="sectionTitle" />
+                                        <TextBlock Text="Все зарегистрированные инциденты и настройки сотрудника за выбранную дату" Classes="sectionSubtitle" />
+                                    </StackPanel>
+
+                                    <Border Classes="well" Padding="0">
+                                        <Grid>
+                                            <StackPanel>
+                                                <!-- Sticky header row -->
+                                                <Border Background="{DynamicResource SurfaceBrush}"
+                                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                        BorderThickness="0,0,0,1"
+                                                        CornerRadius="10,10,0,0"
+                                                        Padding="14,10">
+                                                    <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                                        <TextBlock Grid.Column="0" Text="Тип" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                                        <TextBlock Grid.Column="1" Text="Код Jira" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                                        <TextBlock Grid.Column="2" Text="Интервал" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                                        <TextBlock Grid.Column="3" Text="Описание" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                                        <TextBlock Grid.Column="4" Text="Длительность" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                                    </Grid>
+                                                </Border>
+
+                                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                                    <ItemsControl ItemsSource="{Binding EmployeeTimelineAnnotations}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Classes="employeeEventRow"
+                                                                        BorderBrush="{DynamicResource RowDividerBrush}"
+                                                                        BorderThickness="0,0,0,1"
+                                                                        Padding="14,10"
+                                                                        PointerPressed="EmployeeEventRow_PointerPressed">
+                                                                    <Border.Tag>
+                                                                        <MultiBinding Converter="{StaticResource EqualityToBoolConverter}">
+                                                                            <Binding />
+                                                                            <Binding Path="DataContext.SelectedTimelineAnnotation" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                                        </MultiBinding>
+                                                                    </Border.Tag>
+                                                                    <Border.Styles>
+                                                                        <!-- Style for event row hover state -->
+                                                                        <Style Selector="Border.employeeEventRow">
+                                                                            <Setter Property="Background" Value="Transparent" />
+                                                                            <Setter Property="Cursor" Value="Hand" />
+                                                                        </Style>
+                                                                        <Style Selector="Border.employeeEventRow:pointerover">
+                                                                            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+                                                                        </Style>
+                                                                        <!-- Style for selected state -->
+                                                                        <Style Selector="Border.employeeEventRow[Tag=True]">
+                                                                            <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                                            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                                            <Setter Property="BorderThickness" Value="4,0,0,1" />
+                                                                            <Setter Property="Padding" Value="10,10,14,10" />
+                                                                        </Style>
+                                                                        <Style Selector="Border.employeeEventRow[Tag=True]:pointerover">
+                                                                            <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                                        </Style>
+                                                                    </Border.Styles>
+                                                                    <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                                                        <!-- Column 0: Type Badge -->
+                                                                        <Border Grid.Column="0" HorizontalAlignment="Left" Padding="6,2" CornerRadius="4" BorderThickness="1"
+                                                                                Classes.repair-badge="{Binding IsRepair}"
+                                                                                Classes.setup-badge="{Binding IsSetup}">
+                                                                            <Border.Styles>
+                                                                                <Style Selector="Border.repair-badge">
+                                                                                    <Setter Property="Background" Value="{DynamicResource DangerSoftBackground}" />
+                                                                                    <Setter Property="BorderBrush" Value="{DynamicResource DangerSoftBorder}" />
+                                                                                </Style>
+                                                                                <Style Selector="Border.repair-badge TextBlock">
+                                                                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                                                                </Style>
+                                                                                <Style Selector="Border.setup-badge">
+                                                                                    <Setter Property="Background" Value="{DynamicResource WarningSoftBackground}" />
+                                                                                    <Setter Property="BorderBrush" Value="{DynamicResource WarningSoftBorder}" />
+                                                                                </Style>
+                                                                                <Style Selector="Border.setup-badge TextBlock">
+                                                                                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                                </Style>
+                                                                            </Border.Styles>
+                                                                            <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" />
+                                                                        </Border>
+
+                                                                        <!-- Column 1: Jira code -->
+                                                                        <TextBlock Grid.Column="1" Text="{Binding JiraIssueKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+
+                                                                        <!-- Column 2: Time Interval -->
+                                                                        <TextBlock Grid.Column="2" Text="{Binding TimeInterval}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+
+                                                                        <!-- Column 3: Description -->
+                                                                        <TextBlock Grid.Column="3" Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxLines="1" />
+
+                                                                        <!-- Column 4: Duration -->
+                                                                        <TextBlock Grid.Column="4" Text="{Binding Duration}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                        
+                                                                        <!-- Column 5: Chevron -->
+                                                                        <TextBlock Grid.Column="5" Text="&#xE76C;" Classes="rowChevron" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+
+                                            <!-- Empty state overlay if no events for day -->
+                                            <Border Classes="emptyState"
+                                                    IsVisible="{Binding EmployeeTimelineAnnotations, Converter={StaticResource IsEmptyConverter}}"
+                                                    Margin="0,40,0,0">
+                                                <StackPanel Spacing="6" HorizontalAlignment="Center" MaxWidth="320">
+                                                    <TextBlock Classes="emptyStateTitle" Text="События не найдены" HorizontalAlignment="Center" />
+                                                    <TextBlock Classes="emptyStateSubtitle" Text="На выбранную дату у сотрудника нет зарегистрированных событий." HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- ============== EVENT DETAILS PANEL ============== -->
+                            <Border Classes="panel">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Детализация события" Classes="sectionTitle" />
+                                        <TextBlock Text="Подробная информация о выбранном событии сотрудника" Classes="sectionSubtitle" />
+                                    </StackPanel>
+
+                                    <!-- Empty state placeholder inside Event Details card -->
+                                    <Border Classes="well" IsVisible="{Binding !SelectedTimelineHasData}">
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center" Margin="0,10">
+                                            <Border Width="32" Height="32" CornerRadius="8"
+                                                    Background="{DynamicResource InfoSoftBackground}">
+                                                <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="16"
+                                                           Foreground="{DynamicResource InfoBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Детали не выбраны"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       HorizontalAlignment="Center" />
+                                            <TextBlock Text="Выберите инцидент или настройку в списке выше (или на таймлайне), чтобы просмотреть подробные сведения."
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Event details body — shown only when a timeline event has data -->
+                                    <Border Classes="well detailsPanel"
+                                            Classes.repair-border="{Binding IsSelectedTimelineRepair}"
+                                            Classes.setup-border="{Binding IsSelectedTimelineSetup}"
+                                            IsVisible="{Binding SelectedTimelineHasData}"
+                                            BorderThickness="4,0,0,0" Padding="16">
+                                        <Border.Styles>
+                                            <Style Selector="Border.detailsPanel">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+                                            </Style>
+                                            <Style Selector="Border.repair-border">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+                                            </Style>
+                                            <Style Selector="Border.setup-border">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+                                            </Style>
+                                        </Border.Styles>
+
+                                        <StackPanel Spacing="14">
+                                            <Grid ColumnDefinitions="*,*,*">
+                                                <!-- Column 0: Сведения -->
+                                                <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,16,0">
+                                                    <TextBlock Text="ОСНОВНЫЕ СВЕДЕНИЯ" Classes="eyebrow" />
+
+                                                    <StackPanel Spacing="8">
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Тип события" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <Border Grid.Column="1" HorizontalAlignment="Left" Padding="6,2" CornerRadius="4" BorderThickness="1"
+                                                                    Classes.badge-danger="{Binding IsSelectedTimelineRepair}"
+                                                                    Classes.badge-warning="{Binding IsSelectedTimelineSetup}"
+                                                                    Classes.badge-info="{Binding !SelectedTimelineHasData}">
+                                                                <Border.Styles>
+                                                                    <Style Selector="Border.badge-danger">
+                                                                        <Setter Property="Background" Value="{DynamicResource DangerSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource DangerSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-danger TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-warning">
+                                                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource WarningSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-warning TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-info">
+                                                                        <Setter Property="Background" Value="{DynamicResource InfoSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource InfoSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-info TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource InfoBrush}" />
+                                                                    </Style>
+                                                                </Border.Styles>
+                                                                <TextBlock Text="{Binding SelectedTimelineType}" FontSize="10" FontWeight="SemiBold" />
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Статус" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <Border Grid.Column="1" HorizontalAlignment="Left" Padding="6,2" CornerRadius="4" BorderThickness="1"
+                                                                    Classes.badge-warning="{Binding IsSelectedTimelineInProgress}"
+                                                                    Classes.badge-success="{Binding IsSelectedTimelineCompleted}">
+                                                                <Border.Styles>
+                                                                    <Style Selector="Border.badge-success">
+                                                                        <Setter Property="Background" Value="{DynamicResource SuccessSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-success TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-warning">
+                                                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource WarningSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.badge-warning TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                    </Style>
+                                                                </Border.Styles>
+                                                                <TextBlock Text="{Binding SelectedTimelineStatus}" FontSize="10" FontWeight="SemiBold" />
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Код Jira" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                                <TextBlock Text="{Binding SelectedTimelineJiraKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                                                <Button Classes="smallIcon" Width="22" Height="22" Padding="0"
+                                                                        ToolTip.Tip="Скопировать ключ задачи"
+                                                                        Click="CopyJiraKeyButton_Click"
+                                                                        Background="Transparent" BorderThickness="0">
+                                                                    <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" />
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <!-- Column 1: Временные показатели -->
+                                                <StackPanel Grid.Column="1" Spacing="10" Margin="0,0,16,0">
+                                                    <TextBlock Text="ВРЕМЕННЫЕ ПОКАЗАТЕЛИ" Classes="eyebrow" />
+
+                                                    <StackPanel Spacing="8">
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Начало" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineStart}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                                        </Grid>
+
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Завершение" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineEnd}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                                        </Grid>
+
+                                                        <Grid ColumnDefinitions="90,*">
+                                                            <TextBlock Grid.Column="0" Text="Длительность" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineDuration}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <!-- Column 2: Исполнители -->
+                                                <StackPanel Grid.Column="2" Spacing="10">
+                                                    <TextBlock Text="ИСПОЛНЕНИЕ" Classes="eyebrow" />
+
+                                                    <StackPanel Spacing="8">
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock Text="Ответственный" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                            <TextBlock Text="{Binding SelectedTimelineResponsible}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                                        </StackPanel>
+
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock Text="Заявитель" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                            <TextBlock Text="{Binding SelectedTimelineReporter}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                            <!-- Описание и комментарии -->
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="ПОДРОБНОЕ ОПИСАНИЕ И КОММЕНТАРИИ" Classes="eyebrow" />
+
+                                                <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Описание" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Комментарии" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineComments}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
             </StackPanel>
         </ScrollViewer>
     </Grid>

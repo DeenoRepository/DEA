@@ -243,67 +243,97 @@ namespace EquipmentFailureAnalysis.Views
 
             double left = 4;
             double right = 4;
-            double top = 4;
-            double bottom = ShowHourLabels ? 70 : 4;
+            double top = ShowHourLabels ? 14 : 4;
+            double bottom = ShowHourLabels ? 18 : 4;
 
             double plotW = Math.Max(1, w - left - right);
             double plotH = Math.Max(1, h - top - bottom);
-            double y1 = top + 0.1 * plotH;
-            double y0 = top + 0.9 * plotH;
-
-            if (point.X < left || point.X > left + plotW)
-                return false;
 
             var annSource = Annotations as IList;
             if (annSource == null || annSource.Count == 0)
                 return false;
 
-            double hour = (point.X - left) / (plotW / 24.0);
-            hour = Math.Clamp(hour, 0.0, 24.0);
+            var annObjs = new System.Collections.Generic.List<Models.Annotation>();
+            foreach (var it in annSource)
+                if (it is Models.Annotation a) annObjs.Add(a);
+            annObjs.Sort((a, b) => a.Hour.CompareTo(b.Hour));
 
-            var repair = (RepairsItems != null && RepairsItems.Count > 0) ? annSource
-                .OfType<Models.Annotation>()
-                .Where(a => a.Type == Models.IssueType.Ремонт && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
-                .OrderBy(a => a.StartHour)
-                .FirstOrDefault() : null;
-
-            var setup = (SetupsItems != null && SetupsItems.Count > 0) ? annSource
-                .OfType<Models.Annotation>()
-                .Where(a => a.Type == Models.IssueType.Настройка && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
-                .OrderBy(a => a.StartHour)
-                .FirstOrDefault() : null;
-
-            if (repair == null && setup == null)
+            int annCount = annObjs.Count;
+            if (annCount == 0)
                 return false;
 
-            var builder = new StringBuilder();
-            if (repair != null && setup != null)
+            double[] annCenters = new double[annCount];
+            for (int i = 0; i < annCount; i++)
             {
-                builder.AppendLine("Пересечение событий");
-                builder.AppendLine();
+                annCenters[i] = left + annObjs[i].Hour * (plotW / 24.0);
             }
 
-            var hasEventBlock = false;
+            double trackHeight = Math.Min(24, Math.Max(12, plotH));
+            double trackY = top + (plotH - trackHeight) / 2.0;
 
-            if (repair != null)
+            // 1. Direct hit test for circular markers
+            for (int i = 0; i < annCount; i++)
             {
-                if (hasEventBlock)
-                    AppendTooltipBlockGap(builder);
+                var a = annObjs[i];
+                double ax = annCenters[i];
+                double dotY = trackY + trackHeight / 2.0;
+                var markerRect = new Rect(ax - 5, dotY - 5, 10, 10);
+                var hitRect = markerRect.Inflate(3);
 
-                AppendAnnotationTooltip(builder, "Ремонт", repair);
-                hasEventBlock = true;
+                if (hitRect.Contains(point))
+                {
+                    var builder = new StringBuilder();
+                    string titleText = a.Type == Models.IssueType.Ремонт ? "Ремонт" : "Настройка";
+                    AppendAnnotationTooltip(builder, titleText, a);
+                    tooltipText = builder.ToString().TrimEnd();
+                    return true;
+                }
             }
 
-            if (setup != null)
+            // 2. Fallback hover over track
+            if (point.Y >= trackY && point.Y <= trackY + trackHeight && point.X >= left && point.X <= left + plotW)
             {
-                if (hasEventBlock)
-                    AppendTooltipBlockGap(builder);
+                double hour = (point.X - left) / (plotW / 24.0);
+                hour = Math.Clamp(hour, 0.0, 24.0);
 
-                AppendAnnotationTooltip(builder, "Настройка", setup);
+                var repair = (RepairsItems != null && RepairsItems.Count > 0) ? annObjs
+                    .Where(a => a.Type == Models.IssueType.Ремонт && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
+                    .OrderBy(a => a.StartHour)
+                    .FirstOrDefault() : null;
+
+                var setup = (SetupsItems != null && SetupsItems.Count > 0) ? annObjs
+                    .Where(a => a.Type == Models.IssueType.Настройка && hour >= a.StartHour && hour < Math.Max(a.EndHour, a.StartHour + 0.0001))
+                    .OrderBy(a => a.StartHour)
+                    .FirstOrDefault() : null;
+
+                if (repair != null || setup != null)
+                {
+                    var builder = new StringBuilder();
+                    if (repair != null && setup != null)
+                    {
+                        builder.AppendLine("Пересечение событий");
+                        builder.AppendLine();
+                    }
+
+                    var hasEventBlock = false;
+                    if (repair != null)
+                    {
+                        AppendAnnotationTooltip(builder, "Ремонт", repair);
+                        hasEventBlock = true;
+                    }
+                    if (setup != null)
+                    {
+                        if (hasEventBlock)
+                            AppendTooltipBlockGap(builder);
+                        AppendAnnotationTooltip(builder, "Настройка", setup);
+                    }
+
+                    tooltipText = builder.ToString().TrimEnd();
+                    return tooltipText.Length > 0;
+                }
             }
 
-            tooltipText = builder.ToString().TrimEnd();
-            return tooltipText.Length > 0;
+            return false;
         }
 
         private bool TryGetAnnotationAt(Point point, out Models.Annotation? annotation)
@@ -318,42 +348,73 @@ namespace EquipmentFailureAnalysis.Views
 
             double left = 4;
             double right = 4;
-            double top = 4;
-            double bottom = ShowHourLabels ? 70 : 4;
+            double top = ShowHourLabels ? 14 : 4;
+            double bottom = ShowHourLabels ? 18 : 4;
 
             double plotW = Math.Max(1, w - left - right);
             double plotH = Math.Max(1, h - top - bottom);
-
-            if (point.X < left || point.X > left + plotW)
-                return false;
-
-            if (point.Y < top || point.Y > top + plotH)
-                return false;
 
             var annSource = Annotations as IList;
             if (annSource == null || annSource.Count == 0)
                 return false;
 
-            double hour = (point.X - left) / (plotW / 24.0);
-            hour = Math.Clamp(hour, 0.0, 24.0);
+            var annObjs = new System.Collections.Generic.List<Models.Annotation>();
+            foreach (var it in annSource)
+                if (it is Models.Annotation a) annObjs.Add(a);
+            annObjs.Sort((a, b) => a.Hour.CompareTo(b.Hour));
 
-            // Find an annotation that covers this hour.
-            var matching = annSource.OfType<Models.Annotation>()
-                .Where(a => hour >= a.StartHour && hour <= Math.Max(a.EndHour, a.StartHour + 0.1))
-                .Where(a => {
-                    if (a.Type == Models.IssueType.Ремонт)
-                        return RepairsItems != null && RepairsItems.Count > 0;
-                    if (a.Type == Models.IssueType.Настройка)
-                        return SetupsItems != null && SetupsItems.Count > 0;
-                    return true;
-                })
-                .OrderBy(a => a.StartHour)
-                .FirstOrDefault();
+            int annCount = annObjs.Count;
+            if (annCount == 0)
+                return false;
 
-            if (matching != null)
+            double[] annCenters = new double[annCount];
+            for (int i = 0; i < annCount; i++)
             {
-                annotation = matching;
-                return true;
+                annCenters[i] = left + annObjs[i].Hour * (plotW / 24.0);
+            }
+
+            double trackHeight = Math.Min(24, Math.Max(12, plotH));
+            double trackY = top + (plotH - trackHeight) / 2.0;
+
+            // 1. Direct hit test for circular markers
+            for (int i = 0; i < annCount; i++)
+            {
+                var a = annObjs[i];
+                double ax = annCenters[i];
+                double dotY = trackY + trackHeight / 2.0;
+                var markerRect = new Rect(ax - 5, dotY - 5, 10, 10);
+                var hitRect = markerRect.Inflate(3);
+
+                if (hitRect.Contains(point))
+                {
+                    annotation = a;
+                    return true;
+                }
+            }
+
+            // 2. Click within track fallback
+            if (point.Y >= trackY && point.Y <= trackY + trackHeight && point.X >= left && point.X <= left + plotW)
+            {
+                double hour = (point.X - left) / (plotW / 24.0);
+                hour = Math.Clamp(hour, 0.0, 24.0);
+
+                var matching = annSource.OfType<Models.Annotation>()
+                    .Where(a => hour >= a.StartHour && hour <= Math.Max(a.EndHour, a.StartHour + 0.1))
+                    .Where(a => {
+                        if (a.Type == Models.IssueType.Ремонт)
+                            return RepairsItems != null && RepairsItems.Count > 0;
+                        if (a.Type == Models.IssueType.Настройка)
+                            return SetupsItems != null && SetupsItems.Count > 0;
+                        return true;
+                    })
+                    .OrderBy(a => a.StartHour)
+                    .FirstOrDefault();
+
+                if (matching != null)
+                {
+                    annotation = matching;
+                    return true;
+                }
             }
 
             return false;
@@ -427,13 +488,12 @@ namespace EquipmentFailureAnalysis.Views
             // Margins
             double left = 4;
             double right = 4;
-            double top = 4;
-            double bottom = ShowHourLabels ? 22 : 4;
+            double top = ShowHourLabels ? 14 : 4;
+            double bottom = ShowHourLabels ? 18 : 4;
 
             double plotW = Math.Max(1, w - left - right);
-            double plotH = Math.Max(1, h - top - bottom);
 
-            // Retrieve annotations to determine "IsInProgress" status
+            // Retrieve annotations
             var anns = Annotations as IList ?? new System.Collections.ArrayList();
             var annObjs = new System.Collections.Generic.List<Models.Annotation>();
             foreach (var it in anns)
@@ -441,6 +501,16 @@ namespace EquipmentFailureAnalysis.Views
                 if (it is Models.Annotation a) 
                     annObjs.Add(a);
             }
+            annObjs.Sort((a, b) => a.Hour.CompareTo(b.Hour));
+
+            int annCount = annObjs.Count;
+            double[] annCenters = new double[annCount];
+            for (int i = 0; i < annCount; i++)
+            {
+                annCenters[i] = left + annObjs[i].Hour * (plotW / 24.0);
+            }
+
+            double plotH = Math.Max(1, h - top - bottom);
 
             // Track calculations for the Gantt bar
             double trackHeight = Math.Min(24, Math.Max(12, plotH));
@@ -689,12 +759,34 @@ namespace EquipmentFailureAnalysis.Views
                 double sx = left + sh * (plotW / 24.0);
                 context.DrawLine(shiftPen, new Point(sx, trackY - 2), new Point(sx, trackY + trackHeight + 2));
 
-                if (plotH > 35)
+                if (ShowHourLabels)
                 {
                     string lbl = TimeSpan.FromHours(sh).Hours.ToString("D2") + ":" + TimeSpan.FromHours(sh).Minutes.ToString("D2");
                     var ftLbl = new FormattedText(lbl, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfShift, labelFont, labelBrushShift);
                     double approxW = lbl.Length * labelFont * 0.6;
                     context.DrawText(ftLbl, new Point(sx - approxW / 2.0, trackY - labelFont - 3));
+                }
+            }
+
+            // Draw inline circular event markers when we have events
+            if (annCount > 0)
+            {
+                for (int i = 0; i < annCount; i++)
+                {
+                    var a = annObjs[i];
+                    double ax = annCenters[i];
+
+                    Color typeColor = Color.Parse("#E65100");
+                    if (a.Type == Models.IssueType.Ремонт)
+                        typeColor = Color.Parse("#EF4444");
+                    else if (a.Type == Models.IssueType.Настройка)
+                        typeColor = Color.Parse("#F59E0B");
+
+                    var markerBrush = new SolidColorBrush(typeColor);
+                    double dotY = trackY + trackHeight / 2.0;
+                    var markerRect = new Rect(ax - 5, dotY - 5, 10, 10);
+                    var eg = new EllipseGeometry(markerRect);
+                    context.DrawGeometry(markerBrush, new Pen(Brushes.White, 1.0), eg);
                 }
             }
 

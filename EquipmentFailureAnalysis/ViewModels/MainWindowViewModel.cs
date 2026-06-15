@@ -436,8 +436,18 @@ namespace EquipmentFailureAnalysis.ViewModels
         public double EmployeeCoveragePercent
         {
             get => _employeeCoveragePercent;
-            set => this.RaiseAndSetIfChanged(ref _employeeCoveragePercent, value);
+            set
+            {
+                var changed = Math.Abs(_employeeCoveragePercent - value) > 0.0001;
+                this.RaiseAndSetIfChanged(ref _employeeCoveragePercent, value);
+                if (changed)
+                {
+                    this.RaisePropertyChanged(nameof(EmployeeCoverageSweepAngle));
+                }
+            }
         }
+
+        public double EmployeeCoverageSweepAngle => EmployeeCoveragePercent * 3.6;
 
         private string _employeeTopByIssues = "-";
         public string EmployeeTopByIssues
@@ -512,8 +522,24 @@ namespace EquipmentFailureAnalysis.ViewModels
         public double EmployeeSlaCompliancePercent
         {
             get => _employeeSlaCompliancePercent;
-            set => this.RaiseAndSetIfChanged(ref _employeeSlaCompliancePercent, value);
+            set
+            {
+                var changed = Math.Abs(_employeeSlaCompliancePercent - value) > 0.0001;
+                this.RaiseAndSetIfChanged(ref _employeeSlaCompliancePercent, value);
+                if (changed)
+                {
+                    this.RaisePropertyChanged(nameof(EmployeeSlaSweepAngle));
+                    this.RaisePropertyChanged(nameof(IsEmployeeSlaDanger));
+                    this.RaisePropertyChanged(nameof(IsEmployeeSlaWarning));
+                    this.RaisePropertyChanged(nameof(IsEmployeeSlaSuccess));
+                }
+            }
         }
+
+        public double EmployeeSlaSweepAngle => EmployeeSlaCompliancePercent * 3.6;
+        public bool IsEmployeeSlaDanger => EmployeeSlaCompliancePercent < 80.0;
+        public bool IsEmployeeSlaWarning => EmployeeSlaCompliancePercent >= 80.0 && EmployeeSlaCompliancePercent < 95.0;
+        public bool IsEmployeeSlaSuccess => EmployeeSlaCompliancePercent >= 95.0;
 
         private int _employeeSlaBreaches;
         public int EmployeeSlaBreaches
