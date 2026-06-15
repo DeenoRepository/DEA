@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using System;
 
 namespace EquipmentFailureAnalysis.Views
 {
@@ -94,6 +95,50 @@ namespace EquipmentFailureAnalysis.Views
         {
             if (TopLevel.GetTopLevel(this) is MainWindow host)
                 host.ExportCsvButton_Click(sender, e);
+        }
+
+        private async void CopyPathButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm && !string.IsNullOrWhiteSpace(vm.ReportLastFilePath))
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(vm.ReportLastFilePath);
+                    if (topLevel is MainWindow host)
+                    {
+                        if (host.DataContext is ViewModels.MainWindowViewModel mainVm)
+                        {
+                            mainVm.StatusMessage = $"Путь к отчету скопирован: {vm.ReportLastFilePath}";
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OpenFileButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm && !string.IsNullOrWhiteSpace(vm.ReportLastFilePath))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = vm.ReportLastFilePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    if (TopLevel.GetTopLevel(this) is MainWindow host)
+                    {
+                        if (host.DataContext is ViewModels.MainWindowViewModel mainVm)
+                        {
+                            mainVm.StatusMessage = $"Не удалось открыть файл: {ex.Message}";
+                        }
+                    }
+                }
+            }
         }
     }
 }
