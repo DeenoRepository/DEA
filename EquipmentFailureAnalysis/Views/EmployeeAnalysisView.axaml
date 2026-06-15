@@ -127,7 +127,7 @@
                             <!-- ============== KPI GRID ============== -->
                             <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12">
                                 <!-- Исполнители -->
-                                <Border Grid.Column="0" Classes="kpi">
+                                <Border Grid.Column="0" Classes="kpi" ToolTip.Tip="Общее число сотрудников, задействованных в решении инцидентов и настроек в выбранной группе.">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="Исполнители" Classes="cardSubtext" />
@@ -148,7 +148,7 @@
                                 </Border>
 
                                 <!-- События -->
-                                <Border Grid.Column="1" Classes="kpi">
+                                <Border Grid.Column="1" Classes="kpi" ToolTip.Tip="Общее количество событий (инцидентов и настроек) за выбранный период.">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="События" Classes="cardSubtext" />
@@ -169,7 +169,7 @@
                                 </Border>
 
                                 <!-- Ср. длительность -->
-                                <Border Grid.Column="2" Classes="kpi">
+                                <Border Grid.Column="2" Classes="kpi" ToolTip.Tip="Среднее время выполнения одного события (инцидента или настройки) сотрудниками.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общая длительность назначенных событий / Количество назначенных событий">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="Ср. длительность" Classes="cardSubtext" />
@@ -190,7 +190,7 @@
                                 </Border>
 
                                 <!-- Покрытие (Radial progress ring with standard header) -->
-                                <Border Grid.Column="3" Classes="kpi" ToolTip.Tip="Процент сотрудников, вовлеченных в выполнение задач за выбранный период">
+                                <Border Grid.Column="3" Classes="kpi" ToolTip.Tip="Процент сотрудников, вовлеченных в выполнение задач за выбранный период.&#x0a;&#x0a;Формула расчета:&#x0a;Покрытие = (Количество назначенных событий / Общее количество событий) * 100%">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="Покрытие" Classes="cardSubtext" />
@@ -220,7 +220,7 @@
                                 </Border>
 
                                 <!-- SLA по событиям (Radial progress ring with standard header) -->
-                                <Border Grid.Column="4" Classes="kpi" ToolTip.Tip="Доля задач, выполненных без нарушения установленного норматива SLA">
+                                <Border Grid.Column="4" Classes="kpi" ToolTip.Tip="Доля задач, выполненных без нарушения установленного норматива SLA.&#x0a;&#x0a;Формула расчета:&#x0a;SLA = (Задачи, выполненные в срок / Количество назначенных задач) * 100%">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="SLA по событиям" Classes="cardSubtext" />
@@ -258,7 +258,7 @@
                                 </Border>
 
                                 <!-- Охват оборудования -->
-                                <Border Grid.Column="5" Classes="kpi">
+                                <Border Grid.Column="5" Classes="kpi" ToolTip.Tip="Среднее количество обслуженных уникальных единиц оборудования на одного сотрудника.&#x0a;&#x0a;Формула расчета:&#x0a;Охват = Сумма уникального оборудования по сотрудникам / Количество задействованных сотрудников">
                                     <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" Text="Охват обор." Classes="cardSubtext" />

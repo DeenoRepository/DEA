@@ -260,7 +260,7 @@
                         <!-- KPI 2x2 -->
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
                               RowSpacing="12" ColumnSpacing="12">
-                            <Border Grid.Row="0" Grid.Column="0" Classes="kpi">
+                            <Border Grid.Row="0" Grid.Column="0" Classes="kpi" ToolTip.Tip="Количество уникальных сотрудников, задействованных в решении инцидентов (ремонтов) за последние 30 дней.">
                                 <StackPanel Spacing="6">
                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <Border Width="22" Height="22" CornerRadius="6"
@@ -281,7 +281,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Row="0" Grid.Column="1" Classes="kpi">
+                            <Border Grid.Row="0" Grid.Column="1" Classes="kpi" ToolTip.Tip="Средняя длительность одного события (инцидента или настройки) за последние 30 дней.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общее время событий / Количество событий">
                                 <StackPanel Spacing="6">
                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <Border Width="22" Height="22" CornerRadius="6"

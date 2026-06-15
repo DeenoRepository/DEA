@@ -65,7 +65,7 @@
                  <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="12" ColumnSpacing="12">
 
                      <!-- Events 30d -->
-                     <Border Grid.Row="0" Grid.Column="0" Classes="kpi">
+                     <Border Grid.Row="0" Grid.Column="0" Classes="kpi" ToolTip.Tip="Общее количество событий (инцидентов и настроек) за текущие 30 дней.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="События за 30 дн."
@@ -89,7 +89,7 @@
                      </Border>
 
                      <!-- Prev 30d -->
-                     <Border Grid.Row="0" Grid.Column="1" Classes="kpi">
+                     <Border Grid.Row="0" Grid.Column="1" Classes="kpi" ToolTip.Tip="Общее количество событий за предыдущий 30-дневный период.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Предыдущий период"
@@ -113,7 +113,7 @@
                      </Border>
 
                      <!-- Equipment -->
-                     <Border Grid.Row="0" Grid.Column="2" Classes="kpi">
+                     <Border Grid.Row="0" Grid.Column="2" Classes="kpi" ToolTip.Tip="Количество уникальных единиц оборудования с зарегистрированными событиями за последние 30 дней.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Активное оборудование"
@@ -137,7 +137,7 @@
                      </Border>
 
                      <!-- Avg Duration -->
-                     <Border Grid.Row="1" Grid.Column="0" Classes="kpi">
+                     <Border Grid.Row="1" Grid.Column="0" Classes="kpi" ToolTip.Tip="Средняя длительность одного события (инцидента или настройки) за последние 30 дней.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общее время событий / Количество событий">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Средняя длительность"
@@ -160,7 +160,7 @@
                      </Border>
 
                      <!-- MTBF -->
-                     <Border Grid.Row="1" Grid.Column="1" Classes="kpi">
+                     <Border Grid.Row="1" Grid.Column="1" Classes="kpi" ToolTip.Tip="Среднее время работы оборудования между отказами (ремонтами) за последние 30 дней.&#x0a;&#x0a;Формула расчета:&#x0a;MTBF = (Общее доступное время - Общее время простоя) / Количество ремонтов">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="MTBF · наработка на отказ"
@@ -183,7 +183,7 @@
                      </Border>
 
                      <!-- MTTR -->
-                     <Border Grid.Row="1" Grid.Column="2" Classes="kpi">
+                     <Border Grid.Row="1" Grid.Column="2" Classes="kpi" ToolTip.Tip="Среднее время восстановления работоспособности оборудования после отказа (длительность ремонта).&#x0a;&#x0a;Формула расчета:&#x0a;MTTR = Общее время ремонтов / Количество ремонтов">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="MTTR · время восстановл."
