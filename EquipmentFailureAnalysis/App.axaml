@@ -332,15 +332,20 @@
             <Setter Property="Height" Value="36" />
             <Setter Property="MinHeight" Value="36" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="#1A2342" />
+            <Setter Property="Background" Value="#111827" />
             <Setter Property="BorderBrush" Value="#1F2A4A" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="9" />
-            <Setter Property="Foreground" Value="#E2E8F0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Foreground" Value="#CBD5E1" />
         </Style>
         <Style Selector="Button.headerIcon:pointerover">
-            <Setter Property="Background" Value="#27325A" />
-            <Setter Property="BorderBrush" Value="#3B4677" />
+            <Setter Property="Background" Value="#1E1B4B" />
+            <Setter Property="BorderBrush" Value="#4F46E5" />
+            <Setter Property="Foreground" Value="#818CF8" />
+        </Style>
+        <Style Selector="Button.headerIcon:pressed">
+            <Setter Property="Background" Value="#312E81" />
+            <Setter Property="BorderBrush" Value="#6366F1" />
         </Style>
 
 
