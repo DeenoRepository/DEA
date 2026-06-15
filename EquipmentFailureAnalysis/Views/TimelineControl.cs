@@ -58,43 +58,73 @@ namespace EquipmentFailureAnalysis.Views
             set => SetValue(AnnotationSelectedCommandProperty, value);
         }
 
+        private bool _isAttached;
+
         public TimelineControl()
         {
             this.GetObservable(ItemsProperty).Subscribe(items =>
             {
-                Unsubscribe(itemsChanged);
+                if (_isAttached)
+                    Unsubscribe(itemsChanged);
                 itemsChanged = items as INotifyCollectionChanged;
-                Subscribe(itemsChanged);
+                if (_isAttached)
+                    Subscribe(itemsChanged);
                 InvalidateVisual();
             });
 
             this.GetObservable(RepairsItemsProperty).Subscribe(items =>
             {
-                Unsubscribe(repairsItemsChanged);
+                if (_isAttached)
+                    Unsubscribe(repairsItemsChanged);
                 repairsItemsChanged = items as INotifyCollectionChanged;
-                Subscribe(repairsItemsChanged);
+                if (_isAttached)
+                    Subscribe(repairsItemsChanged);
                 InvalidateVisual();
             });
 
             this.GetObservable(SetupsItemsProperty).Subscribe(items =>
             {
-                Unsubscribe(setupsItemsChanged);
+                if (_isAttached)
+                    Unsubscribe(setupsItemsChanged);
                 setupsItemsChanged = items as INotifyCollectionChanged;
-                Subscribe(setupsItemsChanged);
+                if (_isAttached)
+                    Subscribe(setupsItemsChanged);
                 InvalidateVisual();
             });
 
             this.GetObservable(AnnotationsProperty).Subscribe(anns =>
             {
-                UnsubscribeAnnotations(annotationsChanged);
+                if (_isAttached)
+                    UnsubscribeAnnotations(annotationsChanged);
                 annotationsChanged = anns as INotifyCollectionChanged;
-                SubscribeAnnotations(annotationsChanged);
+                if (_isAttached)
+                    SubscribeAnnotations(annotationsChanged);
                 InvalidateVisual();
             });
 
             PointerMoved += OnPointerMoved;
             PointerExited += OnPointerExited;
             PointerPressed += OnPointerPressed;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _isAttached = true;
+            Subscribe(itemsChanged);
+            Subscribe(repairsItemsChanged);
+            Subscribe(setupsItemsChanged);
+            SubscribeAnnotations(annotationsChanged);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _isAttached = false;
+            Unsubscribe(itemsChanged);
+            Unsubscribe(repairsItemsChanged);
+            Unsubscribe(setupsItemsChanged);
+            UnsubscribeAnnotations(annotationsChanged);
         }
 
         public static readonly StyledProperty<bool> ShowHourLabelsProperty = AvaloniaProperty.Register<TimelineControl, bool>(nameof(ShowHourLabels), true);
@@ -393,7 +423,7 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             // 2. Click within track fallback
-            if (point.Y >= trackY && point.Y <= trackY + trackHeight && point.X >= left && point.X <= left + plotW)
+            if (point.X >= left && point.X <= left + plotW)
             {
                 double hour = (point.X - left) / (plotW / 24.0);
                 hour = Math.Clamp(hour, 0.0, 24.0);
@@ -769,7 +799,7 @@ namespace EquipmentFailureAnalysis.Views
             }
 
             // Draw inline circular event markers when we have events
-            if (annCount > 0)
+            if (ShowAnnotations && annCount > 0)
             {
                 for (int i = 0; i < annCount; i++)
                 {

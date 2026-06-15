@@ -111,16 +111,21 @@ namespace EquipmentFailureAnalysis.Views
         private bool _needsScrollToCurrentMonth = true;
         private System.Collections.Specialized.INotifyCollectionChanged? _subscribedMonthRows;
 
-        protected override void OnDataContextChanged(EventArgs e)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDataContextChanged(e);
-            
-            if (_subscribedMonthRows != null)
-            {
-                _subscribedMonthRows.CollectionChanged -= OnMonthRowsChanged;
-                _subscribedMonthRows = null;
-            }
+            base.OnAttachedToVisualTree(e);
+            SubscribeMonthRows();
+        }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            UnsubscribeMonthRows();
+        }
+
+        private void SubscribeMonthRows()
+        {
+            UnsubscribeMonthRows();
             if (DataContext is ViewModels.DowntimeViewModel vm)
             {
                 _subscribedMonthRows = vm.DowntimeMonthRows;
@@ -129,7 +134,21 @@ namespace EquipmentFailureAnalysis.Views
                     _subscribedMonthRows.CollectionChanged += OnMonthRowsChanged;
                 }
             }
+        }
 
+        private void UnsubscribeMonthRows()
+        {
+            if (_subscribedMonthRows != null)
+            {
+                _subscribedMonthRows.CollectionChanged -= OnMonthRowsChanged;
+                _subscribedMonthRows = null;
+            }
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+            SubscribeMonthRows();
             _needsScrollToCurrentMonth = true;
             Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
         }
