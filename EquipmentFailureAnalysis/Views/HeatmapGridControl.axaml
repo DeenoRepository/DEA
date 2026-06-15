@@ -29,13 +29,13 @@
 
                         <!-- Weekday Headers -->
                         <Grid ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="╨Я╨╜" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="1" Text="╨Т╤В" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="2" Text="╨б╤А" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="3" Text="╨з╤В" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="4" Text="╨Я╤В" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="5" Text="╨б╨▒" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="6" Text="╨Т╤Б" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
                         </Grid>
 
                         <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="0,0,0,4" />
@@ -56,6 +56,7 @@
                                                 HorizontalAlignment="Stretch"
                                                 MinWidth="0"
                                                 MinHeight="0"
+                                                Cursor="Hand"
                                                 Command="{Binding CellCommand, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}"
                                                 CommandParameter="{Binding Date}"
                                                 IsEnabled="{Binding IsValid}">
@@ -66,7 +67,7 @@
                                                     Background="{Binding ., Converter={StaticResource DayCellConverter}, ConverterParameter={Binding ConverterMode, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
-                                                    ToolTip.Tip="{Binding Index, StringFormat='╨б╨╛╨▒╤Л╤В╨╕╨╣: {0}'}">
+                                                    ToolTip.Tip="{Binding Index, StringFormat='Событий: {0}'}">
                                                 <Border.BorderBrush>
                                                     <MultiBinding Converter="{StaticResource SelectedBrushConverter}">
                                                         <Binding Path="Date" />

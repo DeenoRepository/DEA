@@ -2,6 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.FailureAnalysisView">
+    <UserControl.Styles>
+        <Style Selector="ScrollViewer.heatmapScroller /template/ ScrollContentPresenter">
+            <Setter Property="ClipToBounds" Value="True" />
+        </Style>
+    </UserControl.Styles>
 
     <Grid x:Name="FailureAnalysisLayoutRoot">
         <!-- ====================================================
@@ -196,24 +201,12 @@
                             <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
 
                             <Border Classes="well" Padding="0">
-                                <Grid>
-                                    <ScrollViewer x:Name="FailureHeatmapScroller"
-                                                  HorizontalScrollBarVisibility="Hidden"
-                                                  VerticalScrollBarVisibility="Disabled"
-                                                  Background="Transparent"
-                                                  Width="1024"
-                                                  HorizontalAlignment="Center">
-                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
-                                                                 MonthRows="{Binding MonthRows}"
-                                                                 CellCommand="{Binding ShowDayTimelineCommand}"
-                                                                 SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
-                                                                 ConverterMode="FailureAnalysis" />
-                                    </ScrollViewer>
-
-                                    <!-- Carousel Scroll Left (Floating) -->
-                                    <Button Classes="soft"
+                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Center">
+                                    <Button x:Name="FailureHeatmapScrollLeftButton"
+                                            Grid.Column="0"
+                                            Classes="soft"
                                             Width="32" Height="32"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Margin="8,0"
                                             CornerRadius="16"
@@ -221,11 +214,28 @@
                                             ToolTip.Tip="Предыдущие месяцы">
                                         <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Button>
+                                    
+                                    <ScrollViewer Grid.Column="1"
+                                                  x:Name="FailureHeatmapScroller"
+                                                  Classes="heatmapScroller"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Background="Transparent"
+                                                  HorizontalAlignment="Stretch"
+                                                  ClipToBounds="True">
+                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                                 MonthRows="{Binding MonthRows}"
+                                                                 CellCommand="{Binding ShowDayTimelineCommand}"
+                                                                 SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
+                                                                 ConverterMode="FailureAnalysis" />
+                                    </ScrollViewer>
 
                                     <!-- Carousel Scroll Right (Floating) -->
-                                    <Button Classes="soft"
+                                    <Button x:Name="FailureHeatmapScrollRightButton"
+                                            Grid.Column="2"
+                                            Classes="soft"
                                             Width="32" Height="32"
-                                            HorizontalAlignment="Right"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Margin="8,0"
                                             CornerRadius="16"
@@ -235,7 +245,8 @@
                                     </Button>
 
                                     <!-- Empty state for heatmap -->
-                                    <Border Classes="emptyState"
+                                    <Border Grid.ColumnSpan="3"
+                                            Classes="emptyState"
                                             IsVisible="{Binding MonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
                                             <Border Width="44" Height="44" CornerRadius="12"

@@ -2,6 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.DowntimeView">
+    <UserControl.Styles>
+        <Style Selector="ScrollViewer.heatmapScroller /template/ ScrollContentPresenter">
+            <Setter Property="ClipToBounds" Value="True" />
+        </Style>
+    </UserControl.Styles>
 
     <Grid x:Name="DowntimeLayoutRoot">
         <!-- ====================================================
@@ -197,24 +202,12 @@
                             <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
 
                             <Border Classes="well" Padding="0">
-                                <Grid>
-                                    <ScrollViewer x:Name="DowntimeHeatmapScroller"
-                                                  HorizontalScrollBarVisibility="Hidden"
-                                                  VerticalScrollBarVisibility="Disabled"
-                                                  Background="Transparent"
-                                                  Width="1024"
-                                                  HorizontalAlignment="Center">
-                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
-                                                                 MonthRows="{Binding DowntimeMonthRows}"
-                                                                 CellCommand="{Binding ShowDowntimeDayCommand}"
-                                                                 SelectedDate="{Binding DowntimeAnalysisDate, Mode=TwoWay}"
-                                                                 ConverterMode="DowntimeAnalysis" />
-                                    </ScrollViewer>
-
-                                    <!-- Carousel Scroll Left (Floating) -->
-                                    <Button Classes="soft"
+                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Center">
+                                    <Button x:Name="DowntimeHeatmapScrollLeftButton"
+                                            Grid.Column="0"
+                                            Classes="soft"
                                             Width="32" Height="32"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Margin="8,0"
                                             CornerRadius="16"
@@ -223,10 +216,26 @@
                                         <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Button>
 
-                                    <!-- Carousel Scroll Right (Floating) -->
-                                    <Button Classes="soft"
+                                    <ScrollViewer x:Name="DowntimeHeatmapScroller"
+                                                  Grid.Column="1"
+                                                  Classes="heatmapScroller"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Background="Transparent"
+                                                  HorizontalAlignment="Stretch"
+                                                  ClipToBounds="True">
+                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                                 MonthRows="{Binding DowntimeMonthRows}"
+                                                                 CellCommand="{Binding ShowDowntimeDayCommand}"
+                                                                 SelectedDate="{Binding DowntimeAnalysisDate, Mode=TwoWay}"
+                                                                 ConverterMode="DowntimeAnalysis" />
+                                    </ScrollViewer>
+
+                                    <Button x:Name="DowntimeHeatmapScrollRightButton"
+                                            Grid.Column="2"
+                                            Classes="soft"
                                             Width="32" Height="32"
-                                            HorizontalAlignment="Right"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Margin="8,0"
                                             CornerRadius="16"
@@ -236,7 +245,8 @@
                                     </Button>
 
                                     <!-- Empty state for heatmap -->
-                                    <Border Classes="emptyState"
+                                    <Border Grid.ColumnSpan="3"
+                                            Classes="emptyState"
                                             IsVisible="{Binding DowntimeMonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
                                             <Border Width="44" Height="44" CornerRadius="12"

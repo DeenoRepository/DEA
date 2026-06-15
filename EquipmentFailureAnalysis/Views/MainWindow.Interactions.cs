@@ -180,10 +180,64 @@ namespace EquipmentFailureAnalysis.Views
             {
                 if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
                 {
+                    // Dynamically adjust width for FailureHeatmapScroller (always show 1 calendar less than fits)
+                    var failureScroller = FindNestedControl<ScrollViewer>("FailureHeatmapScroller");
+                    if (failureScroller != null)
+                    {
+                        Border? wellBorder = null;
+                        var parent = failureScroller.Parent;
+                        while (parent != null)
+                        {
+                            if (parent is Border b && b.Classes.Contains("well"))
+                            {
+                                wellBorder = b;
+                                break;
+                            }
+                            parent = parent.Parent;
+                        }
+
+                        if (wellBorder != null && wellBorder.Bounds.Width > 0)
+                        {
+                            double wellWidth = wellBorder.Bounds.Width;
+                            double availableWidthForScroller = wellWidth - 96.0;
+                            int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
+                            int targetCount = Math.Max(1, maxFits - 1);
+                            double targetWidth = targetCount * 256.0;
+                            failureScroller.Width = targetWidth;
+                        }
+                    }
+
+                    // Dynamically adjust width for DowntimeHeatmapScroller (always show 1 calendar less than fits)
+                    var downtimeScroller = FindNestedControl<ScrollViewer>("DowntimeHeatmapScroller");
+                    if (downtimeScroller != null)
+                    {
+                        Border? wellBorder = null;
+                        var parent = downtimeScroller.Parent;
+                        while (parent != null)
+                        {
+                            if (parent is Border b && b.Classes.Contains("well"))
+                            {
+                                wellBorder = b;
+                                break;
+                            }
+                            parent = parent.Parent;
+                        }
+
+                        if (wellBorder != null && wellBorder.Bounds.Width > 0)
+                        {
+                            double wellWidth = wellBorder.Bounds.Width;
+                            double availableWidthForScroller = wellWidth - 96.0;
+                            int maxFits = (int)Math.Floor(availableWidthForScroller / 256.0);
+                            int targetCount = Math.Max(1, maxFits - 1);
+                            double targetWidth = targetCount * 256.0;
+                            downtimeScroller.Width = targetWidth;
+                        }
+                    }
+
                     ScrollViewer? targetScroller = _currentPage switch
                     {
-                        AppPage.FailureAnalysis => FindNestedControl<ScrollViewer>("FailureHeatmapScroller"),
-                        AppPage.DowntimeAnalysis => FindNestedControl<ScrollViewer>("DowntimeHeatmapScroller"),
+                        AppPage.FailureAnalysis => failureScroller,
+                        AppPage.DowntimeAnalysis => downtimeScroller,
                         _ => null
                     };
 
