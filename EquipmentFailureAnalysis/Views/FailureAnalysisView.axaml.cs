@@ -50,6 +50,11 @@ namespace EquipmentFailureAnalysis.Views
                 {
                     Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
                 });
+
+                scroller.GetObservable(ScrollViewer.ExtentProperty).Subscribe(_ =>
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
+                });
             }
         }
 
@@ -132,6 +137,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private bool _needsScrollToCurrentMonth = true;
         private System.Collections.Specialized.INotifyCollectionChanged? _subscribedMonthRows;
+        private ViewModels.MainWindowViewModel? _subscribedVm;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -150,6 +156,8 @@ namespace EquipmentFailureAnalysis.Views
             UnsubscribeMonthRows();
             if (DataContext is ViewModels.MainWindowViewModel vm)
             {
+                _subscribedVm = vm;
+                _subscribedVm.PropertyChanged += OnVmPropertyChanged;
                 _subscribedMonthRows = vm.MonthRows;
                 if (_subscribedMonthRows != null)
                 {
@@ -160,10 +168,24 @@ namespace EquipmentFailureAnalysis.Views
 
         private void UnsubscribeMonthRows()
         {
+            if (_subscribedVm != null)
+            {
+                _subscribedVm.PropertyChanged -= OnVmPropertyChanged;
+                _subscribedVm = null;
+            }
             if (_subscribedMonthRows != null)
             {
                 _subscribedMonthRows.CollectionChanged -= OnMonthRowsChanged;
                 _subscribedMonthRows = null;
+            }
+        }
+
+        private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModels.MainWindowViewModel.AnalysisDate))
+            {
+                _needsScrollToCurrentMonth = true;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => TriggerScrollIfReady(), Avalonia.Threading.DispatcherPriority.Loaded);
             }
         }
 
@@ -219,13 +241,13 @@ namespace EquipmentFailureAnalysis.Views
                 if (!_needsScrollToCurrentMonth)
                     return;
 
-                var today = DateTime.Today;
+                var activeDate = vm.AnalysisDate;
                 int targetIdx = -1;
                 double minDiffDays = double.MaxValue;
                 for (int i = 0; i < monthRows.Count; i++)
                 {
                     var r = monthRows[i];
-                    var diff = Math.Abs((new DateTime(r.Year, r.Month, 1) - today).TotalDays);
+                    var diff = Math.Abs((new DateTime(r.Year, r.Month, 1) - activeDate).TotalDays);
                     if (diff < minDiffDays)
                     {
                         minDiffDays = diff;
@@ -235,9 +257,29 @@ namespace EquipmentFailureAnalysis.Views
 
                 if (targetIdx >= 0)
                 {
+                    double monthLeft = targetIdx * 256;
+                    double monthRight = (targetIdx + 1) * 256;
+                    double currentScrollX = scroller.Offset.X;
+
+                    // If the target month is already fully visible, we don't need to change the scroll position
+                    if (monthLeft >= currentScrollX && monthRight <= currentScrollX + viewportWidth + 1.0)
+                    {
+                        _needsScrollToCurrentMonth = false;
+                        return;
+                    }
+
                     double targetX = (targetIdx + 1) * 256 - viewportWidth;
-                    scroller.Offset = new Avalonia.Vector(Math.Max(0, targetX), scroller.Offset.Y);
-                    _needsScrollToCurrentMonth = false;
+                    targetX = Math.Max(0, targetX);
+                    double maxScrollX = Math.Max(0, scroller.Extent.Width - scroller.Viewport.Width);
+                    if (maxScrollX >= targetX || targetX == 0)
+                    {
+                        scroller.Offset = new Avalonia.Vector(targetX, scroller.Offset.Y);
+                        _needsScrollToCurrentMonth = false;
+                    }
+                    else
+                    {
+                        scroller.Offset = new Avalonia.Vector(maxScrollX, scroller.Offset.Y);
+                    }
                 }
             }
         }

@@ -151,13 +151,16 @@ namespace EquipmentFailureAnalysis.Views
             var isLdap = vm.Settings.LdapAuthEnabled;
 
             var initialsText = FindNestedControl<TextBlock>("UserAvatarInitials");
+            var mainUserText = FindNestedControl<TextBlock>("UserMainText");
             var statusText = FindNestedControl<TextBlock>("UserStatusText");
+
+            var hasActiveLdapUser = isLdap && !string.IsNullOrWhiteSpace(username);
 
             if (initialsText != null)
             {
-                if (isLdap && !string.IsNullOrWhiteSpace(username))
+                if (hasActiveLdapUser)
                 {
-                    var clean = username.TrimStart().ToUpperInvariant();
+                    var clean = username!.TrimStart().ToUpperInvariant();
                     initialsText.Text = clean.Length > 0 ? clean[0].ToString() : "U";
                 }
                 else
@@ -166,9 +169,15 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
 
+            if (mainUserText != null)
+            {
+                mainUserText.Text = hasActiveLdapUser ? username! : "Локальный сеанс";
+            }
+
             if (statusText != null)
             {
-                statusText.Text = isLdap ? "Доменный сеанс" : "Локальный сеанс";
+                statusText.Text = hasActiveLdapUser ? "Доменный сеанс" : string.Empty;
+                statusText.IsVisible = hasActiveLdapUser;
             }
         }
 
@@ -336,53 +345,54 @@ namespace EquipmentFailureAnalysis.Views
             }
         }
 
-        private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)
+        private void NavigateToPage(AppPage page)
         {
             CapturePageFilters();
-            _currentPage = AppPage.FailureAnalysis;
+            _currentPage = page;
             UpdatePageVisibility();
             RestorePageFilters();
+
+            if (page == AppPage.Reports)
+            {
+                InitializeReportTools();
+            }
+            else if (page == AppPage.DowntimeAnalysis)
+            {
+                if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
+                    }, DispatcherPriority.Background);
+                }
+            }
+
+            SaveJiraSettingsFromUi();
+        }
+
+        private void FailureAnalysisButton_Click(object? sender, RoutedEventArgs e)
+        {
+            NavigateToPage(AppPage.FailureAnalysis);
         }
 
         private void DashboardButton_Click(object? sender, RoutedEventArgs e)
         {
-            CapturePageFilters();
-            _currentPage = AppPage.Dashboard;
-            UpdatePageVisibility();
-            RestorePageFilters();
+            NavigateToPage(AppPage.Dashboard);
         }
 
         private void DowntimeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
-            CapturePageFilters();
-            _currentPage = AppPage.DowntimeAnalysis;
-            UpdatePageVisibility();
-            RestorePageFilters();
-
-            if (this.DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    vm.Downtime.ShowDowntimeDayCommand.Execute(vm.Downtime.DowntimeAnalysisDate).Subscribe();
-                }, DispatcherPriority.Background);
-            }
+            NavigateToPage(AppPage.DowntimeAnalysis);
         }
 
         private void SettingsButton_Click(object? sender, RoutedEventArgs e)
         {
-            CapturePageFilters();
-            _currentPage = AppPage.Settings;
-            UpdatePageVisibility();
-            RestorePageFilters();
+            NavigateToPage(AppPage.Settings);
         }
 
         private void ReportsButton_Click(object? sender, RoutedEventArgs e)
         {
-            CapturePageFilters();
-            _currentPage = AppPage.Reports;
-            UpdatePageVisibility();
-            InitializeReportTools();
-            RestorePageFilters();
+            NavigateToPage(AppPage.Reports);
         }
 
         private void InitializeReportTools()
@@ -758,10 +768,7 @@ namespace EquipmentFailureAnalysis.Views
 
         private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
-            CapturePageFilters();
-            _currentPage = AppPage.EmployeeAnalysis;
-            UpdatePageVisibility();
-            RestorePageFilters();
+            NavigateToPage(AppPage.EmployeeAnalysis);
         }
 
         private void CapturePageFilters()

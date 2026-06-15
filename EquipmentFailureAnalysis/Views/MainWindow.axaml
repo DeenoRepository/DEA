@@ -8,7 +8,7 @@
         mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
         x:Class="EquipmentFailureAnalysis.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/dea-logo.ico"
+        Icon="/Assets/dea-logo.png"
         Title="DEA — Equipment Failure Analysis"
         Background="{DynamicResource PrimaryBackground}"
         WindowState="Maximized">
@@ -101,27 +101,6 @@
 
                 <!-- Right action cluster -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-
-                    <!-- Live status pill -->
-                    <Border x:Name="LiveStatusPill"
-                            Background="#11203D" BorderBrush="#1F2A4A" BorderThickness="1"
-                            CornerRadius="999" Padding="12,5" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="18" Height="18" CornerRadius="9"
-                                    Background="#22C55E" VerticalAlignment="Center"
-                                    BoxShadow="0 0 6 1 #22C55E">
-                                <TextBlock x:Name="LiveStatusIcon"
-                                           Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
-                                           FontSize="9"
-                                           Foreground="White"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                            </Border>
-                            <TextBlock x:Name="LiveStatusText"
-                                       Text="Online" FontSize="11" FontWeight="Bold"
-                                       Foreground="#E2E8F0" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
 
                     <!-- Theme quick toggle (Light/Dark) -->
                     <Button x:Name="ThemeToggleButton"
@@ -346,7 +325,8 @@
                             <!-- User details -->
                             <StackPanel Grid.Column="1" x:Name="UserProfileTextPanel"
                                         VerticalAlignment="Center" Spacing="1">
-                                <TextBlock Text="{Binding Settings.LdapLastUsername, FallbackValue='Локальный сеанс'}"
+                                <TextBlock x:Name="UserMainText"
+                                           Text="Локальный сеанс"
                                            FontSize="12"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimary}"
@@ -409,44 +389,44 @@
                 Background="{DynamicResource CardBackground}"
                 BorderBrush="{DynamicResource BorderSubtleBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="20,8">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                Padding="20,4">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">
 
                 <!-- Status indicator dot -->
                 <Ellipse Grid.Column="0"
-                         Width="8" Height="8"
+                         Width="6" Height="6"
                          Fill="{DynamicResource AccentBrush}"
                          VerticalAlignment="Center" />
 
                 <TextBlock Grid.Column="1"
                            Text="Статус"
-                           FontSize="11"
+                           FontSize="10"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextMuted}"
                            VerticalAlignment="Center" />
 
                 <TextBlock Grid.Column="2"
                            Text="{Binding StatusMessage}"
-                           FontSize="12"
+                           FontSize="11"
                            Foreground="{DynamicResource TextSecondary}"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center" />
 
                 <Button Grid.Column="3"
-                        FontSize="11"
-                        Padding="10,5"
-                        MinHeight="28"
+                        FontSize="10"
+                        Padding="8,3"
+                        MinHeight="22"
                         Background="Transparent"
                         BorderBrush="{DynamicResource ControlBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                         <TextBlock Text="&#xE7C3;"
                                    FontFamily="Segoe MDL2 Assets"
-                                   FontSize="11"
+                                   FontSize="10"
                                    Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center" />
-                        <TextBlock Text="Журнал событий" FontSize="11"
+                        <TextBlock Text="Журнал событий" FontSize="10"
                                    Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -511,13 +491,15 @@
              LOADING OVERLAY
              ==================================================== -->
         <Grid Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="2"
-              Background="#A0080B16"
+              Background="#60000000"
               IsVisible="{Binding IsLoading}"
               ZIndex="2000">
             <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="#141E33" BorderBrush="#2A395C" BorderThickness="1"
+                    Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource ControlBorderBrush}"
+                    BorderThickness="1"
                     CornerRadius="12" Padding="24" Width="320"
-                    BoxShadow="0 10 30 0 #000000">
+                    BoxShadow="0 10 30 0 #40000000">
                 <StackPanel Spacing="16">
                     <ProgressBar IsIndeterminate="True" Height="4" Foreground="{DynamicResource AccentBrush}" />
                     <TextBlock Text="Идет загрузка и анализ данных..."

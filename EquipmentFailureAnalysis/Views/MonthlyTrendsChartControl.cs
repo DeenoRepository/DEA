@@ -138,7 +138,7 @@ namespace EquipmentFailureAnalysis.Views
                 g.BeginFigure(new Point(points[0].X, plotBottom), true);
                 g.LineTo(points[0]);
                 
-                double tension = 0.25;
+                double tension = 0.12;
                 for (int i = 0; i < points.Count - 1; i++)
                 {
                     Point p0 = points[Math.Max(i - 1, 0)];
@@ -149,8 +149,8 @@ namespace EquipmentFailureAnalysis.Views
                     Point cp1 = p1 + new Point(p2.X - p0.X, p2.Y - p0.Y) * tension;
                     Point cp2 = p2 - new Point(p3.X - p1.X, p3.Y - p1.Y) * tension;
 
-                    cp1 = new Point(Math.Clamp(cp1.X, p1.X, p2.X), cp1.Y);
-                    cp2 = new Point(Math.Clamp(cp2.X, p1.X, p2.X), cp2.Y);
+                    cp1 = new Point(Math.Clamp(cp1.X, p1.X, p2.X), Math.Clamp(cp1.Y, top, plotBottom));
+                    cp2 = new Point(Math.Clamp(cp2.X, p1.X, p2.X), Math.Clamp(cp2.Y, top, plotBottom));
 
                     g.CubicBezierTo(cp1, cp2, p2);
                 }
@@ -176,7 +176,7 @@ namespace EquipmentFailureAnalysis.Views
             using (var g = lineGeometry.Open())
             {
                 g.BeginFigure(points[0], false);
-                double tension = 0.25;
+                double tension = 0.12;
                 for (int i = 0; i < points.Count - 1; i++)
                 {
                     Point p0 = points[Math.Max(i - 1, 0)];
@@ -187,8 +187,8 @@ namespace EquipmentFailureAnalysis.Views
                     Point cp1 = p1 + new Point(p2.X - p0.X, p2.Y - p0.Y) * tension;
                     Point cp2 = p2 - new Point(p3.X - p1.X, p3.Y - p1.Y) * tension;
 
-                    cp1 = new Point(Math.Clamp(cp1.X, p1.X, p2.X), cp1.Y);
-                    cp2 = new Point(Math.Clamp(cp2.X, p1.X, p2.X), cp2.Y);
+                    cp1 = new Point(Math.Clamp(cp1.X, p1.X, p2.X), Math.Clamp(cp1.Y, top, plotBottom));
+                    cp2 = new Point(Math.Clamp(cp2.X, p1.X, p2.X), Math.Clamp(cp2.Y, top, plotBottom));
 
                     g.CubicBezierTo(cp1, cp2, p2);
                 }

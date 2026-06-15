@@ -10,5 +10,13 @@ namespace EquipmentFailureAnalysis.Models
         public string AvgDurationText { get; set; } = "00:00";
         public double IntensityPercent { get; set; }
         public double SlaCompliancePercent { get; set; }
+
+        // Formatting helpers for cleaner UI
+        public bool HasData => IssuesCount > 0;
+        public double RowOpacity => HasData ? 1.0 : 0.45;
+        public string IssuesCountText => HasData ? IssuesCount.ToString() : "—";
+        public string RepairsCountText => RepairsCount > 0 ? RepairsCount.ToString() : "—";
+        public string SetupsCountText => SetupsCount > 0 ? SetupsCount.ToString() : "—";
+        public string AvgDurationTextFormatted => (HasData && AvgDurationMinutes > 0) ? AvgDurationText : "—";
     }
 }

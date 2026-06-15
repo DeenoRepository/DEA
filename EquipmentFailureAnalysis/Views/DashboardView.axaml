@@ -3,6 +3,20 @@
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.DashboardView">
 
+    <UserControl.Styles>
+        <Style Selector="Border.monthlyRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.monthlyRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid x:Name="DashboardLayoutRoot">
 
         <!-- ====================================================
@@ -304,79 +318,81 @@
                                         Classes="sectionSubtitle" />
                          </StackPanel>
 
-                         <Border Classes="well" Padding="0">
-                             <Grid RowDefinitions="Auto,*">
-                                 <!-- Sticky header row -->
-                                 <Border Grid.Row="0"
-                                         Background="{DynamicResource SurfaceBrush}"
-                                         BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                         BorderThickness="0,0,0,1"
-                                         CornerRadius="10,10,0,0"
-                                         Padding="14,10">
-                                     <Grid ColumnDefinitions="1.5*,*,*,*,*">
-                                         <TextBlock Grid.Column="0" Text="Месяц"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}" />
-                                         <TextBlock Grid.Column="1" Text="События"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="2" Text="Ремонтов"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="3" Text="Настроек"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="4" Text="Ср. время"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                     </Grid>
-                                 </Border>
+                          <Border Classes="well" Padding="0" Width="650" HorizontalAlignment="Left">
+                              <Grid RowDefinitions="Auto,*">
+                                  <!-- Sticky header row -->
+                                  <Border Grid.Row="0"
+                                          Background="{DynamicResource SurfaceBrush}"
+                                          BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                          BorderThickness="0,0,0,1"
+                                          CornerRadius="10,10,0,0"
+                                          Padding="14,8">
+                                      <Grid ColumnDefinitions="2.2*,*,*,*,1.2*">
+                                          <TextBlock Grid.Column="0" Text="Месяц"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}" />
+                                          <TextBlock Grid.Column="1" Text="События"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="2" Text="Ремонтов"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="3" Text="Настроек"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="4" Text="Ср. время"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                      </Grid>
+                                  </Border>
 
-                                 <!-- Scrollable list body -->
-                                 <ScrollViewer Grid.Row="1"
-                                               HorizontalScrollBarVisibility="Disabled"
-                                               VerticalScrollBarVisibility="Auto"
-                                               MaxHeight="320">
-                                     <ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
-                                         <ItemsControl.ItemTemplate>
-                                             <DataTemplate>
-                                                 <Border BorderBrush="{DynamicResource RowDividerBrush}"
-                                                         BorderThickness="0,0,0,1"
-                                                         Padding="14,9">
-                                                     <Grid ColumnDefinitions="1.5*,*,*,*,*">
-                                                         <TextBlock Grid.Column="0" Text="{Binding PeriodLabel}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextSecondary}" />
-                                                         <TextBlock Grid.Column="1" Text="{Binding IssuesCount}"
-                                                                    FontSize="12" FontWeight="SemiBold"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="2" Text="{Binding RepairsCount}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="3" Text="{Binding SetupsCount}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="4" Text="{Binding AvgDurationText}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                     </Grid>
-                                                 </Border>
-                                             </DataTemplate>
-                                         </ItemsControl.ItemTemplate>
-                                     </ItemsControl>
-                                 </ScrollViewer>
-                             </Grid>
-                         </Border>
-                     </StackPanel>
-                 </Border>
+                                  <!-- Scrollable list body -->
+                                  <ScrollViewer Grid.Row="1"
+                                                HorizontalScrollBarVisibility="Disabled"
+                                                VerticalScrollBarVisibility="Auto"
+                                                MaxHeight="320">
+                                      <ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
+                                          <ItemsControl.ItemTemplate>
+                                              <DataTemplate>
+                                                  <Border Classes="monthlyRow"
+                                                          BorderBrush="{DynamicResource RowDividerBrush}"
+                                                          BorderThickness="0,0,0,1"
+                                                          Padding="14,7"
+                                                          Opacity="{Binding RowOpacity}">
+                                                      <Grid ColumnDefinitions="2.2*,*,*,*,1.2*">
+                                                          <TextBlock Grid.Column="0" Text="{Binding PeriodLabel}"
+                                                                     FontSize="12" FontWeight="Medium"
+                                                                     Foreground="{DynamicResource TextSecondary}" />
+                                                          <TextBlock Grid.Column="1" Text="{Binding IssuesCountText}"
+                                                                     FontSize="12" FontWeight="SemiBold"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="2" Text="{Binding RepairsCountText}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="3" Text="{Binding SetupsCountText}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="4" Text="{Binding AvgDurationTextFormatted}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                      </Grid>
+                                                  </Border>
+                                              </DataTemplate>
+                                          </ItemsControl.ItemTemplate>
+                                      </ItemsControl>
+                                  </ScrollViewer>
+                              </Grid>
+                          </Border>
+                      </StackPanel>
+                  </Border>
              </StackPanel>
          </ScrollViewer>
     </Grid>

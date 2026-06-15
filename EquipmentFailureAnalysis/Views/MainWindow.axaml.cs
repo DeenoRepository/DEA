@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Data;
 using EquipmentFailureAnalysis.Services;
 using EquipmentFailureAnalysis.Utility;
+using EquipmentFailureAnalysis.Models;
 using System.Linq;
 using System;
 using System.IO;
@@ -736,46 +737,6 @@ namespace EquipmentFailureAnalysis.Views
             SaveJiraSettingsFromUi();
         }
 
-        private sealed class JiraImportSettings
-        {
-            public string JiraResourceUrl { get; set; } = string.Empty;
-            public string JiraUsername { get; set; } = string.Empty;
-            public string JiraJql { get; set; } = string.Empty;
-            public bool JiraAutoImportEnabled { get; set; }
-            public int JiraAutoImportPeriodMinutes { get; set; } = 30;
-            public DateTime? JiraLastSuccessfulImportUtc { get; set; }
-            public List<string> JiraFilterIds { get; set; } = new List<string>();
-            public string HeatmapSelectedSetting { get; set; } = string.Empty;
-            public int FailureHeatmapMin { get; set; } = 0;
-            public int FailureHeatmapMax { get; set; } = 10;
-            public int DowntimeHeatmapMin { get; set; } = 0;
-            public int DowntimeHeatmapMax { get; set; } = 10;
-            public DateTime? ReportStartDate { get; set; }
-            public DateTime? ReportEndDate { get; set; }
-            public string ReportGroupBy { get; set; } = string.Empty;
-            public bool ReportIncludeDashboard { get; set; } = true;
-            public bool ReportIncludeDowntime { get; set; } = true;
-            public bool ReportIncludeEmployee { get; set; } = true;
-            public bool ReportOpenAfterGenerate { get; set; } = true;
-            public bool ReportOnlyInProgress { get; set; }
-            public bool ReportFilterByDuration { get; set; }
-            public int ReportMinDurationMinutes { get; set; } = 60;
-            public bool ReportFieldStart { get; set; } = true;
-            public bool ReportFieldEnd { get; set; } = true;
-            public bool ReportFieldEquipment { get; set; } = true;
-            public bool ReportFieldSubdivision { get; set; } = true;
-            public bool ReportFieldType { get; set; } = true;
-            public bool ReportFieldResponsible { get; set; } = true;
-            public bool ReportFieldDescription { get; set; } = true;
-            public string ReportLastFilePath { get; set; } = string.Empty;
-            public bool LdapAuthEnabled { get; set; }
-            public string LdapServer { get; set; } = string.Empty;
-            public int LdapPort { get; set; } = 389;
-            public bool LdapUseSsl { get; set; }
-            public string LdapDomain { get; set; } = string.Empty;
-            public string LdapBaseDn { get; set; } = string.Empty;
-            public string LdapLastUsername { get; set; } = string.Empty;
-        }
 
         private static string NormalizeReportGroupByKey(string? value)
         {
@@ -864,7 +825,23 @@ namespace EquipmentFailureAnalysis.Views
                     LdapUseSsl = settingsVm?.LdapUseSsl ?? existing.LdapUseSsl,
                     LdapDomain = settingsVm?.LdapDomain?.Trim() ?? existing.LdapDomain,
                     LdapBaseDn = settingsVm?.LdapBaseDn?.Trim() ?? existing.LdapBaseDn,
-                    LdapLastUsername = settingsVm?.LdapLastUsername?.Trim() ?? existing.LdapLastUsername
+                    LdapLastUsername = settingsVm?.LdapLastUsername?.Trim() ?? existing.LdapLastUsername,
+
+                    LastActivePage = _currentPage.ToString(),
+                    AnalysisDate = shellVm?.AnalysisDate,
+                    DowntimeAnalysisDate = shellVm?.DowntimeAnalysisDate,
+                    EmployeeTimelineDate = shellVm?.EmployeeTimelineDate,
+                    SelectedEquipmentUid = shellVm?.SelectedEquipment?.Uid,
+                    SelectedIssueTypeFilter = shellVm?.SelectedIssueTypeFilter ?? "Все позиции",
+                    SelectedDowntimeIssueTypeFilter = shellVm?.SelectedDowntimeIssueTypeFilter ?? "Все типы",
+                    SelectedDowntimeStatusFilter = shellVm?.SelectedDowntimeStatusFilter ?? "Все статусы",
+                    SelectedDowntimeResponsibleFilter = shellVm?.SelectedDowntimeResponsibleFilter ?? "Все ответственные",
+                    SelectedDowntimeSubdivisionFilter = shellVm?.SelectedDowntimeSubdivisionFilter ?? "Все группы",
+                    DowntimeEquipmentSearchQuery = shellVm?.DowntimeEquipmentSearchQuery ?? string.Empty,
+                    SelectedDashboardIssueTypeFilter = shellVm?.Dashboard?.SelectedDashboardIssueTypeFilter ?? "Все типы",
+                    SelectedDashboardResponsibleFilter = shellVm?.Dashboard?.SelectedDashboardResponsibleFilter ?? "Все ответственные",
+                    SelectedDashboardSubdivisionFilter = shellVm?.Dashboard?.SelectedDashboardSubdivisionFilter ?? "Все группы",
+                    SelectedEmployeeTimelineEmployee = shellVm?.SelectedEmployeeTimelineEmployee ?? "Все сотрудники"
                 };
 
                 _jiraSettingsStore.Save("jira_import_settings.json", settings);
@@ -886,25 +863,25 @@ namespace EquipmentFailureAnalysis.Views
 
                 _lastSuccessfulJiraImportUtc = settings.JiraLastSuccessfulImportUtc;
 
-            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel shellSettingsVm)
-            {
-                shellSettingsVm.Settings.JiraResourceUrl = settings.JiraResourceUrl ?? string.Empty;
-                shellSettingsVm.Settings.JiraUsername = settings.JiraUsername ?? string.Empty;
-                shellSettingsVm.Settings.JiraJql = settings.JiraJql ?? string.Empty;
-                shellSettingsVm.Settings.JiraAutoImportEnabled = settings.JiraAutoImportEnabled;
-                shellSettingsVm.Settings.JiraAutoImportPeriodMinutes = Math.Clamp(settings.JiraAutoImportPeriodMinutes <= 0 ? 30 : settings.JiraAutoImportPeriodMinutes, 1, 1440);
-                shellSettingsVm.Settings.JiraFilterIds.Clear();
-                var loadedIds = settings.JiraFilterIds ?? new List<string>();
-                foreach (var filterId in loadedIds.Where(v => !string.IsNullOrWhiteSpace(v) && v.All(char.IsDigit)).Distinct(StringComparer.Ordinal))
-                    shellSettingsVm.Settings.JiraFilterIds.Add(filterId.Trim());
-                shellSettingsVm.Settings.JiraSelectedFilterId = null;
-                shellSettingsVm.Settings.LdapAuthEnabled = settings.LdapAuthEnabled;
-                shellSettingsVm.Settings.LdapServer = settings.LdapServer ?? string.Empty;
-                shellSettingsVm.Settings.LdapPort = Math.Clamp(settings.LdapPort <= 0 ? 389 : settings.LdapPort, 1, 65535);
-                shellSettingsVm.Settings.LdapUseSsl = settings.LdapUseSsl;
-                shellSettingsVm.Settings.LdapDomain = settings.LdapDomain ?? string.Empty;
-                shellSettingsVm.Settings.LdapBaseDn = settings.LdapBaseDn ?? string.Empty;
-                shellSettingsVm.Settings.LdapLastUsername = settings.LdapLastUsername ?? string.Empty;
+                if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel shellSettingsVm)
+                {
+                    shellSettingsVm.Settings.JiraResourceUrl = settings.JiraResourceUrl ?? string.Empty;
+                    shellSettingsVm.Settings.JiraUsername = settings.JiraUsername ?? string.Empty;
+                    shellSettingsVm.Settings.JiraJql = settings.JiraJql ?? string.Empty;
+                    shellSettingsVm.Settings.JiraAutoImportEnabled = settings.JiraAutoImportEnabled;
+                    shellSettingsVm.Settings.JiraAutoImportPeriodMinutes = Math.Clamp(settings.JiraAutoImportPeriodMinutes <= 0 ? 30 : settings.JiraAutoImportPeriodMinutes, 1, 1440);
+                    shellSettingsVm.Settings.JiraFilterIds.Clear();
+                    var loadedIds = settings.JiraFilterIds ?? new List<string>();
+                    foreach (var filterId in loadedIds.Where(v => !string.IsNullOrWhiteSpace(v) && v.All(char.IsDigit)).Distinct(StringComparer.Ordinal))
+                        shellSettingsVm.Settings.JiraFilterIds.Add(filterId.Trim());
+                    shellSettingsVm.Settings.JiraSelectedFilterId = null;
+                    shellSettingsVm.Settings.LdapAuthEnabled = settings.LdapAuthEnabled;
+                    shellSettingsVm.Settings.LdapServer = settings.LdapServer ?? string.Empty;
+                    shellSettingsVm.Settings.LdapPort = Math.Clamp(settings.LdapPort <= 0 ? 389 : settings.LdapPort, 1, 65535);
+                    shellSettingsVm.Settings.LdapUseSsl = settings.LdapUseSsl;
+                    shellSettingsVm.Settings.LdapDomain = settings.LdapDomain ?? string.Empty;
+                    shellSettingsVm.Settings.LdapBaseDn = settings.LdapBaseDn ?? string.Empty;
+                    shellSettingsVm.Settings.LdapLastUsername = settings.LdapLastUsername ?? string.Empty;
                 }
 
                 if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
@@ -920,6 +897,29 @@ namespace EquipmentFailureAnalysis.Views
                     var selected = vm.HeatmapSettingOptions.FirstOrDefault(v => string.Equals(v, settings.HeatmapSelectedSetting, StringComparison.CurrentCultureIgnoreCase));
                     if (!string.IsNullOrWhiteSpace(selected))
                         vm.SelectedHeatmapSetting = selected;
+
+                    // Load UI State Filters (so they are active at startup/reload, but we still Restore them properly after VM loads data)
+                    vm.SelectedIssueTypeFilter = settings.SelectedIssueTypeFilter ?? "Все позиции";
+                    vm.SelectedDowntimeIssueTypeFilter = settings.SelectedDowntimeIssueTypeFilter ?? "Все типы";
+                    vm.SelectedDowntimeStatusFilter = settings.SelectedDowntimeStatusFilter ?? "Все статусы";
+                    vm.SelectedDowntimeResponsibleFilter = settings.SelectedDowntimeResponsibleFilter ?? "Все ответственные";
+                    vm.SelectedDowntimeSubdivisionFilter = settings.SelectedDowntimeSubdivisionFilter ?? "Все группы";
+                    vm.DowntimeEquipmentSearchQuery = settings.DowntimeEquipmentSearchQuery ?? string.Empty;
+                    vm.SelectedEmployeeTimelineEmployee = settings.SelectedEmployeeTimelineEmployee ?? "Все сотрудники";
+
+                    if (vm.Dashboard != null)
+                    {
+                        vm.Dashboard.SelectedDashboardIssueTypeFilter = settings.SelectedDashboardIssueTypeFilter ?? "Все типы";
+                        vm.Dashboard.SelectedDashboardResponsibleFilter = settings.SelectedDashboardResponsibleFilter ?? "Все ответственные";
+                        vm.Dashboard.SelectedDashboardSubdivisionFilter = settings.SelectedDashboardSubdivisionFilter ?? "Все группы";
+                    }
+
+                    _savedDowntimeIssueTypeFilter = vm.SelectedDowntimeIssueTypeFilter;
+                    _savedDowntimeStatusFilter = vm.SelectedDowntimeStatusFilter;
+                    _savedDowntimeResponsibleFilter = vm.SelectedDowntimeResponsibleFilter;
+                    _savedDowntimeSubdivisionFilter = vm.SelectedDowntimeSubdivisionFilter;
+                    _savedDowntimeEquipmentSearchQuery = vm.DowntimeEquipmentSearchQuery;
+                    _savedDashboardSubdivisionFilter = vm.Dashboard?.SelectedDashboardSubdivisionFilter ?? "Все группы";
                 }
 
                 if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel reportOwnerVm)
@@ -952,6 +952,83 @@ namespace EquipmentFailureAnalysis.Views
             {
                 _suppressSettingsSave = false;
                 ConfigureJiraAutoImportLoop();
+            }
+        }
+
+        public void RestoreActiveUiState()
+        {
+            try
+            {
+                _suppressSettingsSave = true;
+
+                if (!_jiraSettingsStore.TryLoad("jira_import_settings.json", out JiraImportSettings? settings) || settings == null)
+                    return;
+
+                if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                {
+                    // 1. Restore filters
+                    vm.SelectedIssueTypeFilter = settings.SelectedIssueTypeFilter ?? "Все позиции";
+                    vm.SelectedDowntimeIssueTypeFilter = settings.SelectedDowntimeIssueTypeFilter ?? "Все типы";
+                    vm.SelectedDowntimeStatusFilter = settings.SelectedDowntimeStatusFilter ?? "Все статусы";
+                    vm.SelectedDowntimeResponsibleFilter = settings.SelectedDowntimeResponsibleFilter ?? "Все ответственные";
+                    vm.SelectedDowntimeSubdivisionFilter = settings.SelectedDowntimeSubdivisionFilter ?? "Все группы";
+                    vm.DowntimeEquipmentSearchQuery = settings.DowntimeEquipmentSearchQuery ?? string.Empty;
+                    vm.SelectedEmployeeTimelineEmployee = settings.SelectedEmployeeTimelineEmployee ?? "Все сотрудники";
+
+                    if (vm.Dashboard != null)
+                    {
+                        vm.Dashboard.SelectedDashboardIssueTypeFilter = settings.SelectedDashboardIssueTypeFilter ?? "Все типы";
+                        vm.Dashboard.SelectedDashboardResponsibleFilter = settings.SelectedDashboardResponsibleFilter ?? "Все ответственные";
+                        vm.Dashboard.SelectedDashboardSubdivisionFilter = settings.SelectedDashboardSubdivisionFilter ?? "Все группы";
+                    }
+
+                    _savedDowntimeIssueTypeFilter = vm.SelectedDowntimeIssueTypeFilter;
+                    _savedDowntimeStatusFilter = vm.SelectedDowntimeStatusFilter;
+                    _savedDowntimeResponsibleFilter = vm.SelectedDowntimeResponsibleFilter;
+                    _savedDowntimeSubdivisionFilter = vm.SelectedDowntimeSubdivisionFilter;
+                    _savedDowntimeEquipmentSearchQuery = vm.DowntimeEquipmentSearchQuery;
+                    _savedDashboardSubdivisionFilter = vm.Dashboard?.SelectedDashboardSubdivisionFilter ?? "Все группы";
+
+                    // 2. Restore selected equipment
+                    if (settings.SelectedEquipmentUid.HasValue)
+                    {
+                        var foundEq = vm.EquipmentCollection.FirstOrDefault(e => e.Uid == settings.SelectedEquipmentUid.Value);
+                        if (foundEq != null)
+                        {
+                            vm.LoadEquipmentCommand.Execute(foundEq).Subscribe(_ =>
+                            {
+                                if (vm.ShowDayTimelineCommand != null)
+                                {
+                                    vm.ShowDayTimelineCommand.Execute(DateTime.Today).Subscribe();
+                                }
+                            });
+                        }
+                    }
+
+                    // 3. Set analysis dates to the current day (today)
+                    vm.AnalysisDate = DateTime.Today;
+                    vm.DowntimeAnalysisDate = DateTime.Today;
+                    vm.EmployeeTimelineDate = DateTime.Today;
+
+                    if (vm.Downtime.ShowDowntimeDayCommand != null)
+                    {
+                        vm.Downtime.ShowDowntimeDayCommand.Execute(DateTime.Today).Subscribe();
+                    }
+
+                    // 4. Restore active page
+                    if (Enum.TryParse<AppPage>(settings.LastActivePage, out var parsedPage))
+                    {
+                        NavigateToPage(parsedPage);
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+            finally
+            {
+                _suppressSettingsSave = false;
             }
         }
 

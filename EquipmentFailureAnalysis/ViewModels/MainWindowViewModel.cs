@@ -1038,15 +1038,34 @@ namespace EquipmentFailureAnalysis.ViewModels
                 {
                     try
                     {
-                        var all = t.Result;
-                        _masterEquipment = all;
-                        RebuildDowntimeResponsibleFilters();
-                        RebuildDowntimeSubdivisionFilters();
-                        RebuildDashboardFilters();
-                        RebuildEmployeeSubdivisionFilters();
-                        RebuildEmployeeMonthOptions();
-                        ApplyTypeFilterAndSort();
-                        FillSearchWithFirstEquipmentIfNeeded();
+                        // Only load default XML if no data has been restored from cache (Jira or last XML)
+                        if (_masterEquipment == null || _masterEquipment.Count == 0)
+                        {
+                            var all = t.Result;
+                            _masterEquipment = all;
+                            RebuildDowntimeResponsibleFilters();
+                            RebuildDowntimeSubdivisionFilters();
+                            RebuildDashboardFilters();
+                            RebuildEmployeeSubdivisionFilters();
+                            RebuildEmployeeMonthOptions();
+                            ApplyTypeFilterAndSort();
+                            FillSearchWithFirstEquipmentIfNeeded();
+
+                            // Preselect first equipment (if exists) and load its data + today's timeline
+                            if (EquipmentCollection.Count > 0 && LoadEquipmentCommand != null)
+                            {
+                                var first = EquipmentCollection[0];
+                                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                                {
+                                    if (ShowDayTimelineCommand != null)
+                                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                                });
+                            }
+
+                            BuildDowntimeHeatmap();
+                            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
+                            BuildEmployeeAnalysis();
+                        }
                     }
                     catch
                     {
@@ -1379,20 +1398,6 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ShowDayTimelineCommand = ReactiveCommand.Create<DateTime>(date => BuildTimelineForDate(date, SelectedEquipment));
             });
 
-            // Preselect first equipment (if exists) and load its data + today's timeline
-            if (EquipmentCollection.Count > 0)
-            {
-                var first = EquipmentCollection[0];
-                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
-                {
-                    if (ShowDayTimelineCommand != null)
-                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
-                });
-            }
-
-            BuildDowntimeHeatmap();
-            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
-            BuildEmployeeAnalysis();
         }
 
     }

@@ -66,6 +66,16 @@ namespace EquipmentFailureAnalysis
 
                 if (!restored)
                     vm.AddStatusEvent("Сохраненные данные не найдены. Ожидается импорт XML или Jira.");
+
+                // Restore last saved active UI state (active page, selected equipment, dates, filters)
+                try
+                {
+                    if (desktop.MainWindow is MainWindow mainWin)
+                    {
+                        mainWin.RestoreActiveUiState();
+                    }
+                }
+                catch { }
             }
 
             base.OnFrameworkInitializationCompleted();
