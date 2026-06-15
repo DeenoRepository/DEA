@@ -960,6 +960,44 @@ namespace EquipmentFailureAnalysis.Views
             return await Dispatcher.UIThread.InvokeAsync(GetJiraApiSettingsFromUi);
         }
 
+        private void LogImportError(string contextMessage, Exception? ex)
+        {
+            try
+            {
+                var appFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "EquipmentFailureAnalysis");
+                Directory.CreateDirectory(appFolder);
+                var logFile = Path.Combine(appFolder, "import_errors.log");
+                
+                var logEntry = new StringBuilder();
+                logEntry.AppendLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss}] {contextMessage}");
+                if (ex != null)
+                {
+                    logEntry.AppendLine($"Type: {ex.GetType().FullName}");
+                    logEntry.AppendLine($"Message: {ex.Message}");
+                    logEntry.AppendLine($"StackTrace:\n{ex.StackTrace}");
+                }
+                logEntry.AppendLine(new string('-', 80));
+                
+                File.AppendAllText(logFile, logEntry.ToString(), Encoding.UTF8);
+
+                if (File.Exists(logFile))
+                {
+                    var lines = File.ReadAllLines(logFile);
+                    if (lines.Length > 2000)
+                    {
+                        var truncated = lines.Skip(lines.Length - 1000).ToArray();
+                        File.WriteAllLines(logFile, truncated, Encoding.UTF8);
+                    }
+                }
+            }
+            catch
+            {
+                // ignore logging errors
+            }
+        }
+
         private async Task<bool> RunJiraImportAsync(bool showDialogs, string sourceLabel, bool isAutoImport, TimeSpan? autoInterval, CancellationToken cancellationToken = default)
         {
             var (url, username, token, jql, filterIds) = await GetJiraApiSettingsFromUiAsync();
@@ -970,6 +1008,12 @@ namespace EquipmentFailureAnalysis.Views
                     await ShowMessageAsync("Ошибка импорта Jira", message);
                 PublishStatus($"Ошибка импорта Jira: {message}");
                 return false;
+            }
+
+            var vm = this.DataContext as EquipmentFailureAnalysis.ViewModels.MainWindowViewModel;
+            if (vm != null)
+            {
+                vm.IsLoading = true;
             }
 
             await _jiraImportLock.WaitAsync(cancellationToken);
@@ -998,6 +1042,7 @@ namespace EquipmentFailureAnalysis.Views
                         await ShowMessageAsync(title, result.ErrorMessage);
                     }
                     PublishStatus($"Ошибка импорта Jira: {result.ErrorMessage}");
+                    LogImportError($"[JIRA IMPORT FAIL] {result.ErrorMessage}", null);
                     return false;
                 }
 
@@ -1018,10 +1063,15 @@ namespace EquipmentFailureAnalysis.Views
             catch (Exception ex)
             {
                 PublishStatus($"Ошибка импорта Jira: {ex.Message}");
+                LogImportError($"[JIRA IMPORT EXCEPTION] {ex.Message}", ex);
                 return false;
             }
             finally
             {
+                if (vm != null)
+                {
+                    vm.IsLoading = false;
+                }
                 _jiraImportLock.Release();
             }
         }

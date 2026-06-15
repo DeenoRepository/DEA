@@ -506,5 +506,29 @@
                     Margin="0,0,28,28"
                     Spacing="10"
                     ZIndex="1000" />
+
+        <!-- ====================================================
+             LOADING OVERLAY
+             ==================================================== -->
+        <Grid Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="2"
+              Background="#A0080B16"
+              IsVisible="{Binding IsLoading}"
+              ZIndex="2000">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="#141E33" BorderBrush="#2A395C" BorderThickness="1"
+                    CornerRadius="12" Padding="24" Width="320"
+                    BoxShadow="0 10 30 0 #000000">
+                <StackPanel Spacing="16">
+                    <ProgressBar IsIndeterminate="True" Height="4" Foreground="{DynamicResource AccentBrush}" />
+                    <TextBlock Text="Идет загрузка и анализ данных..."
+                               FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Пожалуйста, подождите"
+                               FontSize="11" Foreground="{DynamicResource TextMuted}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

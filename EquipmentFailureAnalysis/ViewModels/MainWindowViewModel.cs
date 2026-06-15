@@ -1023,21 +1023,41 @@ namespace EquipmentFailureAnalysis.ViewModels
             // prepare hours 0..23 for timeline labels
             for (int h = 0; h < 24; h++)
                 DayHours.Add(h);
-            XmlDataDecoder xmlDataDecoder = new XmlDataDecoder();
-            // load all equipment and set master list
-            var all = xmlDataDecoder.DecodeEquipment().ToList();
-            all.ForEach(e => { /* ensure Issues collection is not null */ });
-            _masterEquipment = all;
-            RebuildDowntimeResponsibleFilters();
-            RebuildDowntimeSubdivisionFilters();
-            RebuildDashboardFilters();
-            RebuildEmployeeSubdivisionFilters();
-            RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
-            // apply initial type filter and sort
-            ApplyTypeFilterAndSort();
-            FillSearchWithFirstEquipmentIfNeeded();
+
+            IsLoading = true;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                var xmlDataDecoder = new XmlDataDecoder();
+                var all = xmlDataDecoder.DecodeEquipment().ToList();
+                return all;
+            }).ContinueWith(t =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        var all = t.Result;
+                        _masterEquipment = all;
+                        RebuildDowntimeResponsibleFilters();
+                        RebuildDowntimeSubdivisionFilters();
+                        RebuildDashboardFilters();
+                        RebuildEmployeeSubdivisionFilters();
+                        RebuildEmployeeMonthOptions();
+                        ApplyTypeFilterAndSort();
+                        FillSearchWithFirstEquipmentIfNeeded();
+                    }
+                    catch
+                    {
+                        // ignore default load failure
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+                    }
+                });
+            });
 
             // DayCellSize will be adjusted by view to fit available area
 
