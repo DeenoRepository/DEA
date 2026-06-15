@@ -148,155 +148,203 @@
                     BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="0,0,1,0"
                     Padding="12,16">
-                <StackPanel Spacing="4">
+                <Grid RowDefinitions="*,Auto">
+                    <!-- Scrollable menu container -->
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="4">
 
-                    <!-- Sidebar header -->
-                    <StackPanel x:Name="NavigationHeaderPanel" Spacing="2" Margin="6,0,6,10">
-                        <TextBlock Classes="eyebrow" Text="РАЗДЕЛЫ" />
-                        <TextBlock Text="Аналитика отказов"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimary}" />
-                        <TextBlock Text="Быстрый переход между разделами"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <!-- Dashboard -->
-                    <Button x:Name="DashboardNavButton" Classes="navEntry"
-                            HorizontalAlignment="Stretch"
-                            Click="DashboardButton_Click"
-                            ToolTip.Tip="Панель управления">
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
-                            <TextBlock Classes="navIcon" Text="&#xE80F;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                            <StackPanel x:Name="DashboardNavTextPanel" Grid.Column="1"
-                                        Spacing="1" HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-                                <TextBlock Text="Панель управления"
+                            <!-- Sidebar header -->
+                            <StackPanel x:Name="NavigationHeaderPanel" Spacing="2" Margin="6,0,6,10">
+                                <TextBlock Classes="eyebrow" Text="РАЗДЕЛЫ" />
+                                <TextBlock Text="Аналитика отказов"
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="Тренды, KPI, эффективность"
+                                <TextBlock Text="Быстрый переход между разделами"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextMuted}"
-                                           TextWrapping="NoWrap"
-                                           TextTrimming="CharacterEllipsis" />
+                                           TextWrapping="Wrap" />
                             </StackPanel>
-                        </Grid>
-                    </Button>
 
-                    <!-- Downtime -->
-                    <Button x:Name="DowntimeNavButton" Classes="navEntry"
-                            HorizontalAlignment="Stretch"
-                            Click="DowntimeAnalysisButton_Click"
-                            ToolTip.Tip="Анализ простоев">
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
-                            <TextBlock Classes="navIcon" Text="&#xE823;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                            <StackPanel x:Name="DowntimeNavTextPanel" Grid.Column="1"
-                                        Spacing="1" HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-                                <TextBlock Text="Анализ простоев"
+                            <!-- Dashboard -->
+                            <Button x:Name="DashboardNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="DashboardButton_Click"
+                                    ToolTip.Tip="Панель управления">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE80F;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="DashboardNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Панель управления"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Тренды, KPI, эффективность"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Downtime -->
+                            <Button x:Name="DowntimeNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="DowntimeAnalysisButton_Click"
+                                    ToolTip.Tip="Анализ простоев">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE823;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="DowntimeNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Анализ простоев"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Карта тепла и детализация по дням"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Employees -->
+                            <Button x:Name="EmployeeNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="EmployeeAnalysisButton_Click"
+                                    ToolTip.Tip="Анализ сотрудников">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE716;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="EmployeeNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Анализ сотрудников"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Нагрузка, SLA, активность"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Divider -->
+                            <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="10,12,10,6" />
+                            <TextBlock x:Name="ManagementHeaderPanel" Classes="eyebrow" Text="УПРАВЛЕНИЕ" Margin="6,0,6,4" />
+
+                            <!-- Reports -->
+                            <Button x:Name="ReportsNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="ReportsButton_Click"
+                                    ToolTip.Tip="Отчёты">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE9D2;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="ReportsNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Отчёты"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Экспорт HTML · PDF · CSV"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Settings -->
+                            <Button x:Name="SettingsNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="SettingsButton_Click"
+                                    ToolTip.Tip="Настройки">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE713;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="SettingsNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Настройки"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Jira · LDAP · тема"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- User profile panel anchored to bottom -->
+                    <Border Grid.Row="1" x:Name="UserProfilePanel"
+                            Background="{DynamicResource SurfaceAlt}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="10"
+                            Margin="0,12,0,0">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <!-- Avatar container -->
+                            <Border Grid.Column="0" Width="32" Height="32" CornerRadius="16"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Offset="0" Color="#4F46E5" />
+                                        <GradientStop Offset="1" Color="#818CF8" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock x:Name="UserAvatarInitials"
+                                           Text="Л"
                                            FontSize="13"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- User details -->
+                            <StackPanel Grid.Column="1" x:Name="UserProfileTextPanel"
+                                        VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="{Binding Settings.LdapLastUsername, FallbackValue='Локальный сеанс'}"
+                                           FontSize="12"
                                            FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="Карта тепла и детализация по дням"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           TextWrapping="NoWrap"
-                                           TextTrimming="CharacterEllipsis" />
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="UserStatusText"
+                                           Text="Локальный сеанс"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
                         </Grid>
-                    </Button>
-
-                    <!-- Employees -->
-                    <Button x:Name="EmployeeNavButton" Classes="navEntry"
-                            HorizontalAlignment="Stretch"
-                            Click="EmployeeAnalysisButton_Click"
-                            ToolTip.Tip="Анализ сотрудников">
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
-                            <TextBlock Classes="navIcon" Text="&#xE716;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                            <StackPanel x:Name="EmployeeNavTextPanel" Grid.Column="1"
-                                        Spacing="1" HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-                                <TextBlock Text="Анализ сотрудников"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="Нагрузка, SLA, активность"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           TextWrapping="NoWrap"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </Grid>
-                    </Button>
-
-                    <!-- Divider -->
-                    <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="10,12,10,6" />
-                    <TextBlock Classes="eyebrow" Text="УПРАВЛЕНИЕ" Margin="6,0,6,4" />
-
-                    <!-- Reports -->
-                    <Button x:Name="ReportsNavButton" Classes="navEntry"
-                            HorizontalAlignment="Stretch"
-                            Click="ReportsButton_Click"
-                            ToolTip.Tip="Отчёты">
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
-                            <TextBlock Classes="navIcon" Text="&#xE9D2;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                            <StackPanel x:Name="ReportsNavTextPanel" Grid.Column="1"
-                                        Spacing="1" HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-                                <TextBlock Text="Отчёты"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="Экспорт HTML · PDF · CSV"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           TextWrapping="NoWrap"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </Grid>
-                    </Button>
-
-                    <!-- Settings -->
-                    <Button x:Name="SettingsNavButton" Classes="navEntry"
-                            HorizontalAlignment="Stretch"
-                            Click="SettingsButton_Click"
-                            ToolTip.Tip="Настройки">
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
-                            <TextBlock Classes="navIcon" Text="&#xE713;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                            <StackPanel x:Name="SettingsNavTextPanel" Grid.Column="1"
-                                        Spacing="1" HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-                                <TextBlock Text="Настройки"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="Jira · LDAP · тема"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           TextWrapping="NoWrap"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </Grid>
-                    </Button>
-                </StackPanel>
+                    </Border>
+                </Grid>
             </Border>
 
             <!-- Collapse / expand sidebar -->

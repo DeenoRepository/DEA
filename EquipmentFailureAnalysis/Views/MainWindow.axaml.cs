@@ -297,6 +297,36 @@ namespace EquipmentFailureAnalysis.Views
             Dispatcher.UIThread.Post(Apply);
         }
 
+        private IBrush GetThemeBrush(string key, string fallbackHex)
+        {
+            try
+            {
+                if (this.FindResource(key) is IBrush brush)
+                {
+                    return brush;
+                }
+            }
+            catch { }
+
+            try
+            {
+                if (Application.Current != null && Application.Current.FindResource(key) is IBrush appBrush)
+                {
+                    return appBrush;
+                }
+            }
+            catch { }
+
+            try
+            {
+                return Brush.Parse(fallbackHex);
+            }
+            catch
+            {
+                return Brushes.Gray;
+            }
+        }
+
         public void ShowToast(string message, string type = "Info")
         {
             var container = FindNestedControl<StackPanel>("ToastContainer");
@@ -323,9 +353,9 @@ namespace EquipmentFailureAnalysis.Views
 
             var iconBrush = type.ToLowerInvariant() switch
             {
-                "success" => (IBrush)Application.Current!.FindResource("SuccessBrush")!,
-                "error" => (IBrush)Application.Current!.FindResource("DangerBrush")!,
-                _ => (IBrush)Application.Current!.FindResource("InfoBrush")!
+                "success" => GetThemeBrush("SuccessBrush", "#059669"),
+                "error" => GetThemeBrush("DangerBrush", "#DC2626"),
+                _ => GetThemeBrush("InfoBrush", "#0EA5E9")
             };
 
             var icon = new TextBlock
@@ -357,7 +387,7 @@ namespace EquipmentFailureAnalysis.Views
                 Text = titleText,
                 FontWeight = FontWeight.SemiBold,
                 FontSize = 12,
-                Foreground = (IBrush)Application.Current!.FindResource("TextPrimary")!
+                Foreground = GetThemeBrush("TextPrimary", "#0F172A")
             };
             textStack.Children.Add(title);
 
@@ -366,7 +396,7 @@ namespace EquipmentFailureAnalysis.Views
                 Text = message,
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 11,
-                Foreground = (IBrush)Application.Current!.FindResource("TextSecondary")!
+                Foreground = GetThemeBrush("TextSecondary", "#475569")
             };
             textStack.Children.Add(content);
             Grid.SetColumn(textStack, 1);
@@ -379,7 +409,7 @@ namespace EquipmentFailureAnalysis.Views
                     Text = "\uE711",
                     FontFamily = new FontFamily("Segoe MDL2 Assets"),
                     FontSize = 10,
-                    Foreground = (IBrush)Application.Current!.FindResource("TextMuted")!
+                    Foreground = GetThemeBrush("TextMuted", "#94A3B8")
                 },
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
@@ -661,6 +691,7 @@ namespace EquipmentFailureAnalysis.Views
             LoadJiraSettingsToUi();
             ConfigureJiraAutoImportLoop();
             UpdatePageVisibility();
+            HookUserProfileUpdates();
         }
 
         internal void JiraFilterIdAddButton_Click(object? sender, RoutedEventArgs e)

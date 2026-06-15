@@ -60,17 +60,20 @@ namespace EquipmentFailureAnalysis.Views
             var isExpanded = !_isNavigationCollapsed;
 
             SetControlVisibility("NavigationHeaderPanel", isExpanded);
+            SetControlVisibility("ManagementHeaderPanel", isExpanded);
             SetControlVisibility("DashboardNavTextPanel", isExpanded);
             SetControlVisibility("DowntimeNavTextPanel", isExpanded);
             SetControlVisibility("EmployeeNavTextPanel", isExpanded);
             SetControlVisibility("ReportsNavTextPanel", isExpanded);
             SetControlVisibility("SettingsNavTextPanel", isExpanded);
+            SetControlVisibility("UserProfileTextPanel", isExpanded);
 
             UpdateNavigationButtonLayout("DashboardNavButton", isExpanded);
             UpdateNavigationButtonLayout("DowntimeNavButton", isExpanded);
             UpdateNavigationButtonLayout("EmployeeNavButton", isExpanded);
             UpdateNavigationButtonLayout("ReportsNavButton", isExpanded);
             UpdateNavigationButtonLayout("SettingsNavButton", isExpanded);
+            UpdateUserProfileLayout(isExpanded);
 
             var toggleGlyph = FindNestedControl<TextBlock>("NavigationToggleGlyph");
             if (toggleGlyph != null)
@@ -79,6 +82,94 @@ namespace EquipmentFailureAnalysis.Views
             UpdateNavigationToggleLayout(isExpanded);
             UpdateRightPanelTogglePosition();
             ScheduleRightPanelToggleReposition();
+        }
+
+        private void UpdateUserProfileLayout(bool isExpanded)
+        {
+            var userPanel = FindNestedControl<Border>("UserProfilePanel");
+            if (userPanel == null)
+                return;
+
+            userPanel.Padding = isExpanded ? new Thickness(10) : new Thickness(0);
+            userPanel.BorderThickness = isExpanded ? new Thickness(1) : new Thickness(0);
+
+            if (isExpanded)
+            {
+                try
+                {
+                    if (this.FindResource("SurfaceAlt") is IBrush brush)
+                    {
+                        userPanel.Background = brush;
+                        return;
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    if (Avalonia.Application.Current != null && Avalonia.Application.Current.FindResource("SurfaceAlt") is IBrush appBrush)
+                    {
+                        userPanel.Background = appBrush;
+                        return;
+                    }
+                }
+                catch { }
+
+                userPanel.Background = Brushes.Transparent;
+            }
+            else
+            {
+                userPanel.Background = Brushes.Transparent;
+            }
+        }
+
+        public void HookUserProfileUpdates()
+        {
+            if (DataContext is EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+            {
+                vm.Settings.PropertyChanged -= Settings_PropertyChangedForProfile;
+                vm.Settings.PropertyChanged += Settings_PropertyChangedForProfile;
+                UpdateUserPanelState();
+            }
+        }
+
+        private void Settings_PropertyChangedForProfile(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.LdapLastUsername) ||
+                e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.LdapAuthEnabled))
+            {
+                UpdateUserPanelState();
+            }
+        }
+
+        private void UpdateUserPanelState()
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel vm)
+                return;
+
+            var username = vm.Settings.LdapLastUsername?.Trim();
+            var isLdap = vm.Settings.LdapAuthEnabled;
+
+            var initialsText = FindNestedControl<TextBlock>("UserAvatarInitials");
+            var statusText = FindNestedControl<TextBlock>("UserStatusText");
+
+            if (initialsText != null)
+            {
+                if (isLdap && !string.IsNullOrWhiteSpace(username))
+                {
+                    var clean = username.TrimStart().ToUpperInvariant();
+                    initialsText.Text = clean.Length > 0 ? clean[0].ToString() : "U";
+                }
+                else
+                {
+                    initialsText.Text = "Л";
+                }
+            }
+
+            if (statusText != null)
+            {
+                statusText.Text = isLdap ? "Доменный сеанс" : "Локальный сеанс";
+            }
         }
 
         private void UpdateNavigationButtonLayout(string buttonName, bool isExpanded)
