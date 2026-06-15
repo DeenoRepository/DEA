@@ -472,23 +472,32 @@
                                 </StackPanel>
 
                                 <!-- Empty state overlay — shown when list is empty -->
-                                <Border Classes="emptyState"
-                                        IsVisible="{Binding DowntimeDayEquipmentRows.Count, Converter={StaticResource IsEmptyConverter}}"
-                                        Margin="0,50,0,0">
+                                <Border IsVisible="{Binding DowntimeDayEquipmentRows.Count, Converter={StaticResource IsEmptyConverter}}"
+                                        Background="{DynamicResource SuccessSoftBackground}"
+                                        BorderBrush="{DynamicResource SuccessSoftBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="24,18"
+                                        Margin="14">
                                     <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                        <Border Width="36" Height="36" CornerRadius="10"
-                                                Background="{DynamicResource SuccessSoftBackground}">
-                                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="18"
-                                                       Foreground="{DynamicResource SuccessBrush}"
-                                                       HorizontalAlignment="Center"
+                                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border Width="24" Height="24" CornerRadius="6"
+                                                    Background="{DynamicResource SuccessBrush}" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="12"
+                                                           Foreground="White"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Неисправностей не зафиксировано"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       Foreground="{DynamicResource SuccessStrongBrush}"
                                                        VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Classes="emptyStateTitle" Text="Неисправностей не зафиксировано"
-                                                    HorizontalAlignment="Center" />
-                                        <TextBlock Classes="emptyStateSubtitle"
-                                                    Text="За выбранный день нет событий по оборудованию"
-                                                    HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <TextBlock Text="За выбранный день нет событий по оборудованию"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   HorizontalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
