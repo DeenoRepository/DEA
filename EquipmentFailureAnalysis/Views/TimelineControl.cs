@@ -382,10 +382,39 @@ namespace EquipmentFailureAnalysis.Views
             builder.AppendLine();
         }
 
+        private IBrush GetThemeBrush(string key, string fallbackHex)
+        {
+            try
+            {
+                if (this.FindResource(key) is IBrush brush)
+                {
+                    return brush;
+                }
+            }
+            catch { }
+
+            try
+            {
+                if (Application.Current != null && Application.Current.FindResource(key) is IBrush appBrush)
+                {
+                    return appBrush;
+                }
+            }
+            catch { }
+
+            try
+            {
+                return Brush.Parse(fallbackHex);
+            }
+            catch
+            {
+                return Brushes.Gray;
+            }
+        }
+
         public override void Render(DrawingContext context)
         {
             base.Render(context);
-            var items = Items as IList ?? new System.Collections.ArrayList();
             var repairsItems = RepairsItems as IList ?? new System.Collections.ArrayList();
             var setupsItems = SetupsItems as IList ?? new System.Collections.ArrayList();
 
@@ -395,48 +424,31 @@ namespace EquipmentFailureAnalysis.Views
             if (w <= 0 || h <= 0)
                 return;
 
-            // margins
+            // Margins
             double left = 4;
             double right = 4;
             double top = 4;
-            double bottom = ShowHourLabels ? 70 : 4;
+            double bottom = ShowHourLabels ? 22 : 4;
 
             double plotW = Math.Max(1, w - left - right);
             double plotH = Math.Max(1, h - top - bottom);
 
-            // --- estimate annotation space above the plot and shift plot down ---
+            // Retrieve annotations to determine "IsInProgress" status
             var anns = Annotations as IList ?? new System.Collections.ArrayList();
             var annObjs = new System.Collections.Generic.List<Models.Annotation>();
             foreach (var it in anns)
-                if (it is Models.Annotation a) annObjs.Add(a);
-            annObjs.Sort((a, b) => a.Hour.CompareTo(b.Hour));
+            {
+                if (it is Models.Annotation a) 
+                    annObjs.Add(a);
+            }
 
-            var repairsInProgressDropXs = annObjs
-                .Where(a => a.IsInProgress && a.Type == Models.IssueType.Ремонт)
-                .Select(a => left + a.EndHour * (plotW / 24.0))
-                .ToList();
+            // Track calculations for the Gantt bar
+            double trackHeight = Math.Min(24, Math.Max(12, plotH));
+            double trackY = top + (plotH - trackHeight) / 2.0;
 
-            var setupsInProgressDropXs = annObjs
-                .Where(a => a.IsInProgress && a.Type == Models.IssueType.Настройка)
-                .Select(a => left + a.EndHour * (plotW / 24.0))
-                .ToList();
-
-            // Set annotation space to 0 to keep the layout compact and clean
-            double annSpace = 0;
-
-            // shift plot down
-            top += annSpace;
-            plotH = Math.Max(1, h - top - bottom);
-
-            // draw horizontal grid lines for 0 and 1 (subtle)
-            var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(50, 203, 213, 225)), 1);
-            // y for value 1 (top)
-            double y1 = top + 0.1 * plotH;
-            // y for value 0 (bottom)
-            double y0 = top + 0.9 * plotH;
-
-            context.DrawLine(gridPen, new Point(left, y1), new Point(left + plotW, y1));
-            context.DrawLine(gridPen, new Point(left, y0), new Point(left + plotW, y0));
+            // We define y1 and y0 to reuse the BuildPoints helper logic.
+            double y1 = 1;
+            double y0 = 0;
 
             System.Collections.Generic.List<Point> BuildPoints(IList source)
             {
@@ -473,234 +485,251 @@ namespace EquipmentFailureAnalysis.Views
                 return outPts;
             }
 
-            var pts = BuildPoints(items).ToArray();
             var repairsPts = BuildPoints(repairsItems).ToArray();
             var setupsPts = BuildPoints(setupsItems).ToArray();
 
-            // draw hourly ticks (scale) - always visible
-            double tickTop = top + plotH;
-            double tickBottom = tickTop + 6;
-            double xScale = plotW / 24.0;
-            var tickPen = new Pen(new SolidColorBrush(Color.Parse("#94A3B8")), 1);
-            for (int i = 0; i < 24; i++)
+            System.Collections.Generic.List<(double start, double end)> ExtractActiveIntervals(Point[] series)
             {
-                double cx = left + i * xScale;
-                context.DrawLine(tickPen, new Point(cx, tickTop), new Point(cx, tickBottom));
-            }
-            // final tick at 24:00 (render as 23:59 marker)
-            double cxEnd = left + plotW; // 24:00
-            context.DrawLine(tickPen, new Point(cxEnd, tickTop), new Point(cxEnd, tickBottom));
-
-            // draw vertical grid every 15 minutes (dashed, very subtle)
-            var gridDashPen = new Pen(new SolidColorBrush(Color.FromArgb(15, 203, 213, 225)), 1) { DashStyle = new DashStyle(new double[] { 4, 4 }, 0) };
-            for (int q = 0; q <= 24 * 4; q++)
-            {
-                double hour = q * 0.25; // quarter hours
-                double gx = left + hour * (plotW / 24.0);
-                context.DrawLine(gridDashPen, new Point(gx, top), new Point(gx, top + plotH));
+                var list = new System.Collections.Generic.List<(double start, double end)>();
+                for (int i = 0; i < series.Length; i++)
+                {
+                    double xStart = series[i].X;
+                    double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
+                    double y = series[i].Y;
+                    if (Math.Abs(y - y1) < 0.1 && xEnd > xStart + 0.01)
+                    {
+                        list.Add((xStart, xEnd));
+                    }
+                }
+                return list;
             }
 
-            // draw shift boundary markers (e.g., 08:00 start and 16:30 end)
+            var repairs = ExtractActiveIntervals(repairsPts);
+            var setups = ExtractActiveIntervals(setupsPts);
+
+            // Calculate overlap intervals
+            var overlaps = new System.Collections.Generic.List<(double start, double end)>();
+            foreach (var r in repairs)
+            {
+                foreach (var s in setups)
+                {
+                    double oStart = Math.Max(r.start, s.start);
+                    double oEnd = Math.Min(r.end, s.end);
+                    if (oEnd > oStart + 0.01)
+                    {
+                        overlaps.Add((oStart, oEnd));
+                    }
+                }
+            }
+
+            System.Collections.Generic.List<(double start, double end)> SubtractIntervals(System.Collections.Generic.List<(double start, double end)> source, System.Collections.Generic.List<(double start, double end)> toSubtract)
+            {
+                var result = new System.Collections.Generic.List<(double start, double end)>(source);
+                foreach (var sub in toSubtract)
+                {
+                    var nextResult = new System.Collections.Generic.List<(double start, double end)>();
+                    foreach (var src in result)
+                    {
+                        if (src.end <= sub.start || src.start >= sub.end)
+                        {
+                            nextResult.Add(src);
+                        }
+                        else
+                        {
+                            if (src.start < sub.start)
+                            {
+                                nextResult.Add((src.start, sub.start));
+                            }
+                            if (src.end > sub.end)
+                            {
+                                nextResult.Add((sub.end, src.end));
+                            }
+                        }
+                    }
+                    result = nextResult;
+                }
+                return result;
+            }
+
+            var repairsOnly = SubtractIntervals(repairs, overlaps);
+            var setupsOnly = SubtractIntervals(setups, overlaps);
+
+            var repairsStroke = GetThemeBrush("DangerBrush", "#EF4444");
+            var setupsStroke = GetThemeBrush("WarningBrush", "#F59E0B");
+            var stripeBrush = new SolidColorBrush(Color.FromArgb(80, 255, 255, 255));
+
+            bool IsRepairInProgress(double start, double end)
+            {
+                double scaleX = plotW / 24.0;
+                foreach (var a in annObjs)
+                {
+                    if (a.Type == Models.IssueType.Ремонт && a.IsInProgress)
+                    {
+                        double aStart = left + a.StartHour * scaleX;
+                        double aEnd = left + a.EndHour * scaleX;
+                        if (start >= aStart - 1.0 && end <= aEnd + 1.0)
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            bool IsSetupInProgress(double start, double end)
+            {
+                double scaleX = plotW / 24.0;
+                foreach (var a in annObjs)
+                {
+                    if (a.Type == Models.IssueType.Настройка && a.IsInProgress)
+                    {
+                        double aStart = left + a.StartHour * scaleX;
+                        double aEnd = left + a.EndHour * scaleX;
+                        if (start >= aStart - 1.0 && end <= aEnd + 1.0)
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            void DrawHatchPattern(DrawingContext ctx, Rect rect, IBrush hatchBrush)
+            {
+                var pen = new Pen(hatchBrush, 1.8);
+                double spacing = 8.0;
+                double xStart = rect.X;
+                double xEnd = rect.X + rect.Width;
+                double yTop = rect.Y;
+                double height = rect.Height;
+
+                for (double hx = xStart - height; hx < xEnd; hx += spacing)
+                {
+                    double lineStart = Math.Max(xStart, hx);
+                    double lineEnd = Math.Min(xEnd, hx + height);
+                    if (lineEnd > lineStart + 0.1)
+                    {
+                        double yStartOffset = lineStart - hx;
+                        double yEndOffset = lineEnd - hx;
+                        ctx.DrawLine(pen,
+                            new Point(lineStart, yTop + yStartOffset),
+                            new Point(lineEnd, yTop + yEndOffset)
+                        );
+                    }
+                }
+            }
+
+            // Calculate shift boundary coordinates
             double[] shiftHours = new double[] { 8.0, 16.5 };
-            var shiftPen = new Pen(new SolidColorBrush(Color.Parse("#818CF8")), 1.2) { DashStyle = new DashStyle(new double[] { 4, 3 }, 0) };
+            double sX = left + shiftHours[0] * (plotW / 24.0);
+            double eX = left + shiftHours[1] * (plotW / 24.0);
+
+            // Push clip geometry to round all track elements
+            var clipGeom = new RectangleGeometry(new Rect(left, trackY, plotW, trackHeight), 4, 4);
+            using (context.PushGeometryClip(clipGeom))
+            {
+                // 1. Draw base track
+                var okBrush = GetThemeBrush("BorderSubtleBrush", "#EEF1F6");
+                var trackRect = new Rect(left, trackY, plotW, trackHeight);
+                context.FillRectangle(okBrush, trackRect);
+
+                // 2. Draw shift boundary soft fill inside the track
+                var shiftAreaBrush = new SolidColorBrush(Color.FromArgb(15, 79, 70, 229)); // Soft Indigo tint
+                context.FillRectangle(shiftAreaBrush, new Rect(sX, trackY, Math.Max(0, eX - sX), trackHeight));
+
+                // 3. Draw Repair-only segments
+                foreach (var r in repairsOnly)
+                {
+                    var rect = new Rect(r.start, trackY, r.end - r.start, trackHeight);
+                    context.FillRectangle(repairsStroke, rect);
+                    if (IsRepairInProgress(r.start, r.end))
+                    {
+                        DrawHatchPattern(context, rect, stripeBrush);
+                    }
+                }
+
+                // 4. Draw Setup-only segments
+                foreach (var s in setupsOnly)
+                {
+                    var rect = new Rect(s.start, trackY, s.end - s.start, trackHeight);
+                    context.FillRectangle(setupsStroke, rect);
+                    if (IsSetupInProgress(s.start, s.end))
+                    {
+                        DrawHatchPattern(context, rect, stripeBrush);
+                    }
+                }
+
+                // 5. Draw Overlap segments (split vertically)
+                foreach (var o in overlaps)
+                {
+                    double midY = trackY + trackHeight / 2.0;
+
+                    // Top half: Repair
+                    var topRect = new Rect(o.start, trackY, o.end - o.start, trackHeight / 2.0);
+                    context.FillRectangle(repairsStroke, topRect);
+                    if (IsRepairInProgress(o.start, o.end))
+                    {
+                        DrawHatchPattern(context, topRect, stripeBrush);
+                    }
+
+                    // Bottom half: Setup
+                    var bottomRect = new Rect(o.start, midY, o.end - o.start, trackHeight / 2.0);
+                    context.FillRectangle(setupsStroke, bottomRect);
+                    if (IsSetupInProgress(o.start, o.end))
+                    {
+                        DrawHatchPattern(context, bottomRect, stripeBrush);
+                    }
+                }
+            }
+
+            // Draw vertical shift boundary lines passing behind/through the track
+            var shiftPen = new Pen(new SolidColorBrush(Color.Parse("#818CF8")), 1.0) { DashStyle = new DashStyle(new double[] { 3, 3 }, 0) };
             var labelBrushShift = new SolidColorBrush(Color.Parse("#4F46E5"));
             var tfShift = UiTypeface;
-            double labelFont = 11;
-            // draw shaded area for the main shift (between first two entries) if available
-            if (shiftHours.Length >= 2)
-            {
-                double sX = left + shiftHours[0] * (plotW / 24.0);
-                double eX = left + shiftHours[1] * (plotW / 24.0);
-                var fillBrush = new SolidColorBrush(Color.FromArgb(15, 79, 70, 229)); // Soft Indigo tint
-                context.FillRectangle(fillBrush, new Rect(sX, top, Math.Max(0, eX - sX), plotH));
-            }
+            double labelFont = 9;
 
             foreach (var sh in shiftHours)
             {
-                if (sh < 0 || sh > 24) continue;
                 double sx = left + sh * (plotW / 24.0);
-                // vertical marker
-                context.DrawLine(shiftPen, new Point(sx, top), new Point(sx, top + plotH));
-                // label above
-                string lbl = TimeSpan.FromHours(sh).Hours.ToString("D2") + ":" + TimeSpan.FromHours(sh).Minutes.ToString("D2");
-                var ftLbl = new FormattedText(lbl, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfShift, labelFont, labelBrushShift);
-                double approxW = lbl.Length * labelFont * 0.6;
-                context.DrawText(ftLbl, new Point(sx - approxW / 2.0, top - labelFont - 4));
+                context.DrawLine(shiftPen, new Point(sx, trackY - 2), new Point(sx, trackY + trackHeight + 2));
+
+                if (plotH > 35)
+                {
+                    string lbl = TimeSpan.FromHours(sh).Hours.ToString("D2") + ":" + TimeSpan.FromHours(sh).Minutes.ToString("D2");
+                    var ftLbl = new FormattedText(lbl, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfShift, labelFont, labelBrushShift);
+                    double approxW = lbl.Length * labelFont * 0.6;
+                    context.DrawText(ftLbl, new Point(sx - approxW / 2.0, trackY - labelFont - 3));
+                }
             }
 
-            // draw baseline representing normal (OK) state
-            var baselinePen = new Pen(new SolidColorBrush(Color.Parse("#CBD5E1")), 1.5);
-            context.DrawLine(baselinePen, new Point(left, y0), new Point(left + plotW, y0));
-
-            // draw y-axis labels (left)
-            var labelBrushY = new SolidColorBrush(Color.Parse("#475569"));
-            var tfY = UiTypeface;
-            double labelFontSize = 11;
-            var ftTop = new FormattedText(YAxisTopLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
-            var ftBottom = new FormattedText(YAxisBottomLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tfY, labelFontSize, labelBrushY);
-            context.DrawText(ftTop, new Point(2, y1 - labelFontSize / 2));
-            context.DrawText(ftBottom, new Point(2, y0 - labelFontSize / 2));
-
-            // draw horizontal HH:MM labels if enabled
+            // Draw Time Scale and Hour Labels if enabled
             if (ShowHourLabels)
             {
+                double tickTop = trackY + trackHeight + 2;
+                double tickBottom = tickTop + 4;
+                var tickPen = new Pen(new SolidColorBrush(Color.Parse("#94A3B8")), 1);
+                double xScale = plotW / 24.0;
+
+                for (int i = 0; i <= 24; i++)
+                {
+                    double cx = left + i * xScale;
+                    context.DrawLine(tickPen, new Point(cx, tickTop), new Point(cx, tickBottom));
+                }
+
                 var labelBrush = new SolidColorBrush(Color.Parse("#64748B"));
                 double fontSize = 10;
                 var tf = UiTypeface;
 
-                for (int i = 0; i < 24; i++)
+                for (int i = 0; i < 24; i += 2) // Label every 2 hours to keep it neat
                 {
                     double cx = left + i * xScale;
-                    string label = i.ToString("D2") + ":00"; // HH:MM
+                    string label = i.ToString("D2") + ":00";
                     var ft = new FormattedText(label, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tf, fontSize, labelBrush);
                     double approxWidth = label.Length * fontSize * 0.6;
-                    double drawX = cx - approxWidth / 2.0;
-                    double drawY = tickBottom + 4;
-                    context.DrawText(ft, new Point(drawX, drawY));
+                    context.DrawText(ft, new Point(cx - approxWidth / 2.0, tickBottom + 2));
                 }
-                // label for final minute 23:59 at end
-                string endLabel = "23:59";
+
+                string endLabel = "24:00";
                 var ftEnd = new FormattedText(endLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, tf, fontSize, labelBrush);
                 double approxWidthEnd = endLabel.Length * fontSize * 0.6;
-                double drawXEnd = cxEnd - approxWidthEnd / 2.0;
-                double drawYEnd = tickBottom + 4;
-                context.DrawText(ftEnd, new Point(drawXEnd, drawYEnd));
+                context.DrawText(ftEnd, new Point(left + plotW - approxWidthEnd / 2.0, tickBottom + 2));
             }
-
-            System.Collections.Generic.List<(double x1, double x2, double y)> BuildHorizontalSegments(Point[] series)
-            {
-                var segments = new System.Collections.Generic.List<(double x1, double x2, double y)>();
-                if (series.Length == 0)
-                    return segments;
-
-                for (int i = 0; i < series.Length; i++)
-                {
-                    double x1 = series[i].X;
-                    double x2 = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
-                    double y = series[i].Y;
-                    if (x2 > x1 + 0.01)
-                        segments.Add((x1, x2, y));
-                }
-
-                return segments;
-            }
-
-
-
-            void DrawSeries(Point[] series, IBrush strokeBrush, IBrush activeAreaBrush, System.Collections.Generic.List<double> inProgressDropXs)
-            {
-                if (series.Length == 0)
-                    return;
-
-                // 1. Draw active area fills
-                for (int i = 0; i < series.Length; i++)
-                {
-                    double xStart = series[i].X;
-                    double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
-                    double y = series[i].Y;
-
-                    if (Math.Abs(y - y1) < 0.1 && xEnd > xStart)
-                    {
-                        var areaRect = new Rect(xStart, y1, xEnd - xStart, y0 - y1);
-                        context.FillRectangle(activeAreaBrush, areaRect);
-                    }
-                }
-
-                // 2. Draw outline borders only for active blocks
-                var linePen = new Pen(strokeBrush, 1.6) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
-                for (int i = 0; i < series.Length; i++)
-                {
-                    double xStart = series[i].X;
-                    double xEnd = (i < series.Length - 1) ? series[i + 1].X : (left + plotW);
-                    double y = series[i].Y;
-
-                    if (Math.Abs(y - y1) < 0.1)
-                    {
-                        // Draw top border
-                        context.DrawLine(linePen, new Point(xStart, y1), new Point(xEnd, y1));
-
-                        // Draw left border if this is the start of an active block
-                        if (i == 0 || Math.Abs(series[i - 1].Y - y0) < 0.1)
-                        {
-                            context.DrawLine(linePen, new Point(xStart, y0), new Point(xStart, y1));
-                        }
-
-                        // Draw right border if this is the end of an active block
-                        if (i == series.Length - 1 || Math.Abs(series[i + 1].Y - y0) < 0.1)
-                        {
-                            context.DrawLine(linePen, new Point(xEnd, y0), new Point(xEnd, y1));
-                        }
-                    }
-                }
-            }
-
-            var repairsStroke = new SolidColorBrush(Color.Parse("#EF4444"));
-
-            var repairsAreaGradient = new LinearGradientBrush
-            {
-                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = new GradientStops
-                {
-                    new GradientStop(Color.FromArgb(90, 239, 68, 68), 0.0),
-                    new GradientStop(Color.FromArgb(15, 239, 68, 68), 1.0)
-                }
-            };
-
-            var setupsStroke = new SolidColorBrush(Color.Parse("#F59E0B"));
-
-            var setupsAreaGradient = new LinearGradientBrush
-            {
-                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = new GradientStops
-                {
-                    new GradientStop(Color.FromArgb(90, 245, 158, 11), 0.0),
-                    new GradientStop(Color.FromArgb(15, 245, 158, 11), 1.0)
-                }
-            };
-
-            DrawSeries(repairsPts, repairsStroke, repairsAreaGradient, repairsInProgressDropXs);
-            DrawSeries(setupsPts, setupsStroke, setupsAreaGradient, setupsInProgressDropXs);
-
-            var repairsHorizontal = BuildHorizontalSegments(repairsPts);
-            var setupsHorizontal = BuildHorizontalSegments(setupsPts);
-
-            var mixStroke = new SolidColorBrush(Color.Parse("#F97316"));
-            var mixAreaGradient = new LinearGradientBrush
-            {
-                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = new GradientStops
-                {
-                    new GradientStop(Color.FromArgb(110, 249, 115, 22), 0.0),
-                    new GradientStop(Color.FromArgb(18, 249, 115, 22), 1.0)
-                }
-            };
-            var mixPen = new Pen(mixStroke, 2.0) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round };
-
-            foreach (var r in repairsHorizontal)
-            {
-                foreach (var s in setupsHorizontal)
-                {
-                    if (Math.Abs(r.y - s.y) > 0.1)
-                        continue;
-
-                    double overlapStart = Math.Max(r.x1, s.x1);
-                    double overlapEnd = Math.Min(r.x2, s.x2);
-                    if (overlapEnd > overlapStart + 0.2)
-                    {
-                        if (Math.Abs(r.y - y1) < 0.1)
-                        {
-                            var overlapArea = new Rect(overlapStart, y1, overlapEnd - overlapStart, y0 - y1);
-                            context.FillRectangle(mixAreaGradient, overlapArea);
-                        }
-                        context.DrawLine(mixPen, new Point(overlapStart, r.y), new Point(overlapEnd, r.y));
-                    }
-                }
-            }
-
-            // summary label removed by request
         }
     }
 }
