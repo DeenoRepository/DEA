@@ -1,4 +1,4 @@
-﻿using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Models;
 using EquipmentFailureAnalysis.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ namespace EquipmentFailureAnalysis.Services
             public string Description { get; init; } = string.Empty;
             public IssueType Type { get; init; }
             public bool IsInProgress { get; init; }
-            public double DurationMinutes => Math.Max(0, ((IsInProgress ? DateTime.Now : End) - Start).TotalMinutes);
+            public double DurationMinutes { get; init; }
         }
 
         public HtmlReportResult GenerateHtmlReport(MainWindowViewModel vm, HtmlReportOptions options)
@@ -65,21 +65,30 @@ namespace EquipmentFailureAnalysis.Services
                 };
             }
 
+            var now = DateTime.Now;
             var periodEndExclusive = options.EndDate.AddDays(1);
             var reportRows = vm.GetEquipmentForReports()
                 .SelectMany(eq => (eq.Issues ?? new ObservableCollection<Issue>())
                     .Where(issue => issue.End > options.StartDate && issue.Start < periodEndExclusive)
-                    .Select(issue => new ReportIssueRow
+                    .Select(issue =>
                     {
-                        Start = issue.Start,
-                        End = issue.End,
-                        EquipmentTitle = eq.Title ?? string.Empty,
-                        InventoryNumber = eq.InventoryNumber ?? string.Empty,
-                        Subdivision = eq.Subdivision ?? string.Empty,
-                        Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible!.Trim(),
-                        Description = issue.Description ?? string.Empty,
-                        Type = issue.Type,
-                        IsInProgress = issue.IsInProgress
+                        var issueEnd = issue.IsInProgress ? now : issue.End;
+                        var overlapStart = issue.Start < options.StartDate ? options.StartDate : issue.Start;
+                        var overlapEnd = issueEnd > periodEndExclusive ? periodEndExclusive : issueEnd;
+                        var duration = Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+                        return new ReportIssueRow
+                        {
+                            Start = issue.Start,
+                            End = issue.End,
+                            EquipmentTitle = eq.Title ?? string.Empty,
+                            InventoryNumber = eq.InventoryNumber ?? string.Empty,
+                            Subdivision = eq.Subdivision ?? string.Empty,
+                            Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible!.Trim(),
+                            Description = issue.Description ?? string.Empty,
+                            Type = issue.Type,
+                            IsInProgress = issue.IsInProgress,
+                            DurationMinutes = duration
+                        };
                     }))
                 .ToList();
 
@@ -128,7 +137,7 @@ namespace EquipmentFailureAnalysis.Services
             {
                 ("Начало", x => x.Start.ToString("dd.MM.yyyy HH:mm")),
                 ("Окончание / длительность", x => x.IsInProgress
-                    ? TimeSpan.FromMinutes(Math.Max(0, (DateTime.Now - x.Start).TotalMinutes)).ToString(@"hh\:mm")
+                    ? FormatTimeSpan(TimeSpan.FromMinutes(Math.Max(0, (DateTime.Now - x.Start).TotalMinutes)))
                     : x.End.ToString("dd.MM.yyyy HH:mm")),
                 ("Оборудование", x => string.IsNullOrWhiteSpace(x.InventoryNumber) ? x.EquipmentTitle : $"{x.EquipmentTitle} ({x.InventoryNumber})"),
                 ("Группа", x => string.IsNullOrWhiteSpace(x.Subdivision) ? "-" : x.Subdivision),
@@ -206,7 +215,7 @@ namespace EquipmentFailureAnalysis.Services
 
             html.AppendLine($"<section><h2>Группировка: {H(GetGroupByCaption(groupByKey))}</h2><table><thead><tr><th>Группа</th><th>События</th><th>Рем.</th><th>Наст.</th><th>Ср. длительность</th><th>Суммарно</th></tr></thead><tbody>");
             foreach (var g in grouped)
-                html.AppendLine($"<tr><td>{H(g.GroupName)}</td><td>{g.Total}</td><td>{g.Repairs}</td><td>{g.Setups}</td><td>{TimeSpan.FromMinutes(g.AvgMinutes):hh\\:mm}</td><td>{TimeSpan.FromMinutes(g.TotalMinutes):hh\\:mm}</td></tr>");
+                html.AppendLine($"<tr><td>{H(g.GroupName)}</td><td>{g.Total}</td><td>{g.Repairs}</td><td>{g.Setups}</td><td>{FormatTimeSpan(TimeSpan.FromMinutes(g.AvgMinutes))}</td><td>{FormatTimeSpan(TimeSpan.FromMinutes(g.TotalMinutes))}</td></tr>");
             if (grouped.Count == 0)
                 html.AppendLine("<tr><td colspan=\"6\">Нет данных за выбранный период.</td></tr>");
             html.AppendLine("</tbody></table></section>");
@@ -268,6 +277,12 @@ namespace EquipmentFailureAnalysis.Services
             "equipment" => "По оборудованию",
             _ => "По дням"
         };
+
+        private static string FormatTimeSpan(TimeSpan ts)
+        {
+            var hours = (int)ts.TotalHours;
+            return $"{hours:00}:{ts.Minutes:00}";
+        }
 
         private static string FormatDuration(double totalMinutes)
         {

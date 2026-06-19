@@ -16,22 +16,30 @@ namespace EquipmentFailureAnalysis.Services
         {
             try
             {
+                var now = DateTime.Now;
                 var periodEndExclusive = options.EndDate.AddDays(1);
                 var reportRows = vm.GetEquipmentForReports()
                     .SelectMany(eq => (eq.Issues ?? new ObservableCollection<Issue>())
                         .Where(issue => issue.End > options.StartDate && issue.Start < periodEndExclusive)
-                        .Select(issue => new
+                        .Select(issue =>
                         {
-                            Start = issue.Start,
-                            End = issue.End,
-                            EquipmentTitle = eq.Title ?? string.Empty,
-                            InventoryNumber = eq.InventoryNumber ?? string.Empty,
-                            Subdivision = eq.Subdivision ?? string.Empty,
-                            Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible.Trim(),
-                            Description = issue.Description ?? string.Empty,
-                            Type = issue.Type,
-                            IsInProgress = issue.IsInProgress,
-                            DurationMinutes = Math.Max(0, ((issue.IsInProgress ? DateTime.Now : issue.End) - issue.Start).TotalMinutes)
+                            var issueEnd = issue.IsInProgress ? now : issue.End;
+                            var overlapStart = issue.Start < options.StartDate ? options.StartDate : issue.Start;
+                            var overlapEnd = issueEnd > periodEndExclusive ? periodEndExclusive : issueEnd;
+                            var duration = Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+                            return new
+                            {
+                                Start = issue.Start,
+                                End = issue.End,
+                                EquipmentTitle = eq.Title ?? string.Empty,
+                                InventoryNumber = eq.InventoryNumber ?? string.Empty,
+                                Subdivision = eq.Subdivision ?? string.Empty,
+                                Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible.Trim(),
+                                Description = issue.Description ?? string.Empty,
+                                Type = issue.Type,
+                                IsInProgress = issue.IsInProgress,
+                                DurationMinutes = duration
+                            };
                         }))
                     .ToList();
 
@@ -122,7 +130,7 @@ namespace EquipmentFailureAnalysis.Services
                 csv.AppendLine("Группа;События;Ремонты;Настройки;Средняя длительность;Суммарная длительность");
                 foreach (var g in grouped)
                 {
-                    csv.AppendLine($"{g.GroupName};{g.Total};{g.Repairs};{g.Setups};{TimeSpan.FromMinutes(g.AvgMinutes):hh\\:mm};{TimeSpan.FromMinutes(g.TotalMinutes):hh\\:mm}");
+                    csv.AppendLine($"{g.GroupName};{g.Total};{g.Repairs};{g.Setups};{FormatTimeSpan(TimeSpan.FromMinutes(g.AvgMinutes))};{FormatTimeSpan(TimeSpan.FromMinutes(g.TotalMinutes))}");
                 }
                 csv.AppendLine();
 
@@ -162,22 +170,30 @@ namespace EquipmentFailureAnalysis.Services
         {
             try
             {
+                var now = DateTime.Now;
                 var periodEndExclusive = options.EndDate.AddDays(1);
                 var reportRows = vm.GetEquipmentForReports()
                     .SelectMany(eq => (eq.Issues ?? new ObservableCollection<Issue>())
                         .Where(issue => issue.End > options.StartDate && issue.Start < periodEndExclusive)
-                        .Select(issue => new
+                        .Select(issue =>
                         {
-                            Start = issue.Start,
-                            End = issue.End,
-                            EquipmentTitle = eq.Title ?? string.Empty,
-                            InventoryNumber = eq.InventoryNumber ?? string.Empty,
-                            Subdivision = eq.Subdivision ?? string.Empty,
-                            Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible.Trim(),
-                            Description = issue.Description ?? string.Empty,
-                            Type = issue.Type,
-                            IsInProgress = issue.IsInProgress,
-                            DurationMinutes = Math.Max(0, ((issue.IsInProgress ? DateTime.Now : issue.End) - issue.Start).TotalMinutes)
+                            var issueEnd = issue.IsInProgress ? now : issue.End;
+                            var overlapStart = issue.Start < options.StartDate ? options.StartDate : issue.Start;
+                            var overlapEnd = issueEnd > periodEndExclusive ? periodEndExclusive : issueEnd;
+                            var duration = Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+                            return new
+                            {
+                                Start = issue.Start,
+                                End = issue.End,
+                                EquipmentTitle = eq.Title ?? string.Empty,
+                                InventoryNumber = eq.InventoryNumber ?? string.Empty,
+                                Subdivision = eq.Subdivision ?? string.Empty,
+                                Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "Без ответственного" : issue.Responsible.Trim(),
+                                Description = issue.Description ?? string.Empty,
+                                Type = issue.Type,
+                                IsInProgress = issue.IsInProgress,
+                                DurationMinutes = duration
+                            };
                         }))
                     .ToList();
 
@@ -348,8 +364,8 @@ namespace EquipmentFailureAnalysis.Services
                         canvas.DrawText(g.Total.ToString(), margin + 180, y, paintText);
                         canvas.DrawText(g.Repairs.ToString(), margin + 240, y, paintText);
                         canvas.DrawText(g.Setups.ToString(), margin + 280, y, paintText);
-                        canvas.DrawText(TimeSpan.FromMinutes(g.AvgMinutes).ToString(@"hh\:mm"), margin + 330, y, paintText);
-                        canvas.DrawText(TimeSpan.FromMinutes(g.TotalMinutes).ToString(@"hh\:mm"), margin + 410, y, paintText);
+                        canvas.DrawText(FormatTimeSpan(TimeSpan.FromMinutes(g.AvgMinutes)), margin + 330, y, paintText);
+                        canvas.DrawText(FormatTimeSpan(TimeSpan.FromMinutes(g.TotalMinutes)), margin + 410, y, paintText);
                         y += 16;
                     }
 
@@ -407,7 +423,7 @@ namespace EquipmentFailureAnalysis.Services
                         var respStr = item.Responsible;
                         if (respStr.Length > 18) respStr = respStr.Substring(0, 16) + "..";
                         canvas.DrawText(respStr, margin + 320, y, paintText);
-                        canvas.DrawText(TimeSpan.FromMinutes(item.DurationMinutes).ToString(@"hh\:mm"), margin + 430, y, paintText);
+                        canvas.DrawText(FormatTimeSpan(TimeSpan.FromMinutes(item.DurationMinutes)), margin + 430, y, paintText);
                         y += 16;
                     }
 
@@ -435,6 +451,12 @@ namespace EquipmentFailureAnalysis.Services
             var hours = wholeMinutes / 60;
             var minutes = wholeMinutes % 60;
             return $"{hours} ч {minutes:00} мин";
+        }
+
+        private static string FormatTimeSpan(TimeSpan ts)
+        {
+            var hours = (int)ts.TotalHours;
+            return $"{hours:00}:{ts.Minutes:00}";
         }
     }
 }

@@ -30,6 +30,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _dashboardCurrentPeriodMttr = "00:00";
         private string _dashboardCurrentPeriodMtbf = "00:00";
         private double _dashboardCurrentPeriodUnassignedSharePercent;
+        private string _dashboardAvailabilityPercentText = "100.0%";
         private string _dashboardRecurringFailuresValue = "0 ед. / 0 событий";
         private ObservableCollection<SubdivisionRatingRow> _dashboardSubdivisionRatings = new();
         private ObservableCollection<DashboardTrendPoint> _dashboardMonthlyTrends = new();
@@ -40,6 +41,10 @@ namespace EquipmentFailureAnalysis.ViewModels
         private string _selectedDashboardIssueTypeFilter = "Все типы";
         private string _selectedDashboardResponsibleFilter = "Все ответственные";
         private string _selectedDashboardSubdivisionFilter = "Все группы";
+        private string _selectedDashboardStatusFilter = "Все статусы";
+        private string _dashboardEquipmentSearchQuery = string.Empty;
+        private DateTime _dashboardStartDate = DateTime.Today.AddDays(-30);
+        private DateTime _dashboardEndDate = DateTime.Today;
 
         public DashboardViewModel(MainWindowViewModel shell)
         {
@@ -47,6 +52,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             DashboardIssueTypeFilters.Add("Все типы");
             DashboardIssueTypeFilters.Add("Ремонты");
             DashboardIssueTypeFilters.Add("Настройки");
+            DashboardStatusFilters.Add("Все статусы");
+            DashboardStatusFilters.Add("В процессе");
+            DashboardStatusFilters.Add("Завершена");
             ResetDashboardFiltersCommand = ReactiveCommand.Create(ResetDashboardFilters);
         }
 
@@ -54,6 +62,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         public ObservableCollection<string> DashboardIssueTypeFilters { get; } = new();
         public ObservableCollection<string> DashboardResponsibleFilters { get; } = new();
         public ObservableCollection<string> DashboardSubdivisionFilters { get; } = new();
+        public ObservableCollection<string> DashboardStatusFilters { get; } = new();
         public ReactiveCommand<Unit, Unit> ResetDashboardFiltersCommand { get; }
 
         public int DashboardCurrentPeriodIssues
@@ -180,6 +189,12 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             get => _dashboardCurrentPeriodUnassignedSharePercent;
             set => this.RaiseAndSetIfChanged(ref _dashboardCurrentPeriodUnassignedSharePercent, value);
+        }
+
+        public string DashboardAvailabilityPercentText
+        {
+            get => _dashboardAvailabilityPercentText;
+            set => this.RaiseAndSetIfChanged(ref _dashboardAvailabilityPercentText, value);
         }
 
         public string DashboardRecurringFailuresValue
@@ -335,12 +350,70 @@ namespace EquipmentFailureAnalysis.ViewModels
             _isRefreshingFilters = false;
         }
 
+        public string SelectedDashboardStatusFilter
+        {
+            get => _selectedDashboardStatusFilter;
+            set
+            {
+                var normalized = string.IsNullOrWhiteSpace(value) ? "Все статусы" : value.Trim();
+                if (string.Equals(_selectedDashboardStatusFilter, normalized, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _selectedDashboardStatusFilter, normalized);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        public string DashboardEquipmentSearchQuery
+        {
+            get => _dashboardEquipmentSearchQuery;
+            set
+            {
+                var val = value ?? string.Empty;
+                if (string.Equals(_dashboardEquipmentSearchQuery, val, StringComparison.CurrentCulture))
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _dashboardEquipmentSearchQuery, val);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        public DateTime DashboardStartDate
+        {
+            get => _dashboardStartDate;
+            set
+            {
+                if (_dashboardStartDate == value)
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _dashboardStartDate, value);
+                OnDashboardFiltersChanged();
+            }
+        }
+
+        public DateTime DashboardEndDate
+        {
+            get => _dashboardEndDate;
+            set
+            {
+                if (_dashboardEndDate == value)
+                    return;
+
+                this.RaiseAndSetIfChanged(ref _dashboardEndDate, value);
+                OnDashboardFiltersChanged();
+            }
+        }
+
         private void ResetDashboardFilters()
         {
             _isRefreshingFilters = true;
             SelectedDashboardIssueTypeFilter = "Все типы";
+            SelectedDashboardStatusFilter = "Все статусы";
             SelectedDashboardResponsibleFilter = "Все ответственные";
             SelectedDashboardSubdivisionFilter = "Все группы";
+            DashboardEquipmentSearchQuery = string.Empty;
+            DashboardStartDate = DateTime.Today.AddDays(-30);
+            DashboardEndDate = DateTime.Today;
             _isRefreshingFilters = false;
             _shell.HandleDashboardFilterChanged();
             _shell.FiltersResetCounter += 1;

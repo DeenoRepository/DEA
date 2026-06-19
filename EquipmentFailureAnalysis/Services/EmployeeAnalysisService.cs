@@ -39,6 +39,16 @@ namespace EquipmentFailureAnalysis.Services
             string selectedSubdivision,
             double slaTargetMinutes)
         {
+            var now = DateTime.Now;
+            var monthStart = DateTime.MinValue;
+            var monthEnd = DateTime.MaxValue;
+            var ruCulture = new CultureInfo("ru-RU");
+            if (!string.IsNullOrWhiteSpace(selectedMonth) && selectedMonth != "Все месяцы" && DateTime.TryParseExact(selectedMonth, "MMMM yyyy", ruCulture, DateTimeStyles.None, out var monthDate))
+            {
+                monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
+                monthEnd = monthStart.AddMonths(1);
+            }
+
             var issuesWithEquipmentAll = masterEquipment
                 .SelectMany(eq => eq.Issues.Select(issue => new EmployeeIssueProjection { Equipment = eq, Issue = issue }))
                 .ToList();
@@ -57,7 +67,7 @@ namespace EquipmentFailureAnalysis.Services
             var repairsTotal = assignedIssues.Count(x => x.Issue.Type == IssueType.Ремонт);
             var setupsTotal = assignedIssues.Count(x => x.Issue.Type == IssueType.Настройка);
 
-            var slaMetTotal = assignedIssues.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= slaTargetMinutes);
+            var slaMetTotal = assignedIssues.Count(x => Math.Max(0, ((x.Issue.IsInProgress ? now : x.Issue.End) - x.Issue.Start).TotalMinutes) <= slaTargetMinutes);
             var slaBreaches = Math.Max(0, assignedIssues.Count - slaMetTotal);
             var slaCompliancePercent = assignedIssues.Count == 0
                 ? 0.0
@@ -74,10 +84,20 @@ namespace EquipmentFailureAnalysis.Services
                     var issues = g.Select(x => x.Issue).ToList();
                     var repairsCount = issues.Count(i => i.Type == IssueType.Ремонт);
                     var setupsCount = issues.Count(i => i.Type == IssueType.Настройка);
-                    var slaMetCount = issues.Count(i => Math.Max(0, (i.End - i.Start).TotalMinutes) <= slaTargetMinutes);
-                    var totalDuration = TimeSpan.FromMinutes(issues.Sum(i => Math.Max(0, (i.End - i.Start).TotalMinutes)));
+                    var slaMetCount = issues.Count(i => Math.Max(0, ((i.IsInProgress ? now : i.End) - i.Start).TotalMinutes) <= slaTargetMinutes);
+                    var totalDuration = TimeSpan.FromMinutes(issues.Sum(i =>
+                    {
+                        var issueEnd = i.IsInProgress ? now : i.End;
+                        if (monthStart != DateTime.MinValue)
+                        {
+                            var overlapStart = i.Start < monthStart ? monthStart : i.Start;
+                            var overlapEnd = issueEnd > monthEnd ? monthEnd : issueEnd;
+                            return Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+                        }
+                        return Math.Max(0, (issueEnd - i.Start).TotalMinutes);
+                    }));
                     var avgMinutes = issues.Count == 0 ? 0.0 : totalDuration.TotalMinutes / issues.Count;
-                    var lastIssueDate = issues.Count == 0 ? DateTime.MinValue : issues.Max(i => i.End);
+                    var lastIssueDate = issues.Count == 0 ? DateTime.MinValue : issues.Max(i => i.IsInProgress ? now : i.End);
 
                     return new EmployeeAnalysisRow
                     {
@@ -164,7 +184,17 @@ namespace EquipmentFailureAnalysis.Services
 
             var avgDurationMinutes = assignedIssues.Count == 0
                 ? 0.0
-                : assignedIssues.Sum(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes)) / assignedIssues.Count;
+                : assignedIssues.Sum(x =>
+                {
+                    var issueEnd = x.Issue.IsInProgress ? now : x.Issue.End;
+                    if (monthStart != DateTime.MinValue)
+                    {
+                        var overlapStart = x.Issue.Start < monthStart ? monthStart : x.Issue.Start;
+                        var overlapEnd = issueEnd > monthEnd ? monthEnd : issueEnd;
+                        return Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+                    }
+                    return Math.Max(0, (issueEnd - x.Issue.Start).TotalMinutes);
+                }) / assignedIssues.Count;
 
             var topByIssues = rows.OrderByDescending(r => r.IssuesCount).ThenBy(r => r.Name).FirstOrDefault();
             var topByIssuesName = topByIssues?.Name ?? "-";

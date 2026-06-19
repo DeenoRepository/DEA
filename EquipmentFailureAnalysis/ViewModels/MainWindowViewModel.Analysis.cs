@@ -107,6 +107,9 @@ namespace EquipmentFailureAnalysis.ViewModels
             if (imported == null)
                 return;
 
+            var selectedUid = SelectedEquipment?.Uid;
+            var selectedTitle = SelectedEquipment?.Title;
+
             var all = imported.ToList();
             _masterEquipment = all;
             RebuildDowntimeResponsibleFilters();
@@ -118,17 +121,41 @@ namespace EquipmentFailureAnalysis.ViewModels
             _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
             EquipmentCollection.Clear();
             ApplyFilter();
-            FillSearchWithFirstEquipmentIfNeeded(force: true);
 
-            // auto-select first
-            if (EquipmentCollection.Count > 0)
+            EquipmentInfo? targetToSelect = null;
+            if (selectedUid.HasValue && selectedUid != 0)
             {
-                var first = EquipmentCollection[0];
-                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                targetToSelect = EquipmentCollection.FirstOrDefault(e => e.Uid == selectedUid);
+            }
+            if (targetToSelect == null && !string.IsNullOrEmpty(selectedTitle))
+            {
+                targetToSelect = EquipmentCollection.FirstOrDefault(e => string.Equals(e.Title, selectedTitle, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (targetToSelect != null)
+            {
+                SelectedEquipment = targetToSelect;
+                SearchQuery = targetToSelect.Title ?? string.Empty;
+                LoadEquipmentCommand.Execute(targetToSelect).Subscribe(_ =>
                 {
                     if (ShowDayTimelineCommand != null)
                         ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
                 });
+            }
+            else
+            {
+                FillSearchWithFirstEquipmentIfNeeded(force: true);
+
+                // auto-select first
+                if (EquipmentCollection.Count > 0)
+                {
+                    var first = EquipmentCollection[0];
+                    LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                    {
+                        if (ShowDayTimelineCommand != null)
+                            ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                    });
+                }
             }
 
             BuildDowntimeHeatmap();
@@ -269,10 +296,11 @@ namespace EquipmentFailureAnalysis.ViewModels
         private void BuildDashboard()
         {
             var now = DateTime.Now;
-            var currentPeriodStart = now.Date.AddDays(-30);
-            var currentPeriodEnd = now.Date.AddDays(1);
-            var previousPeriodStart = currentPeriodStart.AddDays(-30);
+            var currentPeriodStart = Dashboard.DashboardStartDate.Date;
+            var currentPeriodEnd = Dashboard.DashboardEndDate.Date.AddDays(1);
+            var periodDuration = currentPeriodEnd - currentPeriodStart;
             var previousPeriodEnd = currentPeriodStart;
+            var previousPeriodStart = previousPeriodEnd - periodDuration;
 
             var currentIssues = GetDashboardFilteredIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
             var previousIssues = GetDashboardFilteredIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
@@ -297,21 +325,43 @@ namespace EquipmentFailureAnalysis.ViewModels
 
             var avgDurationMinutes = currentIssues.Count == 0
                 ? 0.0
-                : currentIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+                : currentIssues.Average(i => Math.Max(0, ((i.Issue.IsInProgress ? now : i.Issue.End) - i.Issue.Start).TotalMinutes));
             DashboardCurrentPeriodAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
             var mttrMinutes = currentRepairIssues.Count == 0
                 ? 0.0
-                : currentRepairIssues.Average(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+                : currentRepairIssues.Average(i => Math.Max(0, ((i.Issue.IsInProgress ? now : i.Issue.End) - i.Issue.Start).TotalMinutes));
             Dashboard.DashboardCurrentPeriodMttr = FormatDuration(TimeSpan.FromMinutes(mttrMinutes));
 
-            var totalEquipmentCount = Math.Max(1, _masterEquipment.Count);
-            var totalAvailableMinutes = totalEquipmentCount * 30.0 * 24.0 * 60.0;
-            var totalDowntimeMinutes = currentIssues.Sum(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes));
+            var filteredEquipment = _masterEquipment.AsEnumerable();
+            if (!string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                    filteredEquipment = filteredEquipment.Where(eq => string.IsNullOrWhiteSpace(eq.Subdivision));
+                else
+                    filteredEquipment = filteredEquipment.Where(eq => string.Equals(eq.Subdivision?.Trim(), Dashboard.SelectedDashboardSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+            var totalEquipmentCount = Math.Max(1, filteredEquipment.Count());
+            var daysInPeriod = Math.Max(1.0, periodDuration.TotalDays);
+            var totalAvailableMinutes = totalEquipmentCount * daysInPeriod * 8.0 * 60.0;
+
+            var totalDowntimeMinutes = currentIssues.Sum(i =>
+            {
+                var issueEnd = i.Issue.IsInProgress ? now : i.Issue.End;
+                var overlapStart = i.Issue.Start < currentPeriodStart ? currentPeriodStart : i.Issue.Start;
+                var overlapEnd = issueEnd > currentPeriodEnd ? currentPeriodEnd : issueEnd;
+                return Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+            });
+
             var totalFailures = currentIssues.Count(i => i.Issue.Type == IssueType.Ремонт);
             var mtbfMinutes = totalFailures == 0 
-                ? totalAvailableMinutes 
+                ? Math.Max(0, totalAvailableMinutes - totalDowntimeMinutes) 
                 : Math.Max(0, (totalAvailableMinutes - totalDowntimeMinutes) / totalFailures);
             Dashboard.DashboardCurrentPeriodMtbf = FormatDuration(TimeSpan.FromMinutes(mtbfMinutes));
+
+            var availabilityPercent = totalAvailableMinutes == 0
+                ? 100.0
+                : Math.Clamp((totalAvailableMinutes - totalDowntimeMinutes) * 100.0 / totalAvailableMinutes, 0.0, 100.0);
+            Dashboard.DashboardAvailabilityPercentText = availabilityPercent.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
 
             DashboardCurrentPeriodAffectedEquipment = currentIssues
                 .Select(i => i.Equipment.Title)
@@ -363,7 +413,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                 .ThenBy(x => x.Name)
                 .FirstOrDefault();
             DashboardRiskEquipment = AddSoftWrapOpportunities(topRiskEquipment?.Name ?? "-");
-            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 ремонтов" : $"{topRiskEquipment.Count} ремонтов за 30 дней";
+            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 ремонтов" : $"{topRiskEquipment.Count} ремонтов за выбранный период";
 
             var recurringByEquipment = currentRepairIssues
                 .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
@@ -387,7 +437,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         : groupSlaMet * 100.0 / groupAssignedAll.Count;
                     var groupAvgMinutes = groupRepairs.Count == 0
                         ? 0.0
-                        : groupRepairs.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+                        : groupRepairs.Average(x => Math.Max(0, ((x.Issue.IsInProgress ? now : x.Issue.End) - x.Issue.Start).TotalMinutes));
 
                     return new Models.SubdivisionRatingRow
                     {
@@ -502,7 +552,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             Dashboard.DashboardDataWarnings = new ObservableCollection<DataWarning>(
                 warningsList.OrderByDescending(w => w.Severity == "Error" ? 1 : 0).ThenByDescending(w => w.Start).Take(15));
 
-            BuildDashboardMonthlyTrends(now);
+            BuildDashboardMonthlyTrends(Dashboard.DashboardEndDate);
         }
 
         private void BuildDashboardMonthlyTrends(DateTime referenceDate)
@@ -526,7 +576,7 @@ namespace EquipmentFailureAnalysis.ViewModels
                         .ToList();
                     var avgMinutes = monthRepairs.Count == 0
                         ? 0.0
-                        : monthRepairs.Average(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes));
+                        : monthRepairs.Average(x => Math.Max(0, ((x.Issue.IsInProgress ? referenceDate : x.Issue.End) - x.Issue.Start).TotalMinutes));
 
                     var monthAssignedIssues = monthIssues
                         .Where(x => !IsUnassignedResponsible(x.Issue.Responsible))
@@ -562,12 +612,51 @@ namespace EquipmentFailureAnalysis.ViewModels
         {
             var source = GetIssuesOverlappingPeriod(start, end);
 
+            // 1. Subdivision filter
             if (!string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
                     source = source.Where(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision));
                 else
                     source = source.Where(i => string.Equals(i.Equipment.Subdivision?.Trim(), Dashboard.SelectedDashboardSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            // 2. Issue Type filter
+            source = Dashboard.SelectedDashboardIssueTypeFilter switch
+            {
+                "Ремонты" => source.Where(i => i.Issue.Type == IssueType.Ремонт),
+                "Настройки" => source.Where(i => i.Issue.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            // 3. Status filter
+            source = Dashboard.SelectedDashboardStatusFilter switch
+            {
+                "В процессе" => source.Where(i => i.Issue.IsInProgress),
+                "Завершена" => source.Where(i => !i.Issue.IsInProgress),
+                _ => source
+            };
+
+            // 4. Responsible filter
+            if (!string.Equals(Dashboard.SelectedDashboardResponsibleFilter, "Все ответственные", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardResponsibleFilter, "Без ответственного", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    source = source.Where(i => IsUnassignedResponsible(i.Issue.Responsible));
+                }
+                else
+                {
+                    source = source.Where(i => string.Equals(i.Issue.Responsible?.Trim(), Dashboard.SelectedDashboardResponsibleFilter, StringComparison.CurrentCultureIgnoreCase));
+                }
+            }
+
+            // 5. Equipment Search Query
+            var query = (Dashboard.DashboardEquipmentSearchQuery ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                source = source.Where(i =>
+                    (i.Equipment.Title?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
+                    || (i.Equipment.InventoryNumber?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false));
             }
 
             return source;

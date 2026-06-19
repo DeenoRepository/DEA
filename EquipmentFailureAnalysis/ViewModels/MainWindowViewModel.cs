@@ -612,6 +612,16 @@ namespace EquipmentFailureAnalysis.ViewModels
             }
         }
 
+        public string DashboardAvailabilityPercentText
+        {
+            get => Dashboard.DashboardAvailabilityPercentText;
+            set
+            {
+                Dashboard.DashboardAvailabilityPercentText = value;
+                this.RaisePropertyChanged(nameof(DashboardAvailabilityPercentText));
+            }
+        }
+
         public int DashboardCurrentPeriodAffectedEquipment
         {
             get => Dashboard.DashboardCurrentPeriodAffectedEquipment;
@@ -1023,21 +1033,60 @@ namespace EquipmentFailureAnalysis.ViewModels
             // prepare hours 0..23 for timeline labels
             for (int h = 0; h < 24; h++)
                 DayHours.Add(h);
-            XmlDataDecoder xmlDataDecoder = new XmlDataDecoder();
-            // load all equipment and set master list
-            var all = xmlDataDecoder.DecodeEquipment().ToList();
-            all.ForEach(e => { /* ensure Issues collection is not null */ });
-            _masterEquipment = all;
-            RebuildDowntimeResponsibleFilters();
-            RebuildDowntimeSubdivisionFilters();
-            RebuildDashboardFilters();
-            RebuildEmployeeSubdivisionFilters();
-            RebuildEmployeeMonthOptions();
             // initialize collection before applying filters (prevents null refs)
             EquipmentCollection = new ObservableCollection<EquipmentInfo>();
-            // apply initial type filter and sort
-            ApplyTypeFilterAndSort();
-            FillSearchWithFirstEquipmentIfNeeded();
+
+            IsLoading = true;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                var xmlDataDecoder = new XmlDataDecoder();
+                var all = xmlDataDecoder.DecodeEquipment().ToList();
+                return all;
+            }).ContinueWith(t =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        // Only load default XML if no data has been restored from cache (Jira or last XML)
+                        if (_masterEquipment == null || _masterEquipment.Count == 0)
+                        {
+                            var all = t.Result;
+                            _masterEquipment = all;
+                            RebuildDowntimeResponsibleFilters();
+                            RebuildDowntimeSubdivisionFilters();
+                            RebuildDashboardFilters();
+                            RebuildEmployeeSubdivisionFilters();
+                            RebuildEmployeeMonthOptions();
+                            ApplyTypeFilterAndSort();
+                            FillSearchWithFirstEquipmentIfNeeded();
+
+                            // Preselect first equipment (if exists) and load its data + today's timeline
+                            if (EquipmentCollection.Count > 0 && LoadEquipmentCommand != null)
+                            {
+                                var first = EquipmentCollection[0];
+                                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                                {
+                                    if (ShowDayTimelineCommand != null)
+                                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                                });
+                            }
+
+                            BuildDowntimeHeatmap();
+                            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
+                            BuildEmployeeAnalysis();
+                        }
+                    }
+                    catch
+                    {
+                        // ignore default load failure
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+                    }
+                });
+            });
 
             // DayCellSize will be adjusted by view to fit available area
 
@@ -1359,20 +1408,6 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ShowDayTimelineCommand = ReactiveCommand.Create<DateTime>(date => BuildTimelineForDate(date, SelectedEquipment));
             });
 
-            // Preselect first equipment (if exists) and load its data + today's timeline
-            if (EquipmentCollection.Count > 0)
-            {
-                var first = EquipmentCollection[0];
-                LoadEquipmentCommand.Execute(first).Subscribe(_ =>
-                {
-                    if (ShowDayTimelineCommand != null)
-                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
-                });
-            }
-
-            BuildDowntimeHeatmap();
-            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
-            BuildEmployeeAnalysis();
         }
 
     }

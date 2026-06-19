@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -29,6 +29,7 @@ namespace EquipmentFailureAnalysis.Views
             {
                 prevVm.Reports.PropertyChanged -= OnReportsViewModelPropertyChanged;
                 prevVm.Settings.PropertyChanged -= OnSettingsViewModelPropertyChanged;
+                prevVm.Dashboard.PropertyChanged -= OnDashboardViewModelPropertyChanged;
             }
 
             _trackedSettingsVm = DataContext as INotifyPropertyChanged;
@@ -38,6 +39,7 @@ namespace EquipmentFailureAnalysis.Views
             {
                 vm.Reports.PropertyChanged += OnReportsViewModelPropertyChanged;
                 vm.Settings.PropertyChanged += OnSettingsViewModelPropertyChanged;
+                vm.Dashboard.PropertyChanged += OnDashboardViewModelPropertyChanged;
             }
         }
 
@@ -48,7 +50,18 @@ namespace EquipmentFailureAnalysis.Views
 
             if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.HeatmapColorMin)
                 || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.HeatmapColorMax)
-                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedHeatmapSetting))
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedHeatmapSetting)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.AnalysisDate)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.DowntimeAnalysisDate)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.EmployeeTimelineDate)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedEquipment)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedIssueTypeFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedDowntimeIssueTypeFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedDowntimeStatusFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedDowntimeResponsibleFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedDowntimeSubdivisionFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.DowntimeEquipmentSearchQuery)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.MainWindowViewModel.SelectedEmployeeTimelineEmployee))
             {
                 SaveJiraSettingsFromUi();
             }
@@ -82,6 +95,19 @@ namespace EquipmentFailureAnalysis.Views
                 || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.SettingsViewModel.JiraAutoImportPeriodMinutes))
             {
                 ConfigureJiraAutoImportLoop();
+            }
+        }
+
+        private void OnDashboardViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_suppressSettingsSave)
+                return;
+
+            if (e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.DashboardViewModel.SelectedDashboardIssueTypeFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.DashboardViewModel.SelectedDashboardResponsibleFilter)
+                || e.PropertyName == nameof(EquipmentFailureAnalysis.ViewModels.DashboardViewModel.SelectedDashboardSubdivisionFilter))
+            {
+                SaveJiraSettingsFromUi();
             }
         }
 

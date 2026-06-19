@@ -3,6 +3,20 @@
              xmlns:views="using:EquipmentFailureAnalysis.Views"
              x:Class="EquipmentFailureAnalysis.Views.DashboardView">
 
+    <UserControl.Styles>
+        <Style Selector="Border.monthlyRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.monthlyRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid x:Name="DashboardLayoutRoot">
 
         <!-- ====================================================
@@ -19,56 +33,92 @@
                      <StackPanel Spacing="2">
                          <TextBlock Text="Панель управления" FontSize="22" FontWeight="Bold"
                                     Foreground="{DynamicResource TextPrimary}" />
-                         <TextBlock Text="Сводные показатели за последние 30 дней"
-                                    FontSize="13"
-                                    Foreground="{DynamicResource TextMuted}" />
+                         <TextBlock FontSize="13" Foreground="{DynamicResource TextMuted}">
+                             <TextBlock.Text>
+                                 <MultiBinding StringFormat="Сводные показатели за период {0:dd.MM.yyyy} — {1:dd.MM.yyyy}">
+                                     <Binding Path="DashboardStartDate" />
+                                     <Binding Path="DashboardEndDate" />
+                                 </MultiBinding>
+                             </TextBlock.Text>
+                         </TextBlock>
                      </StackPanel>
                  </Grid>
 
-                 <!-- ============== FILTER BAR ============== -->
-                 <Border Classes="panelFlat" Padding="14,12">
-                     <Grid ColumnDefinitions="Auto,Auto,260,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                         <Border Grid.Column="0"
-                                 Width="32" Height="32"
-                                 CornerRadius="8"
-                                 Background="{DynamicResource AccentSoftBackground}"
-                                 VerticalAlignment="Center">
-                             <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets"
-                                        FontSize="14"
-                                        Foreground="{DynamicResource AccentForeground}"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center" />
-                         </Border>
-                         <StackPanel Grid.Column="1" Spacing="0" VerticalAlignment="Center" Margin="4,0,8,0">
-                             <TextBlock Text="Фильтрация" FontSize="12" FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextPrimary}" />
-                             <TextBlock Text="Подразделение" FontSize="11"
-                                        Foreground="{DynamicResource TextMuted}" />
-                         </StackPanel>
+                 <!-- ============== UNIVERSAL FILTER BAR ============== -->
+                 <Border Classes="panelFlat" Padding="0">
+                     <Expander x:Name="FilterExpander" IsExpanded="False" HorizontalAlignment="Stretch">
+                         <Expander.Header>
+                             <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center" Margin="0,2">
+                                 <Border Grid.Column="0"
+                                         Width="32" Height="32"
+                                         CornerRadius="8"
+                                         Background="{DynamicResource AccentSoftBackground}"
+                                         VerticalAlignment="Center">
+                                     <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets"
+                                                FontSize="14"
+                                                Foreground="{DynamicResource AccentForeground}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                 </Border>
+                                 <StackPanel Grid.Column="1" Spacing="0" VerticalAlignment="Center" Margin="10,0,0,0">
+                                     <TextBlock Text="Универсальный фильтр" FontSize="12" FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextPrimary}" />
+                                     <TextBlock Text="Временной период и группа оборудования"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextMuted}" />
+                                 </StackPanel>
 
-                         <ComboBox Grid.Column="2"
-                                   ItemsSource="{Binding DashboardSubdivisionFilters}"
-                                   SelectedItem="{Binding SelectedDashboardSubdivisionFilter, Mode=TwoWay}"
-                                   HorizontalAlignment="Stretch" />
+                                 <Button Grid.Column="2"
+                                         Classes="resetFilter"
+                                         Content="Сбросить"
+                                         Margin="8,0,0,0"
+                                         Command="{Binding ResetDashboardFiltersCommand}"
+                                         Click="ResetFiltersWithToast_Click" />
+                             </Grid>
+                         </Expander.Header>
 
-                         <Border Grid.Column="3" />
+                        <StackPanel Spacing="10" Margin="0,8,0,0">
+                             <Grid ColumnDefinitions="Auto,*,12,Auto,*,20,Auto,*"
+                                   RowDefinitions="Auto"
+                                   ColumnSpacing="0">
+                                 <TextBlock Grid.Column="0" Text="Период с"
+                                            FontSize="11" FontWeight="SemiBold"
+                                            Foreground="{DynamicResource TextMuted}"
+                                            VerticalAlignment="Center" Margin="0,0,8,0" />
+                                 <CalendarDatePicker Grid.Column="1"
+                                                     SelectedDate="{Binding DashboardStartDate, Mode=TwoWay}"
+                                                     HorizontalAlignment="Stretch" />
 
-                         <Button Grid.Column="4"
-                                 Classes="resetFilter"
-                                 Content="Сбросить"
-                                 Command="{Binding ResetDashboardFiltersCommand}"
-                                 Click="ResetFiltersWithToast_Click" />
-                     </Grid>
+                                 <TextBlock Grid.Column="3" Text="по"
+                                            FontSize="11" FontWeight="SemiBold"
+                                            Foreground="{DynamicResource TextMuted}"
+                                            VerticalAlignment="Center" Margin="0,0,8,0"
+                                            HorizontalAlignment="Center" />
+                                 <CalendarDatePicker Grid.Column="4"
+                                                     SelectedDate="{Binding DashboardEndDate, Mode=TwoWay}"
+                                                     HorizontalAlignment="Stretch" />
+
+                                 <TextBlock Grid.Column="6" Text="Группа"
+                                            FontSize="11" FontWeight="SemiBold"
+                                            Foreground="{DynamicResource TextMuted}"
+                                            VerticalAlignment="Center" Margin="0,0,8,0" />
+                                 <ComboBox Grid.Column="7"
+                                           ItemsSource="{Binding DashboardSubdivisionFilters}"
+                                           SelectedItem="{Binding SelectedDashboardSubdivisionFilter, Mode=TwoWay}"
+                                           HorizontalAlignment="Stretch" />
+                             </Grid>
+                        </StackPanel>
+                     </Expander>
                  </Border>
 
-                 <!-- ============== KPI GRID (3×2) ============== -->
-                 <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="12" ColumnSpacing="12">
+                  <!-- ============== KPI GRID (3×3) ============== -->
+                  <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="12" ColumnSpacing="12">
 
-                     <!-- Events 30d -->
-                     <Border Grid.Row="0" Grid.Column="0" Classes="kpi" ToolTip.Tip="Общее количество событий (инцидентов и настроек) за текущие 30 дней.">
+                     <!-- Events -->
+                     <Border Grid.Row="0" Grid.Column="0" Classes="kpi" ToolTip.Tip="Общее количество событий (инцидентов и настроек) за выбранный период.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
-                                 <TextBlock Grid.Column="0" Text="События за 30 дн."
+                                 <TextBlock Grid.Column="0" Text="События за период"
                                             Classes="cardSubtext" />
                                  <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
                                          Background="{DynamicResource AccentSoftBackground}">
@@ -88,8 +138,8 @@
                          </StackPanel>
                      </Border>
 
-                     <!-- Prev 30d -->
-                     <Border Grid.Row="0" Grid.Column="1" Classes="kpi" ToolTip.Tip="Общее количество событий за предыдущий 30-дневный период.">
+                     <!-- Prev Period -->
+                     <Border Grid.Row="0" Grid.Column="1" Classes="kpi" ToolTip.Tip="Общее количество событий за предыдущий период такой же длительности.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Предыдущий период"
@@ -113,7 +163,7 @@
                      </Border>
 
                      <!-- Equipment -->
-                     <Border Grid.Row="0" Grid.Column="2" Classes="kpi" ToolTip.Tip="Количество уникальных единиц оборудования с зарегистрированными событиями за последние 30 дней.">
+                     <Border Grid.Row="0" Grid.Column="2" Classes="kpi" ToolTip.Tip="Количество уникальных единиц оборудования с зарегистрированными событиями за выбранный период.">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Активное оборудование"
@@ -137,7 +187,7 @@
                      </Border>
 
                      <!-- Avg Duration -->
-                     <Border Grid.Row="1" Grid.Column="0" Classes="kpi" ToolTip.Tip="Средняя длительность одного события (инцидента или настройки) за последние 30 дней.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общее время событий / Количество событий">
+                     <Border Grid.Row="1" Grid.Column="0" Classes="kpi" ToolTip.Tip="Средняя длительность одного события (инцидента или настройки) за выбранный период.&#x0a;&#x0a;Формула расчета:&#x0a;Ср. длительность = Общее время событий / Количество событий">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="Средняя длительность"
@@ -160,7 +210,7 @@
                      </Border>
 
                      <!-- MTBF -->
-                     <Border Grid.Row="1" Grid.Column="1" Classes="kpi" ToolTip.Tip="Среднее время работы оборудования между отказами (ремонтами) за последние 30 дней.&#x0a;&#x0a;Формула расчета:&#x0a;MTBF = (Общее доступное время - Общее время простоя) / Количество ремонтов">
+                     <Border Grid.Row="1" Grid.Column="1" Classes="kpi" ToolTip.Tip="Среднее время работы оборудования между отказами (ремонтами) за выбранный период.&#x0a;&#x0a;Формула расчета:&#x0a;MTBF = (Общее доступное время - Общее время простоя) / Количество ремонтов">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="MTBF · наработка на отказ"
@@ -183,7 +233,7 @@
                      </Border>
 
                      <!-- MTTR -->
-                     <Border Grid.Row="1" Grid.Column="2" Classes="kpi" ToolTip.Tip="Среднее время восстановления работоспособности оборудования после отказа (длительность ремонта).&#x0a;&#x0a;Формула расчета:&#x0a;MTTR = Общее время ремонтов / Количество ремонтов">
+                     <Border Grid.Row="1" Grid.Column="2" Classes="kpi" ToolTip.Tip="Среднее время восстановления работоспособности оборудования после отказа (длительность ремонта) за выбранный период.&#x0a;&#x0a;Формула расчета:&#x0a;MTTR = Общее время ремонтов / Количество ремонтов">
                          <StackPanel Spacing="8">
                              <Grid ColumnDefinitions="*,Auto">
                                  <TextBlock Grid.Column="0" Text="MTTR · время восстановл."
@@ -200,11 +250,80 @@
                              <TextBlock Text="{Binding DashboardCurrentPeriodMttr}"
                                         FontSize="28" FontWeight="Bold"
                                         Foreground="{DynamicResource TextPrimary}" />
-                             <TextBlock Text="среднее по ремонтам" FontSize="11"
-                                        Foreground="{DynamicResource TextMuted}" />
-                         </StackPanel>
-                     </Border>
-                 </Grid>
+                              <TextBlock Text="среднее по ремонтам" FontSize="11"
+                                         Foreground="{DynamicResource TextMuted}" />
+                          </StackPanel>
+                      </Border>
+
+                      <!-- Availability Factor -->
+                      <Border Grid.Row="2" Grid.Column="0" Classes="kpi" ToolTip.Tip="Коэффициент доступности оборудования за выбранный период.&#x0a;&#x0a;Формула расчета:&#x0a;Доступность = (Общее доступное время - Общее время простоя) / Общее доступное время">
+                          <StackPanel Spacing="8">
+                              <Grid ColumnDefinitions="*,Auto">
+                                  <TextBlock Grid.Column="0" Text="Доступность оборудования"
+                                             Classes="cardSubtext" />
+                                  <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                          Background="{DynamicResource InfoSoftBackground}">
+                                      <TextBlock Text="&#xE930;" FontFamily="Segoe MDL2 Assets"
+                                                 FontSize="13"
+                                                 Foreground="{DynamicResource InfoBrush}"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center" />
+                                  </Border>
+                              </Grid>
+                              <TextBlock Text="{Binding DashboardAvailabilityPercentText}"
+                                         FontSize="28" FontWeight="Bold"
+                                         Foreground="{DynamicResource TextPrimary}" />
+                              <TextBlock Text="целевое значение: &gt;95%" FontSize="11"
+                                         Foreground="{DynamicResource TextMuted}" />
+                          </StackPanel>
+                      </Border>
+
+                      <!-- SLA Compliance -->
+                      <Border Grid.Row="2" Grid.Column="1" Classes="kpi" ToolTip.Tip="Соблюдение регламентного времени (SLA) выполнения задач за выбранный период.">
+                          <StackPanel Spacing="8">
+                              <Grid ColumnDefinitions="*,Auto">
+                                  <TextBlock Grid.Column="0" Text="Уровень SLA"
+                                             Classes="cardSubtext" />
+                                  <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                          Background="{DynamicResource SuccessSoftBackground}">
+                                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                 FontSize="13"
+                                                 Foreground="{DynamicResource SuccessBrush}"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center" />
+                                  </Border>
+                              </Grid>
+                              <TextBlock Text="{Binding DashboardCurrentPeriodSlaCompliancePercent, StringFormat='{}{0:0.#}%'}"
+                                         FontSize="28" FontWeight="Bold"
+                                         Foreground="{DynamicResource TextPrimary}" />
+                              <TextBlock Text="по назначенным задачам" FontSize="11"
+                                         Foreground="{DynamicResource TextMuted}" />
+                          </StackPanel>
+                      </Border>
+
+                      <!-- Unassigned Share -->
+                      <Border Grid.Row="2" Grid.Column="2" Classes="kpi" ToolTip.Tip="Доля ремонтов без назначенного ответственного сотрудника за последние 30 дней.">
+                          <StackPanel Spacing="8">
+                              <Grid ColumnDefinitions="*,Auto">
+                                  <TextBlock Grid.Column="0" Text="Неназначенные ремонты"
+                                             Classes="cardSubtext" />
+                                  <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                          Background="{DynamicResource WarningSoftBackground}">
+                                      <TextBlock Text="&#xE897;" FontFamily="Segoe MDL2 Assets"
+                                                FontSize="13"
+                                                Foreground="{DynamicResource WarningBrush}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                  </Border>
+                              </Grid>
+                              <TextBlock Text="{Binding DashboardCurrentPeriodUnassignedSharePercent, StringFormat='{}{0:0.#}%'}"
+                                         FontSize="28" FontWeight="Bold"
+                                         Foreground="{DynamicResource TextPrimary}" />
+                              <TextBlock Text="от общего числа ремонтов" FontSize="11"
+                                         Foreground="{DynamicResource TextMuted}" />
+                          </StackPanel>
+                      </Border>
+                  </Grid>
 
                  <!-- ============== TRENDS CARD ============== -->
                  <Border Classes="panel">
@@ -304,79 +423,81 @@
                                         Classes="sectionSubtitle" />
                          </StackPanel>
 
-                         <Border Classes="well" Padding="0">
-                             <Grid RowDefinitions="Auto,*">
-                                 <!-- Sticky header row -->
-                                 <Border Grid.Row="0"
-                                         Background="{DynamicResource SurfaceBrush}"
-                                         BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                         BorderThickness="0,0,0,1"
-                                         CornerRadius="10,10,0,0"
-                                         Padding="14,10">
-                                     <Grid ColumnDefinitions="1.5*,*,*,*,*">
-                                         <TextBlock Grid.Column="0" Text="Месяц"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}" />
-                                         <TextBlock Grid.Column="1" Text="События"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="2" Text="Ремонтов"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="3" Text="Настроек"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                         <TextBlock Grid.Column="4" Text="Ср. время"
-                                                    FontSize="11" FontWeight="SemiBold"
-                                                    Foreground="{DynamicResource TextMuted}"
-                                                    HorizontalAlignment="Right" />
-                                     </Grid>
-                                 </Border>
+                          <Border Classes="well" Padding="0" Width="650" HorizontalAlignment="Left">
+                              <Grid RowDefinitions="Auto,*">
+                                  <!-- Sticky header row -->
+                                  <Border Grid.Row="0"
+                                          Background="{DynamicResource SurfaceBrush}"
+                                          BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                          BorderThickness="0,0,0,1"
+                                          CornerRadius="10,10,0,0"
+                                          Padding="14,8">
+                                      <Grid ColumnDefinitions="2.2*,*,*,*,1.2*">
+                                          <TextBlock Grid.Column="0" Text="Месяц"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}" />
+                                          <TextBlock Grid.Column="1" Text="События"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="2" Text="Ремонтов"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="3" Text="Настроек"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                          <TextBlock Grid.Column="4" Text="Ср. время"
+                                                     FontSize="11" FontWeight="SemiBold"
+                                                     Foreground="{DynamicResource TextMuted}"
+                                                     HorizontalAlignment="Right" />
+                                      </Grid>
+                                  </Border>
 
-                                 <!-- Scrollable list body -->
-                                 <ScrollViewer Grid.Row="1"
-                                               HorizontalScrollBarVisibility="Disabled"
-                                               VerticalScrollBarVisibility="Auto"
-                                               MaxHeight="320">
-                                     <ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
-                                         <ItemsControl.ItemTemplate>
-                                             <DataTemplate>
-                                                 <Border BorderBrush="{DynamicResource RowDividerBrush}"
-                                                         BorderThickness="0,0,0,1"
-                                                         Padding="14,9">
-                                                     <Grid ColumnDefinitions="1.5*,*,*,*,*">
-                                                         <TextBlock Grid.Column="0" Text="{Binding PeriodLabel}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextSecondary}" />
-                                                         <TextBlock Grid.Column="1" Text="{Binding IssuesCount}"
-                                                                    FontSize="12" FontWeight="SemiBold"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="2" Text="{Binding RepairsCount}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="3" Text="{Binding SetupsCount}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                         <TextBlock Grid.Column="4" Text="{Binding AvgDurationText}"
-                                                                    FontSize="12"
-                                                                    Foreground="{DynamicResource TextPrimary}"
-                                                                    HorizontalAlignment="Right" />
-                                                     </Grid>
-                                                 </Border>
-                                             </DataTemplate>
-                                         </ItemsControl.ItemTemplate>
-                                     </ItemsControl>
-                                 </ScrollViewer>
-                             </Grid>
-                         </Border>
-                     </StackPanel>
-                 </Border>
+                                  <!-- Scrollable list body -->
+                                  <ScrollViewer Grid.Row="1"
+                                                HorizontalScrollBarVisibility="Disabled"
+                                                VerticalScrollBarVisibility="Auto"
+                                                MaxHeight="320">
+                                      <ItemsControl ItemsSource="{Binding DashboardMonthlyTrends}">
+                                          <ItemsControl.ItemTemplate>
+                                              <DataTemplate>
+                                                  <Border Classes="monthlyRow"
+                                                          BorderBrush="{DynamicResource RowDividerBrush}"
+                                                          BorderThickness="0,0,0,1"
+                                                          Padding="14,7"
+                                                          Opacity="{Binding RowOpacity}">
+                                                      <Grid ColumnDefinitions="2.2*,*,*,*,1.2*">
+                                                          <TextBlock Grid.Column="0" Text="{Binding PeriodLabel}"
+                                                                     FontSize="12" FontWeight="Medium"
+                                                                     Foreground="{DynamicResource TextSecondary}" />
+                                                          <TextBlock Grid.Column="1" Text="{Binding IssuesCountText}"
+                                                                     FontSize="12" FontWeight="SemiBold"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="2" Text="{Binding RepairsCountText}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="3" Text="{Binding SetupsCountText}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                          <TextBlock Grid.Column="4" Text="{Binding AvgDurationTextFormatted}"
+                                                                     FontSize="12"
+                                                                     Foreground="{DynamicResource TextPrimary}"
+                                                                     HorizontalAlignment="Right" />
+                                                      </Grid>
+                                                  </Border>
+                                              </DataTemplate>
+                                          </ItemsControl.ItemTemplate>
+                                      </ItemsControl>
+                                  </ScrollViewer>
+                              </Grid>
+                          </Border>
+                      </StackPanel>
+                  </Border>
              </StackPanel>
          </ScrollViewer>
     </Grid>
