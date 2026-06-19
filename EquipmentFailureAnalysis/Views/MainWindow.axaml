@@ -237,6 +237,32 @@
                                 </Grid>
                             </Button>
 
+                            <!-- PPR -->
+                            <Button x:Name="PprNavButton" Classes="navEntry"
+                                    HorizontalAlignment="Stretch"
+                                    Click="PprButton_Click"
+                                    ToolTip.Tip="График ППР">
+                                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                                    <TextBlock Classes="navIcon" Text="&#xE8F1;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                    <StackPanel x:Name="PprNavTextPanel" Grid.Column="1"
+                                                Spacing="1" HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="График ППР"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="Контроль проведения ремонтов"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
                             <!-- Divider -->
                             <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="10,12,10,6" />
                             <TextBlock x:Name="ManagementHeaderPanel" Classes="eyebrow" Text="УПРАВЛЕНИЕ" Margin="6,0,6,4" />

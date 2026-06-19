@@ -1,0 +1,461 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
+             xmlns:utility="using:EquipmentFailureAnalysis.Utility"
+             xmlns:models="using:EquipmentFailureAnalysis.Models"
+             x:Class="EquipmentFailureAnalysis.Views.PprView"
+             x:DataType="vm:PprViewModel">
+
+    <UserControl.Resources>
+        <utility:PprCellToBrushConverter x:Key="PprCellToBrushConverter" />
+        <utility:PprCellHasPlanConverter x:Key="PprCellHasPlanConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.monthCell">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.monthCell:pointerover">
+            <Setter Property="RenderTransform" Value="scale(1.08)" />
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+
+        <Style Selector="Border.pprRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.pprRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+        </Style>
+
+        <!-- KPI styles -->
+        <Style Selector="Border.kpiCard">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <ThicknessTransition Property="Padding" Duration="0:0:0.15" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.kpiCard:pointerover">
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid x:Name="PprAnalysisLayoutRoot">
+        <ScrollViewer x:Name="PprCenterColumn"
+                      Margin="20,18,20,18"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <StackPanel Spacing="14">
+
+                <!-- ============== PAGE HEADER ============== -->
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="График ППР" FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Планово-предупредительный ремонт: контроль проведения и статистика по месяцам"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextMuted}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="Импорт из Excel" Click="ImportExcel_Click"
+                                Classes="accent" Padding="12,8" CornerRadius="8"
+                                ToolTip.Tip="Импортировать новый график ППР из XLSX-файла" />
+                        <Button Content="Экспорт в Excel" Click="ExportExcel_Click"
+                                Padding="12,8" CornerRadius="8"
+                                ToolTip.Tip="Экспортировать текущее состояние в новый файл Excel с цветовой маркировкой" />
+                        <Button Content="Сбросить отметки" Command="{Binding ResetCompletionsCommand}"
+                                Padding="12,8" CornerRadius="8"
+                                ToolTip.Tip="Сбросить все отметки о выполнении в текущем графике" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- ============== FILTERS PANEL ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Фильтрация и параметры" Classes="sectionTitle" />
+                        <Grid ColumnDefinitions="*,16,*,16,Auto" ColumnSpacing="0" VerticalAlignment="Center">
+                            <!-- Group filter -->
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Группа оборудования (Подразделение)" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
+                                <ComboBox ItemsSource="{Binding SubdivisionFilters}"
+                                          SelectedItem="{Binding SelectedSubdivisionFilter, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch" />
+                            </StackPanel>
+
+                            <!-- Search query -->
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="Поиск оборудования" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
+                                <TextBox Text="{Binding SearchQuery, Mode=TwoWay}"
+                                         Watermark="Введите наименование или инвентарный номер..."
+                                         HorizontalAlignment="Stretch" />
+                            </StackPanel>
+
+                            <!-- Year Selection -->
+                            <StackPanel Grid.Column="4" Spacing="4" Margin="12,0,0,0">
+                                <TextBlock Text="Год графика" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
+                                <NumericUpDown Minimum="2020" Maximum="2100" Increment="1" Width="120"
+                                               FormatString="F0"
+                                               Value="{Binding SelectedYear, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== KPI CARDS ============== -->
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+                    <!-- Total items -->
+                    <Border Grid.Column="0" Classes="kpiCard">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Всего на ППР" Classes="cardSubtext" />
+                                <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                        Background="{DynamicResource AccentSoftBackground}">
+                                    <TextBlock Text="&#xE950;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding TotalEquipmentCount, StringFormat='{}{0} ед.'}"
+                                       FontSize="28" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="позиций в графике" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Completed -->
+                    <Border Grid.Column="1" Classes="kpiCard">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Выполнено работ" Classes="cardSubtext" />
+                                <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                        Background="{DynamicResource SuccessSoftBackground}">
+                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding TotalCompletedCount, StringFormat='{}{0} ремонтов'}"
+                                       FontSize="28" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="ТО и ТР завершено" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Overdue -->
+                    <Border Grid.Column="2" Classes="kpiCard">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Просрочено работ" Classes="cardSubtext" />
+                                <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                        Background="{DynamicResource DangerSoftBackground}">
+                                    <TextBlock Text="&#xEA39;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource DangerBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding TotalOverdueCount, StringFormat='{}{0} пропущено'}"
+                                       FontSize="28" FontWeight="Bold"
+                                       Foreground="{DynamicResource DangerBrush}" />
+                            <TextBlock Text="из прошлых месяцев" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Rate -->
+                    <Border Grid.Column="3" Classes="kpiCard">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Процент выполнения" Classes="cardSubtext" />
+                                <Border Grid.Column="1" Width="28" Height="28" CornerRadius="8"
+                                        Background="{DynamicResource InfoSoftBackground}">
+                                    <TextBlock Text="&#xE930;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource InfoBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                <StackPanel Spacing="4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding CompletionRate, StringFormat='{}{0:0.0}%'}"
+                                               FontSize="28" FontWeight="Bold"
+                                               Foreground="{DynamicResource InfoBrush}" />
+                                    <TextBlock Text="выполнение плана" FontSize="11" Foreground="{DynamicResource TextMuted}" />
+                                </StackPanel>
+                                <Grid Grid.Column="1" Width="48" Height="48" Margin="8,0,0,0" VerticalAlignment="Center">
+                                    <Ellipse Stroke="{DynamicResource BorderSubtleBrush}" StrokeThickness="4" Width="42" Height="42" />
+                                    <!-- Simple approximation for progress visual -->
+                                    <Arc Stroke="{DynamicResource InfoBrush}" StrokeThickness="4" StartAngle="-90"
+                                         SweepAngle="{Binding CompletionRate, Converter={StaticResource IndexToForegroundConverter}, ConverterParameter=3.6}"
+                                         Width="42" Height="42"
+                                         StrokeJoin="Round" StrokeLineCap="Round" />
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ============== MAIN SCHEDULE GRID ============== -->
+                <Border Classes="panel" Padding="0">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Sticky Header -->
+                        <Border Grid.Row="0"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                BorderThickness="0,0,0,1"
+                                CornerRadius="10,10,0,0"
+                                Padding="14,10">
+                            <Grid ColumnDefinitions="1.2*,1.8*,0.8*,*,*,*,*,*,*,*,*,*,*,*,*">
+                                <TextBlock Grid.Column="0" Text="Подразделение" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                <TextBlock Grid.Column="1" Text="Оборудование" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="4,0" />
+                                <TextBlock Grid.Column="2" Text="Инв. №" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="4,0" />
+                                
+                                <TextBlock Grid.Column="3" Text="Янв" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="4" Text="Фев" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="5" Text="Мар" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="6" Text="Апр" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="7" Text="Май" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="8" Text="Июн" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="9" Text="Июл" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="10" Text="Авг" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="11" Text="Сен" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="12" Text="Окт" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="13" Text="Ноя" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="14" Text="Дек" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Scrollable Body -->
+                        <ScrollViewer Grid.Row="1"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Auto"
+                                      MaxHeight="580">
+                            <Grid>
+                                <ItemsControl ItemsSource="{Binding FilteredPprItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="models:PprScheduleItem">
+                                            <Border Classes="pprRow"
+                                                    BorderBrush="{DynamicResource RowDividerBrush}"
+                                                    BorderThickness="0,0,0,1"
+                                                    Padding="14,8">
+                                                <Grid ColumnDefinitions="1.2*,1.8*,0.8*,*,*,*,*,*,*,*,*,*,*,*,*">
+                                                    <!-- Info cells -->
+                                                    <TextBlock Grid.Column="0" Text="{Binding Subdivision}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding EquipmentTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="4,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding InventoryNumber}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="4,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+
+                                                    <!-- 12 months cells -->
+                                                    <!-- Month 1: Jan -->
+                                                    <Button Grid.Column="3" Classes="monthCell" Click="MonthCell_Click" Tag="0" Content="{Binding MonthlyPlans[0]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='0'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="0">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 2: Feb -->
+                                                    <Button Grid.Column="4" Classes="monthCell" Click="MonthCell_Click" Tag="1" Content="{Binding MonthlyPlans[1]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='1'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="1">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 3: Mar -->
+                                                    <Button Grid.Column="5" Classes="monthCell" Click="MonthCell_Click" Tag="2" Content="{Binding MonthlyPlans[2]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='2'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="2">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 4: Apr -->
+                                                    <Button Grid.Column="6" Classes="monthCell" Click="MonthCell_Click" Tag="3" Content="{Binding MonthlyPlans[3]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='3'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="3">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 5: May -->
+                                                    <Button Grid.Column="7" Classes="monthCell" Click="MonthCell_Click" Tag="4" Content="{Binding MonthlyPlans[4]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='4'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="4">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 6: Jun -->
+                                                    <Button Grid.Column="8" Classes="monthCell" Click="MonthCell_Click" Tag="5" Content="{Binding MonthlyPlans[5]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='5'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="5">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 7: Jul -->
+                                                    <Button Grid.Column="9" Classes="monthCell" Click="MonthCell_Click" Tag="6" Content="{Binding MonthlyPlans[6]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='6'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="6">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 8: Aug -->
+                                                    <Button Grid.Column="10" Classes="monthCell" Click="MonthCell_Click" Tag="7" Content="{Binding MonthlyPlans[7]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='7'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="7">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 9: Sep -->
+                                                    <Button Grid.Column="11" Classes="monthCell" Click="MonthCell_Click" Tag="8" Content="{Binding MonthlyPlans[8]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='8'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="8">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 10: Oct -->
+                                                    <Button Grid.Column="12" Classes="monthCell" Click="MonthCell_Click" Tag="9" Content="{Binding MonthlyPlans[9]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='9'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="9">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 11: Nov -->
+                                                    <Button Grid.Column="13" Classes="monthCell" Click="MonthCell_Click" Tag="10" Content="{Binding MonthlyPlans[10]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='10'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="10">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                    <!-- Month 12: Dec -->
+                                                    <Button Grid.Column="14" Classes="monthCell" Click="MonthCell_Click" Tag="11" Content="{Binding MonthlyPlans[11]}"
+                                                            IsVisible="{Binding Converter={StaticResource PprCellHasPlanConverter}, ConverterParameter='11'}"
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Background>
+                                                            <MultiBinding Converter="{StaticResource PprCellToBrushConverter}" ConverterParameter="11">
+                                                                <Binding />
+                                                                <Binding Path="$parent[UserControl].DataContext.SelectedYear" />
+                                                            </MultiBinding>
+                                                        </Button.Background>
+                                                    </Button>
+
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty State -->
+                                <Border Classes="emptyState"
+                                        IsVisible="{Binding !FilteredPprItems.Count}"
+                                        Margin="0,50,0,50">
+                                    <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
+                                        <Border Width="44" Height="44" CornerRadius="12"
+                                                Background="{DynamicResource AccentSoftBackground}">
+                                            <TextBlock Text="&#xE950;" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="22"
+                                                       Foreground="{DynamicResource AccentForeground}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Classes="emptyStateTitle" Text="График ППР не загружен"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Classes="emptyStateSubtitle"
+                                                   Text="Нет позиций для отображения. Импортируйте файл XLSX или сбросьте фильтры"
+                                                   HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

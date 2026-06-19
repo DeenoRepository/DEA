@@ -66,11 +66,13 @@ namespace EquipmentFailureAnalysis.Views
             SetControlVisibility("EmployeeNavTextPanel", isExpanded);
             SetControlVisibility("ReportsNavTextPanel", isExpanded);
             SetControlVisibility("SettingsNavTextPanel", isExpanded);
+            SetControlVisibility("PprNavTextPanel", isExpanded);
             SetControlVisibility("UserProfileTextPanel", isExpanded);
 
             UpdateNavigationButtonLayout("DashboardNavButton", isExpanded);
             UpdateNavigationButtonLayout("DowntimeNavButton", isExpanded);
             UpdateNavigationButtonLayout("EmployeeNavButton", isExpanded);
+            UpdateNavigationButtonLayout("PprNavButton", isExpanded);
             UpdateNavigationButtonLayout("ReportsNavButton", isExpanded);
             UpdateNavigationButtonLayout("SettingsNavButton", isExpanded);
             UpdateUserProfileLayout(isExpanded);
@@ -730,6 +732,7 @@ namespace EquipmentFailureAnalysis.Views
                 AppPage.Reports => "ReportsLayoutRoot",
                 AppPage.Settings => "SettingsLayoutRoot",
                 AppPage.EmployeeAnalysis => "EmployeeAnalysisLayoutRoot",
+                AppPage.Ppr => "PprAnalysisLayoutRoot",
                 _ => null
             };
 
@@ -757,6 +760,7 @@ namespace EquipmentFailureAnalysis.Views
                 AppPage.Reports => "ReportsCenterColumn",
                 AppPage.Settings => "SettingsCenterColumn",
                 AppPage.EmployeeAnalysis => "EmployeeCenterColumn",
+                AppPage.Ppr => "PprCenterColumn",
                 _ => null
             };
 
@@ -769,6 +773,11 @@ namespace EquipmentFailureAnalysis.Views
         private void EmployeeAnalysisButton_Click(object? sender, RoutedEventArgs e)
         {
             NavigateToPage(AppPage.EmployeeAnalysis);
+        }
+
+        private void PprButton_Click(object? sender, RoutedEventArgs e)
+        {
+            NavigateToPage(AppPage.Ppr);
         }
 
         private void CapturePageFilters()
@@ -882,6 +891,7 @@ namespace EquipmentFailureAnalysis.Views
                     AppPage.Reports => _reportsPage,
                     AppPage.Settings => _settingsPage,
                     AppPage.EmployeeAnalysis => _employeeAnalysisPage,
+                    AppPage.Ppr => _pprPage,
                     _ => null
                 };
 
@@ -897,12 +907,14 @@ namespace EquipmentFailureAnalysis.Views
             var isReportsPage = _currentPage == AppPage.Reports;
             var isSettingsPage = _currentPage == AppPage.Settings;
             var isEmployeeAnalysisPage = _currentPage == AppPage.EmployeeAnalysis;
+            var isPprPage = _currentPage == AppPage.Ppr;
 
             SetNavigationButtonSelected("DashboardNavButton", isDashboardPage);
             SetNavigationButtonSelected("DowntimeNavButton", isDowntimeAnalysisPage || isFailureAnalysisPage);
             SetNavigationButtonSelected("EmployeeNavButton", isEmployeeAnalysisPage);
             SetNavigationButtonSelected("ReportsNavButton", isReportsPage);
             SetNavigationButtonSelected("SettingsNavButton", isSettingsPage);
+            SetNavigationButtonSelected("PprNavButton", isPprPage);
 
             ApplyRightPanelState();
             OnWindowResized();

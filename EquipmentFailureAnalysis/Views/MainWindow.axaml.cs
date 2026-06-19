@@ -53,6 +53,7 @@ namespace EquipmentFailureAnalysis.Views
         private ReportsView? _reportsPage;
         private SettingsView? _settingsPage;
         private EmployeeAnalysisView? _employeeAnalysisPage;
+        private PprView? _pprPage;
 
         private enum AppPage
         {
@@ -61,7 +62,8 @@ namespace EquipmentFailureAnalysis.Views
             DowntimeAnalysis,
             Reports,
             Settings,
-            EmployeeAnalysis
+            EmployeeAnalysis,
+            Ppr
         }
 
         internal async void ImportFromJiraButton_Click(object? sender, RoutedEventArgs e)
@@ -495,6 +497,10 @@ namespace EquipmentFailureAnalysis.Views
             if (_employeeAnalysisPage == null)
                 _employeeAnalysisPage = new EmployeeAnalysisView();
             _employeeAnalysisPage.DataContext = vm;
+
+            if (_pprPage == null)
+                _pprPage = new PprView();
+            _pprPage.DataContext = vm.Ppr;
         }
 
         private T? FindNestedControl<T>(string name) where T : Control

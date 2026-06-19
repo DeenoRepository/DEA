@@ -15,6 +15,7 @@ namespace EquipmentFailureAnalysis.ViewModels
         public DowntimeViewModel Downtime { get; }
         public ReportsViewModel Reports { get; }
         public SettingsViewModel Settings { get; }
+        public PprViewModel Ppr { get; }
 
         private bool _isLoading;
         public bool IsLoading
@@ -1011,6 +1012,7 @@ namespace EquipmentFailureAnalysis.ViewModels
             Downtime = new DowntimeViewModel(this);
             Reports = new ReportsViewModel(this);
             Settings = new SettingsViewModel(this);
+            Ppr = new PprViewModel(this);
 
             HeatmapSettingOptions.Add(FailureHeatmapOption);
             HeatmapSettingOptions.Add(DowntimeHeatmapOption);
