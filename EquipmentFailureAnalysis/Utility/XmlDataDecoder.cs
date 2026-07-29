@@ -178,53 +178,25 @@ namespace EquipmentFailureAnalysis.Utility
                 }
 
                 string? equipmentText = equipmentNode?.InnerText?.Trim();
-                string title = "Unknown Equipment";
-                int uid = 0;
-                string? inventoryNumber = null;
+                string title;
+                int uid;
+                string? inventoryNumber;
 
-                if (!string.IsNullOrEmpty(equipmentText))
+                if (!string.IsNullOrWhiteSpace(equipmentText))
                 {
-                    // 1. Поиск с явным префиксом (инв., зав., №, инв, зав) с поддержкой комбинаций (например, "зав. №")
-                    var matchWithPrefix = Regex.Match(equipmentText, @"^(?<Name>.*?)[\s\t]+(?:(?:инв\.|зав\.|№|инв|зав)[\s\t\.\№]*)+(?<ID>[a-zA-Z0-9\-\/]+)$", RegexOptions.IgnoreCase);
-                    if (matchWithPrefix.Success)
-                    {
-                        title = matchWithPrefix.Groups["Name"].Value.Trim();
-                        inventoryNumber = matchWithPrefix.Groups["ID"].Value.Trim();
-                        int.TryParse(inventoryNumber, out uid);
-                    }
-                    else
-                    {
-                        // 2. Поиск без префикса (числовой суффикс)
-                        var matchPureNumeric = Regex.Match(equipmentText, @"^(?<Name>.*?)[\s\t]+(?<ID>\d+)$", RegexOptions.IgnoreCase);
-                        if (matchPureNumeric.Success)
-                        {
-                            var possibleId = matchPureNumeric.Groups["ID"].Value;
-                            var nameEnd = matchPureNumeric.Groups["Name"].Index + matchPureNumeric.Groups["Name"].Length;
-                            var idStart = matchPureNumeric.Groups["ID"].Index;
-                            var separatorSpan = equipmentText.Substring(nameEnd, idStart - nameEnd);
-
-                            // Считаем инвентарным номером, если разделено табуляцией, либо если длина не равна 4 (чтобы не путать с моделями типа TDS 2002) и длина >= 2
-                            if (separatorSpan.Contains('\t') || (possibleId.Length != 4 && possibleId.Length >= 2))
-                            {
-                                title = matchPureNumeric.Groups["Name"].Value.Trim();
-                                inventoryNumber = possibleId;
-                                int.TryParse(inventoryNumber, out uid);
-                            }
-                            else
-                            {
-                                title = equipmentText;
-                            }
-                        }
-                        else
-                        {
-                            title = equipmentText;
-                        }
-                    }
+                    var parseResult = EquipmentNameParser.Parse(equipmentText);
+                    title = parseResult.Title;
+                    inventoryNumber = parseResult.InventoryNumber;
+                    uid = parseResult.Uid;
                 }
                 else
                 {
                     // Если спец. поле пустое, берем название из Summary
-                    title = xmlNode["summary"]?.InnerText ?? "Без названия";
+                    var summaryText = xmlNode["summary"]?.InnerText?.Trim() ?? "Без названия";
+                    var parseResult = EquipmentNameParser.Parse(summaryText);
+                    title = parseResult.Title;
+                    inventoryNumber = parseResult.InventoryNumber;
+                    uid = parseResult.Uid;
                 }
 
                 // 2. Парсинг дат (с учетом формата JIRA RSS)

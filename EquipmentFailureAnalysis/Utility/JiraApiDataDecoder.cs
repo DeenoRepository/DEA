@@ -105,53 +105,25 @@ namespace EquipmentFailureAnalysis.Utility
                     var subdivision = GetSubdivision(fields);
                     var equipmentText = GetEquipmentText(fields, effectiveEquipmentFieldIds);
 
-                    var title = "Unknown Equipment";
-                    var uid = 0;
-                    string? inventoryNumber = null;
+                    string title;
+                    int uid;
+                    string? inventoryNumber;
 
                     if (!string.IsNullOrWhiteSpace(equipmentText))
                     {
-                        // 1. Поиск с явным префиксом (инв., зав., №, инв, зав) с поддержкой комбинаций (например, "зав. №")
-                        var matchWithPrefix = Regex.Match(equipmentText, @"^(?<Name>.*?)[\s\t]+(?:(?:инв\.|зав\.|№|инв|зав)[\s\t\.\№]*)+(?<ID>[a-zA-Z0-9\-\/]+)$", RegexOptions.IgnoreCase);
-                        if (matchWithPrefix.Success)
-                        {
-                            title = matchWithPrefix.Groups["Name"].Value.Trim();
-                            inventoryNumber = matchWithPrefix.Groups["ID"].Value.Trim();
-                            int.TryParse(inventoryNumber, out uid);
-                        }
-                        else
-                        {
-                            // 2. Поиск без префикса (числовой суффикс)
-                            var matchPureNumeric = Regex.Match(equipmentText, @"^(?<Name>.*?)[\s\t]+(?<ID>\d+)$", RegexOptions.IgnoreCase);
-                            if (matchPureNumeric.Success)
-                            {
-                                var possibleId = matchPureNumeric.Groups["ID"].Value;
-                                var nameEnd = matchPureNumeric.Groups["Name"].Index + matchPureNumeric.Groups["Name"].Length;
-                                var idStart = matchPureNumeric.Groups["ID"].Index;
-                                var separatorSpan = equipmentText.Substring(nameEnd, idStart - nameEnd);
-
-                                // Считаем инвентарным номером, если разделено табуляцией, либо если длина не равна 4 (чтобы не путать с моделями типа TDS 2002) и длина >= 2
-                                if (separatorSpan.Contains('\t') || (possibleId.Length != 4 && possibleId.Length >= 2))
-                                {
-                                    title = matchPureNumeric.Groups["Name"].Value.Trim();
-                                    inventoryNumber = possibleId;
-                                    int.TryParse(inventoryNumber, out uid);
-                                }
-                                else
-                                {
-                                    title = equipmentText;
-                                }
-                            }
-                            else
-                            {
-                                title = equipmentText;
-                            }
-                        }
+                        var parseResult = EquipmentNameParser.Parse(equipmentText);
+                        title = parseResult.Title;
+                        inventoryNumber = parseResult.InventoryNumber;
+                        uid = parseResult.Uid;
                     }
                     else
                     {
                         var summary = TryGetString(fields, "summary");
-                        title = string.IsNullOrWhiteSpace(summary) ? "Без названия" : summary.Trim();
+                        var summaryText = string.IsNullOrWhiteSpace(summary) ? "Без названия" : summary.Trim();
+                        var parseResult = EquipmentNameParser.Parse(summaryText);
+                        title = parseResult.Title;
+                        inventoryNumber = parseResult.InventoryNumber;
+                        uid = parseResult.Uid;
                     }
 
                     DateTime.TryParse(TryGetString(fields, "created"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var start);

@@ -106,6 +106,16 @@ namespace EquipmentFailureAnalysis.Services
                     var inventory = colInventory > 0 ? worksheet.Cell(r, colInventory).GetString()?.Trim() : string.Empty;
                     var year = colCommissionYear > 0 ? worksheet.Cell(r, colCommissionYear).GetString()?.Trim() : string.Empty;
 
+                    if (string.IsNullOrWhiteSpace(inventory) || string.Equals(inventory, "б/н", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var parsed = EquipmentFailureAnalysis.Utility.EquipmentNameParser.Parse(title);
+                        if (!string.IsNullOrWhiteSpace(parsed.InventoryNumber))
+                        {
+                            inventory = parsed.InventoryNumber;
+                            title = parsed.Title;
+                        }
+                    }
+
                     var item = new PprScheduleItem
                     {
                         Subdivision = string.IsNullOrWhiteSpace(subdivision) ? "Без группы" : subdivision,
