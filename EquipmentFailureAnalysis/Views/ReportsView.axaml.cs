@@ -146,5 +146,35 @@ namespace EquipmentFailureAnalysis.Views
                 }
             }
         }
+
+        private void Preset1Year_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm)
+                vm.SetPeriodPreset("1year");
+        }
+
+        private void Preset2Years_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm)
+                vm.SetPeriodPreset("2years");
+        }
+
+        private void Preset3Years_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm)
+                vm.SetPeriodPreset("3years");
+        }
+
+        private void Preset5Years_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm)
+                vm.SetPeriodPreset("5years");
+        }
+
+        private void PresetAll_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ReportsViewModel vm)
+                vm.SetPeriodPreset("all");
+        }
     }
 }

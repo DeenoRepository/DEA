@@ -106,5 +106,52 @@ namespace EquipmentFailureAnalysis.Tests
             var q2Bucket = row.PeriodBuckets["2026-Q2"];
             Assert.Equal(120, q2Bucket.SetupMinutes);
         }
+
+        [Fact]
+        public void BuildReport_MultiYearPeriod_GeneratesAllSubPeriodBucketsAcrossYears()
+        {
+            var service = new EquipmentDowntimeLossService();
+            var eq = new EquipmentInfo
+            {
+                Title = "Пресс многолетний",
+                InventoryNumber = "INV-2024",
+                Subdivision = "Штамповка",
+                Issues = new ObservableCollection<Issue>
+                {
+                    new Issue
+                    {
+                        Description = "Ремонт 2024",
+                        Type = IssueType.Ремонт,
+                        Start = new DateTime(2024, 5, 10, 10, 0, 0),
+                        End = new DateTime(2024, 5, 10, 15, 0, 0) // 300 mins
+                    },
+                    new Issue
+                    {
+                        Description = "Настройка 2026",
+                        Type = IssueType.Настройка,
+                        Start = new DateTime(2026, 11, 1, 8, 0, 0),
+                        End = new DateTime(2026, 11, 1, 12, 0, 0) // 240 mins
+                    }
+                }
+            };
+
+            var start = new DateTime(2024, 1, 1);
+            var end = new DateTime(2026, 12, 31);
+
+            // Quarterly over 3 years (2024, 2025, 2026) -> 12 quarters
+            var reportQuarterly = service.BuildReport(new[] { eq }, start, end, PeriodGranularity.Quarterly);
+            Assert.Equal(12, reportQuarterly.PeriodHeaders.Count);
+            Assert.Equal(540, reportQuarterly.GrandTotalMinutes);
+
+            var q2024Q2 = reportQuarterly.Rows[0].PeriodBuckets["2024-Q2"];
+            Assert.Equal(300, q2024Q2.RepairMinutes);
+
+            var q2026Q4 = reportQuarterly.Rows[0].PeriodBuckets["2026-Q4"];
+            Assert.Equal(240, q2026Q4.SetupMinutes);
+
+            // Monthly over 3 years -> 36 months
+            var reportMonthly = service.BuildReport(new[] { eq }, start, end, PeriodGranularity.Monthly);
+            Assert.Equal(36, reportMonthly.PeriodHeaders.Count);
+        }
     }
 }

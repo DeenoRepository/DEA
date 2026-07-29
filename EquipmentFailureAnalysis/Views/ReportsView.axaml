@@ -92,6 +92,16 @@
                                         </ComboBox>
                                     </StackPanel>
                                 </Grid>
+
+                                <!-- Multi-year Period Presets -->
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,2,0,0">
+                                    <TextBlock Text="Период:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Button Classes="secondary" Height="26" Padding="8,0" FontSize="11" Content="Текущий год" Click="Preset1Year_Click" />
+                                    <Button Classes="secondary" Height="26" Padding="8,0" FontSize="11" Content="За 2 года" Click="Preset2Years_Click" />
+                                    <Button Classes="secondary" Height="26" Padding="8,0" FontSize="11" Content="За 3 года" Click="Preset3Years_Click" />
+                                    <Button Classes="secondary" Height="26" Padding="8,0" FontSize="11" Content="За 5 лет" Click="Preset5Years_Click" />
+                                    <Button Classes="secondary" Height="26" Padding="8,0" FontSize="11" Content="За всё время" Click="PresetAll_Click" />
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 
