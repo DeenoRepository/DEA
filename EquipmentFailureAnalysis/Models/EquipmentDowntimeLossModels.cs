@@ -23,8 +23,26 @@ namespace EquipmentFailureAnalysis.Models
         public int TotalCount => RepairCount + SetupCount;
     }
 
+    public sealed class DowntimeIssueDetail
+    {
+        public string EquipmentIdKey { get; init; } = string.Empty;
+        public string EquipmentTitle { get; init; } = string.Empty;
+        public string InventoryNumber { get; init; } = string.Empty;
+        public string Subdivision { get; init; } = string.Empty;
+        public string JiraIssueKey { get; init; } = string.Empty;
+        public string IssueType { get; init; } = string.Empty;
+        public DateTime Start { get; init; }
+        public DateTime End { get; init; }
+        public double DurationMinutes { get; init; }
+        public string Responsible { get; init; } = string.Empty;
+        public string Reporter { get; init; } = string.Empty;
+        public string Description { get; init; } = string.Empty;
+        public string Comments { get; init; } = string.Empty;
+    }
+
     public sealed class EquipmentDowntimeLossRow
     {
+        public string EquipmentIdKey { get; init; } = string.Empty;
         public string EquipmentTitle { get; init; } = string.Empty;
         public string InventoryNumber { get; init; } = string.Empty;
         public string Subdivision { get; init; } = string.Empty;
@@ -44,6 +62,7 @@ namespace EquipmentFailureAnalysis.Models
         public PeriodGranularity Granularity { get; init; }
         public List<PeriodLossBucket> PeriodHeaders { get; init; } = new List<PeriodLossBucket>();
         public List<EquipmentDowntimeLossRow> Rows { get; init; } = new List<EquipmentDowntimeLossRow>();
+        public List<DowntimeIssueDetail> AllIssueDetails { get; init; } = new List<DowntimeIssueDetail>();
         public double TotalRepairMinutes { get; set; }
         public double TotalSetupMinutes { get; set; }
         public double GrandTotalMinutes => TotalRepairMinutes + TotalSetupMinutes;

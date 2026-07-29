@@ -153,5 +153,45 @@ namespace EquipmentFailureAnalysis.Tests
             var reportMonthly = service.BuildReport(new[] { eq }, start, end, PeriodGranularity.Monthly);
             Assert.Equal(36, reportMonthly.PeriodHeaders.Count);
         }
+
+        [Fact]
+        public void BuildReport_PopulatesIssueDetailsForSheet2()
+        {
+            var service = new EquipmentDowntimeLossService();
+            var eq = new EquipmentInfo
+            {
+                Uid = 77,
+                Title = "Фрезерный станок",
+                InventoryNumber = "INV-777",
+                Subdivision = "Цех №3",
+                Issues = new ObservableCollection<Issue>
+                {
+                    new Issue
+                    {
+                        JiraIssueKey = "MAINT-101",
+                        Description = "Сбой главного шпинделя",
+                        Comments = "Заменен подшипник и откалиброван зазор",
+                        Type = IssueType.Ремонт,
+                        Responsible = "Иванов И.И.",
+                        Reporter = "Петров П.П.",
+                        Start = new DateTime(2026, 3, 1, 8, 0, 0),
+                        End = new DateTime(2026, 3, 1, 10, 30, 0)
+                    }
+                }
+            };
+
+            var start = new DateTime(2026, 1, 1);
+            var end = new DateTime(2026, 12, 31);
+
+            var report = service.BuildReport(new[] { eq }, start, end, PeriodGranularity.Monthly);
+
+            Assert.Single(report.AllIssueDetails);
+            var detail = report.AllIssueDetails[0];
+            Assert.Equal("INV-777", detail.EquipmentIdKey);
+            Assert.Equal("MAINT-101", detail.JiraIssueKey);
+            Assert.Equal("Сбой главного шпинделя", detail.Description);
+            Assert.Equal("Заменен подшипник и откалиброван зазор", detail.Comments);
+            Assert.Equal(150, detail.DurationMinutes);
+        }
     }
 }

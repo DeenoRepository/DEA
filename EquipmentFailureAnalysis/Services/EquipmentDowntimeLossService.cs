@@ -28,6 +28,7 @@ namespace EquipmentFailureAnalysis.Services
             var periodHeaders = GeneratePeriodBuckets(start, periodExclusiveEnd, granularity, ruCulture);
 
             var equipmentRows = new List<EquipmentDowntimeLossRow>();
+            var allIssueDetails = new List<DowntimeIssueDetail>();
 
             var filteredEquipment = masterEquipment ?? Enumerable.Empty<EquipmentInfo>();
             if (!string.IsNullOrWhiteSpace(subdivisionFilter)
@@ -51,11 +52,30 @@ namespace EquipmentFailureAnalysis.Services
 
             foreach (var eq in filteredEquipment)
             {
+                var invNo = string.IsNullOrWhiteSpace(eq.InventoryNumber) ? "б/н" : eq.InventoryNumber.Trim();
+                var eqTitle = eq.Title?.Trim() ?? string.Empty;
+                var subdivision = string.IsNullOrWhiteSpace(eq.Subdivision) ? "Без группы" : eq.Subdivision.Trim();
+
+                string equipmentIdKey;
+                if (!string.IsNullOrWhiteSpace(eq.InventoryNumber) && !string.Equals(eq.InventoryNumber.Trim(), "б/н", StringComparison.OrdinalIgnoreCase))
+                {
+                    equipmentIdKey = eq.InventoryNumber.Trim();
+                }
+                else if (eq.Uid > 0)
+                {
+                    equipmentIdKey = $"EQ-{eq.Uid:D4}";
+                }
+                else
+                {
+                    equipmentIdKey = string.IsNullOrWhiteSpace(eqTitle) ? "EQ-UNK" : eqTitle;
+                }
+
                 var row = new EquipmentDowntimeLossRow
                 {
-                    EquipmentTitle = eq.Title ?? string.Empty,
-                    InventoryNumber = string.IsNullOrWhiteSpace(eq.InventoryNumber) ? "б/н" : eq.InventoryNumber.Trim(),
-                    Subdivision = string.IsNullOrWhiteSpace(eq.Subdivision) ? "Без группы" : eq.Subdivision.Trim()
+                    EquipmentIdKey = equipmentIdKey,
+                    EquipmentTitle = eqTitle,
+                    InventoryNumber = invNo,
+                    Subdivision = subdivision
                 };
 
                 // Initialize buckets for this equipment row
@@ -80,6 +100,25 @@ namespace EquipmentFailureAnalysis.Services
 
                         bool isRepair = issue.Type == IssueType.Ремонт;
                         bool isSetup = issue.Type == IssueType.Настройка;
+                        double totalIssueMinutes = Math.Max(0, (issueEnd - issue.Start).TotalMinutes);
+
+                        // Collect issue detail for Sheet 2
+                        allIssueDetails.Add(new DowntimeIssueDetail
+                        {
+                            EquipmentIdKey = equipmentIdKey,
+                            EquipmentTitle = eqTitle,
+                            InventoryNumber = invNo,
+                            Subdivision = subdivision,
+                            JiraIssueKey = issue.JiraIssueKey?.Trim() ?? string.Empty,
+                            IssueType = issue.Type.ToString(),
+                            Start = issue.Start,
+                            End = issueEnd,
+                            DurationMinutes = totalIssueMinutes,
+                            Responsible = issue.Responsible?.Trim() ?? string.Empty,
+                            Reporter = issue.Reporter?.Trim() ?? string.Empty,
+                            Description = issue.Description?.Trim() ?? string.Empty,
+                            Comments = issue.Comments?.Trim() ?? string.Empty
+                        });
 
                         foreach (var header in periodHeaders)
                         {
@@ -136,6 +175,11 @@ namespace EquipmentFailureAnalysis.Services
                 .ThenBy(r => r.EquipmentTitle)
                 .ToList();
 
+            allIssueDetails = allIssueDetails
+                .OrderBy(d => d.EquipmentIdKey)
+                .ThenByDescending(d => d.Start)
+                .ToList();
+
             return new EquipmentDowntimeLossReport
             {
                 StartDate = start,
@@ -143,6 +187,7 @@ namespace EquipmentFailureAnalysis.Services
                 Granularity = granularity,
                 PeriodHeaders = periodHeaders,
                 Rows = equipmentRows,
+                AllIssueDetails = allIssueDetails,
                 TotalRepairMinutes = grandTotalRepairMinutes,
                 TotalSetupMinutes = grandTotalSetupMinutes,
                 TotalRepairCount = grandTotalRepairCount,
