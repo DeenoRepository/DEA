@@ -13,6 +13,11 @@ namespace EquipmentFailureAnalysis.Tests
         [InlineData("Маркер лазерный инв №340050/1", "Маркер лазерный", "340050/1", 0)]
         [InlineData("Станок инв. № 11491", "Станок", "11491", 11491)]
         [InlineData("Печь терм. инв-334865", "Печь терм", "334865", 334865)]
+        [InlineData("Оборудование инв.19693", "Оборудование", "19693", 19693)]
+        [InlineData("Установка инв.49031", "Установка", "49031", 49031)]
+        [InlineData("инв.19693", "19693", "19693", 19693)]
+        [InlineData("инв.49031", "49031", "49031", 49031)]
+        [InlineData("инв.334865", "334865", "334865", 334865)]
         public void Parse_WhenContainsInv_ExtractsInventoryNumberAndCleansTitle(
             string input, string expectedTitle, string expectedInv, int expectedUid)
         {
