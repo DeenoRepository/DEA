@@ -187,7 +187,7 @@ namespace EquipmentFailureAnalysis.Tests
 
             Assert.Single(report.AllIssueDetails);
             var detail = report.AllIssueDetails[0];
-            Assert.Equal("INV-777", detail.EquipmentIdKey);
+            Assert.Equal("Фрезерный станок", detail.EquipmentTitle);
             Assert.Equal("MAINT-101", detail.JiraIssueKey);
             Assert.Equal("Сбой главного шпинделя", detail.Description);
             Assert.Equal("Заменен подшипник и откалиброван зазор", detail.Comments);

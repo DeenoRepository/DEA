@@ -56,19 +56,7 @@ namespace EquipmentFailureAnalysis.Services
                 var eqTitle = eq.Title?.Trim() ?? string.Empty;
                 var subdivision = string.IsNullOrWhiteSpace(eq.Subdivision) ? "Без группы" : eq.Subdivision.Trim();
 
-                string equipmentIdKey;
-                if (!string.IsNullOrWhiteSpace(eq.InventoryNumber) && !string.Equals(eq.InventoryNumber.Trim(), "б/н", StringComparison.OrdinalIgnoreCase))
-                {
-                    equipmentIdKey = eq.InventoryNumber.Trim();
-                }
-                else if (eq.Uid > 0)
-                {
-                    equipmentIdKey = $"EQ-{eq.Uid:D4}";
-                }
-                else
-                {
-                    equipmentIdKey = string.IsNullOrWhiteSpace(eqTitle) ? "EQ-UNK" : eqTitle;
-                }
+                string equipmentIdKey = eqTitle;
 
                 var row = new EquipmentDowntimeLossRow
                 {

@@ -32,21 +32,19 @@ namespace EquipmentFailureAnalysis.Services
                 subHeaderStyle.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                 subHeaderStyle.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-                // Fixed metadata headers (Col 1 to 4)
-                sheet1.Range(1, 1, 1, 4).Merge().Value = "Информация об оборудовании";
-                sheet1.Range(1, 1, 1, 4).Style = headerStyle;
+                // Fixed metadata headers (Col 1 to 3)
+                sheet1.Range(1, 1, 1, 3).Merge().Value = "Информация об оборудовании";
+                sheet1.Range(1, 1, 1, 3).Style = headerStyle;
 
-                sheet1.Cell(2, 1).Value = "ID оборудования";
-                sheet1.Cell(2, 2).Value = "Подразделение";
-                sheet1.Cell(2, 3).Value = "Наименование оборудования";
-                sheet1.Cell(2, 4).Value = "Инвентарный номер";
+                sheet1.Cell(2, 1).Value = "Подразделение";
+                sheet1.Cell(2, 2).Value = "Наименование оборудования";
+                sheet1.Cell(2, 3).Value = "Инвентарный номер";
 
                 sheet1.Cell(2, 1).Style = subHeaderStyle;
                 sheet1.Cell(2, 2).Style = subHeaderStyle;
                 sheet1.Cell(2, 3).Style = subHeaderStyle;
-                sheet1.Cell(2, 4).Style = subHeaderStyle;
 
-                int col = 5;
+                int col = 4;
                 var periodHeaders = report.PeriodHeaders;
 
                 // Period headers
@@ -81,14 +79,13 @@ namespace EquipmentFailureAnalysis.Services
 
                 foreach (var eqRow in report.Rows)
                 {
-                    sheet1.Cell(row, 1).Value = eqRow.EquipmentIdKey;
-                    sheet1.Cell(row, 2).Value = eqRow.Subdivision;
-                    sheet1.Cell(row, 3).Value = eqRow.EquipmentTitle;
-                    sheet1.Cell(row, 4).Value = eqRow.InventoryNumber;
+                    sheet1.Cell(row, 1).Value = eqRow.Subdivision;
+                    sheet1.Cell(row, 2).Value = eqRow.EquipmentTitle;
+                    sheet1.Cell(row, 3).Value = eqRow.InventoryNumber;
 
-                    sheet1.Cell(row, 1).Style.Font.Bold = true;
+                    sheet1.Cell(row, 2).Style.Font.Bold = true;
 
-                    int curCol = 5;
+                    int curCol = 4;
                     foreach (var period in periodHeaders)
                     {
                         eqRow.PeriodBuckets.TryGetValue(period.PeriodKey, out var bucket);
@@ -137,9 +134,9 @@ namespace EquipmentFailureAnalysis.Services
                 totalRowStyle.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0"); // Slate 200
 
                 sheet1.Cell(row, 1).Value = "ИТОГО ПО ВСЕМУ ОБОРУДОВАНИЮ";
-                sheet1.Range(row, 1, row, 4).Merge().Style = totalRowStyle;
+                sheet1.Range(row, 1, row, 3).Merge().Style = totalRowStyle;
 
-                int sumCol = 5;
+                int sumCol = 4;
                 foreach (var period in periodHeaders)
                 {
                     double periodR = 0, periodS = 0, periodT = 0;
@@ -189,8 +186,8 @@ namespace EquipmentFailureAnalysis.Services
                 var sheet2 = workbook.Worksheets.Add("Описания и комментарии");
 
                 // Banner headers
-                sheet2.Range(1, 1, 1, 13).Merge().Value = "Журнал инцидентов, описаний и комментариев к оборудованию";
-                sheet2.Range(1, 1, 1, 13).Style = headerStyle;
+                sheet2.Range(1, 1, 1, 12).Merge().Value = "Журнал инцидентов, описаний и комментариев к оборудованию";
+                sheet2.Range(1, 1, 1, 12).Style = headerStyle;
                 sheet2.Row(1).Height = 26;
 
                 var noteStyle = workbook.Style;
@@ -199,14 +196,13 @@ namespace EquipmentFailureAnalysis.Services
                 noteStyle.Font.FontColor = XLColor.FromHtml("#334155");
                 noteStyle.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-                sheet2.Range(2, 1, 2, 13).Merge().Value = "Связь с Листом 1 происходит по полю 'ID оборудования'. На основе текстов описаний и комментариев формируется общая формулировка причин неисправностей и частых проблем по каждому оборудованию.";
-                sheet2.Range(2, 1, 2, 13).Style = noteStyle;
+                sheet2.Range(2, 1, 2, 12).Merge().Value = "Связь с Листом 1 происходит по полю 'Наименование оборудования'. На основе текстов описаний и комментариев формируется общая формулировка причин неисправностей и частых проблем по каждому оборудованию.";
+                sheet2.Range(2, 1, 2, 12).Style = noteStyle;
                 sheet2.Row(2).Height = 22;
 
                 // Table headers on Row 3
                 string[] headersSheet2 = new[]
                 {
-                    "ID оборудования",
                     "Подразделение",
                     "Наименование оборудования",
                     "Инвентарный номер",
@@ -232,38 +228,37 @@ namespace EquipmentFailureAnalysis.Services
                 int s2Row = 4;
                 foreach (var detail in report.AllIssueDetails)
                 {
-                    sheet2.Cell(s2Row, 1).Value = detail.EquipmentIdKey;
-                    sheet2.Cell(s2Row, 2).Value = detail.Subdivision;
-                    sheet2.Cell(s2Row, 3).Value = detail.EquipmentTitle;
-                    sheet2.Cell(s2Row, 4).Value = detail.InventoryNumber;
-                    sheet2.Cell(s2Row, 5).Value = detail.JiraIssueKey;
-                    sheet2.Cell(s2Row, 6).Value = detail.IssueType;
-                    sheet2.Cell(s2Row, 7).Value = detail.Start.ToString("yyyy-MM-dd HH:mm");
-                    sheet2.Cell(s2Row, 8).Value = detail.End.ToString("yyyy-MM-dd HH:mm");
+                    sheet2.Cell(s2Row, 1).Value = detail.Subdivision;
+                    sheet2.Cell(s2Row, 2).Value = detail.EquipmentTitle;
+                    sheet2.Cell(s2Row, 3).Value = detail.InventoryNumber;
+                    sheet2.Cell(s2Row, 4).Value = detail.JiraIssueKey;
+                    sheet2.Cell(s2Row, 5).Value = detail.IssueType;
+                    sheet2.Cell(s2Row, 6).Value = detail.Start.ToString("yyyy-MM-dd HH:mm");
+                    sheet2.Cell(s2Row, 7).Value = detail.End.ToString("yyyy-MM-dd HH:mm");
 
                     double durHours = detail.DurationMinutes / 60.0;
-                    sheet2.Cell(s2Row, 9).Value = durHours;
-                    sheet2.Cell(s2Row, 9).Style.NumberFormat.Format = "0.0";
+                    sheet2.Cell(s2Row, 8).Value = durHours;
+                    sheet2.Cell(s2Row, 8).Style.NumberFormat.Format = "0.0";
 
-                    sheet2.Cell(s2Row, 10).Value = detail.Responsible;
-                    sheet2.Cell(s2Row, 11).Value = detail.Reporter;
+                    sheet2.Cell(s2Row, 9).Value = detail.Responsible;
+                    sheet2.Cell(s2Row, 10).Value = detail.Reporter;
 
-                    var descCell = sheet2.Cell(s2Row, 12);
+                    var descCell = sheet2.Cell(s2Row, 11);
                     descCell.Value = detail.Description;
                     descCell.Style.Alignment.WrapText = true;
 
-                    var commCell = sheet2.Cell(s2Row, 13);
+                    var commCell = sheet2.Cell(s2Row, 12);
                     commCell.Value = detail.Comments;
                     commCell.Style.Alignment.WrapText = true;
 
-                    sheet2.Cell(s2Row, 1).Style.Font.Bold = true;
+                    sheet2.Cell(s2Row, 2).Style.Font.Bold = true;
 
                     s2Row++;
                 }
 
-                sheet2.Columns(1, 11).AdjustToContents();
-                sheet2.Column(12).Width = 50; // Description column width
-                sheet2.Column(13).Width = 50; // Comments column width
+                sheet2.Columns(1, 10).AdjustToContents();
+                sheet2.Column(11).Width = 50; // Description column width
+                sheet2.Column(12).Width = 50; // Comments column width
                 sheet2.ShowGridLines = true;
 
                 workbook.SaveAs(filePath);
