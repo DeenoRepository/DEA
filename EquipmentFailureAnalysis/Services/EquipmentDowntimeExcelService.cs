@@ -184,12 +184,12 @@ namespace EquipmentFailureAnalysis.Services
                 sheet1.ShowGridLines = true;
 
                 // ==========================================
-                // SHEET 2: Описания и комментарии (для ИИ-агента)
+                // SHEET 2: Описания и комментарии
                 // ==========================================
                 var sheet2 = workbook.Worksheets.Add("Описания и комментарии");
 
-                // Banner headers for AI agent
-                sheet2.Range(1, 1, 1, 13).Merge().Value = "Журнал инцидентов, описаний и комментариев к оборудованию (Данные для анализа ИИ-агентом)";
+                // Banner headers
+                sheet2.Range(1, 1, 1, 13).Merge().Value = "Журнал инцидентов, описаний и комментариев к оборудованию";
                 sheet2.Range(1, 1, 1, 13).Style = headerStyle;
                 sheet2.Row(1).Height = 26;
 
@@ -199,7 +199,7 @@ namespace EquipmentFailureAnalysis.Services
                 noteStyle.Font.FontColor = XLColor.FromHtml("#334155");
                 noteStyle.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-                sheet2.Range(2, 1, 2, 13).Merge().Value = "Инструкция для ИИ: Связь с Листом 1 происходит по полю 'ID оборудования'. На основе текстов описаний и комментариев сформируйте общую формулировку причин неисправностей и частых проблем по каждому оборудованию.";
+                sheet2.Range(2, 1, 2, 13).Merge().Value = "Связь с Листом 1 происходит по полю 'ID оборудования'. На основе текстов описаний и комментариев формируется общая формулировка причин неисправностей и частых проблем по каждому оборудованию.";
                 sheet2.Range(2, 1, 2, 13).Style = noteStyle;
                 sheet2.Row(2).Height = 22;
 
