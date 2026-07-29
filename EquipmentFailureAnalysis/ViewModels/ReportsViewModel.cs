@@ -1,4 +1,5 @@
-﻿using EquipmentFailureAnalysis.Services;
+using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -319,27 +320,56 @@ namespace EquipmentFailureAnalysis.ViewModels
                 ShowEquipment = ReportFieldEquipment,
                 ShowSubdivision = ReportFieldSubdivision,
                 ShowType = ReportFieldType,
-                ShowResponsible = ReportFieldResponsible,
-                ShowDescription = ReportFieldDescription
-            };
-
-            if (options.EndDate < options.StartDate)
-            {
-                validationError = "Дата окончания периода не может быть меньше даты начала.";
-                return false;
-            }
-
-            validationError = null;
-            return true;
-        }
-
-        public void EnsureDefaultPeriod(DateTime today)
-        {
-            var date = today.Date;
-            if (!ReportStartDate.HasValue)
-                ReportStartDate = date;
-            if (!ReportEndDate.HasValue)
-                ReportEndDate = date;
-        }
-    }
+                ShowResponsible = ReportFieldResponsible,
+                ShowDescription = ReportFieldDescription
+            };
+
+            if (options.EndDate < options.StartDate)
+            {
+                validationError = "Дата окончания периода не может быть меньше даты начала.";
+                return false;
+            }
+
+            validationError = null;
+            return true;
+        }
+
+        private int _downtimeLossGranularityIndex;
+
+        public int DowntimeLossGranularityIndex
+        {
+            get => _downtimeLossGranularityIndex;
+            set => this.RaiseAndSetIfChanged(ref _downtimeLossGranularityIndex, Math.Clamp(value, 0, 1));
+        }
+
+        public PeriodGranularity DowntimeLossGranularity => DowntimeLossGranularityIndex == 1 ? PeriodGranularity.Quarterly : PeriodGranularity.Monthly;
+
+        public bool TryBuildDowntimeLossReport(out EquipmentDowntimeLossReport? report, out string? validationError)
+        {
+            var today = DateTime.Now;
+            var startDate = ReportStartDate?.Date ?? today.Date;
+            var endDate = ReportEndDate?.Date ?? today.Date;
+
+            if (endDate < startDate)
+            {
+                report = null;
+                validationError = "Дата окончания периода не может быть меньше даты начала.";
+                return false;
+            }
+
+            var service = new EquipmentDowntimeLossService();
+            report = service.BuildReport(_shell.GetEquipmentForReports(), startDate, endDate, DowntimeLossGranularity);
+            validationError = null;
+            return true;
+        }
+
+        public void EnsureDefaultPeriod(DateTime today)
+        {
+            var date = today.Date;
+            if (!ReportStartDate.HasValue)
+                ReportStartDate = date;
+            if (!ReportEndDate.HasValue)
+                ReportEndDate = date;
+        }
+    }
 }

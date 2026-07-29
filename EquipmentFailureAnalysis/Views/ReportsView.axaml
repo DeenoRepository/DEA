@@ -259,6 +259,51 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- ============== DOWNTIME LOSS STRUCTURE EXPORT PANEL ============== -->
+                        <Border Classes="panel">
+                            <StackPanel Spacing="14">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="26" Height="26" CornerRadius="8"
+                                            Background="{DynamicResource WarningSoftBackground}">
+                                        <TextBlock Text="&#xEA3B;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource WarningBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Структура потерь времени оборудования"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <TextBlock Text="ВЫГРУЗКА ПОТЕРЬ ПО ПРИЧИНАМ И ПЕРИОДАМ" Classes="eyebrow" Margin="0,0,0,2" />
+
+                                <Grid ColumnDefinitions="*,16,Auto" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Детализация по времени:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <ComboBox x:Name="DowntimeLossGranularityCombo"
+                                                  SelectedIndex="{Binding DowntimeLossGranularityIndex, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="Помесячно (каждый месяц)" />
+                                            <ComboBoxItem Content="По кварталам (I, II, III, IV)" />
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2" Classes="primary" Height="36" Padding="14,0"
+                                            VerticalAlignment="Bottom"
+                                            Click="ExportDowntimeLossExcel_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center" />
+                                            <TextBlock Text="Выгрузить в Excel (.xlsx)" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <!-- ============== EXPORT OPERATIONS PANEL ============== -->
                         <Border Classes="panel">
                             <StackPanel Spacing="14">

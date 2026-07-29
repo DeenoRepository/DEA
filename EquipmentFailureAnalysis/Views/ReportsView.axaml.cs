@@ -97,6 +97,12 @@ namespace EquipmentFailureAnalysis.Views
                 host.ExportCsvButton_Click(sender, e);
         }
 
+        private void ExportDowntimeLossExcel_Click(object? sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is MainWindow host)
+                host.ExportDowntimeLossExcel_Click(sender, e);
+        }
+
         private async void CopyPathButton_Click(object? sender, RoutedEventArgs e)
         {
             if (DataContext is ViewModels.ReportsViewModel vm && !string.IsNullOrWhiteSpace(vm.ReportLastFilePath))

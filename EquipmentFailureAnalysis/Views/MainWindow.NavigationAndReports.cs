@@ -1072,6 +1072,62 @@ namespace EquipmentFailureAnalysis.Views
             ShowToast("Фильтры сброшены", "Success");
             PublishStatus("Фильтры сброшены");
         }
+
+        public async void ExportDowntimeLossExcel_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EquipmentFailureAnalysis.ViewModels.MainWindowViewModel mainVm)
+                return;
+
+            if (!mainVm.Reports.TryBuildDowntimeLossReport(out var report, out var validationError) || report == null)
+            {
+                ShowToast(validationError ?? "Ошибка формирования данных.", "Error");
+                return;
+            }
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+
+            var granularityName = report.Granularity == EquipmentFailureAnalysis.Models.PeriodGranularity.Quarterly ? "поквартально" : "помесячно";
+            var fileName = $"Структура_потерь_простоев_{granularityName}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Сохранение структуры потерь оборудования (Excel)",
+                DefaultExtension = "xlsx",
+                SuggestedFileName = fileName,
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType("Файлы Excel (*.xlsx)") { Patterns = new[] { "*.xlsx" } }
+                }
+            });
+
+            if (file == null) return;
+
+            var localPath = file.Path.LocalPath;
+            var service = new EquipmentDowntimeExcelService();
+            bool success = service.ExportToExcel(report, localPath);
+
+            if (success)
+            {
+                mainVm.Reports.ReportLastFilePath = localPath;
+                ShowToast("Выгрузка структуры потерь сохранена в Excel!", "Success");
+                PublishStatus($"Выгружен отчёт структуры потерь: {localPath}");
+                mainVm.AddStatusEvent($"Экспортирована структура потерь в Excel: {localPath}");
+
+                if (mainVm.Reports.ReportOpenAfterGenerate)
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo { FileName = localPath, UseShellExecute = true });
+                    }
+                    catch { }
+                }
+            }
+            else
+            {
+                ShowToast("Ошибка при записи файла Excel.", "Error");
+            }
+        }
     }
 }
 
