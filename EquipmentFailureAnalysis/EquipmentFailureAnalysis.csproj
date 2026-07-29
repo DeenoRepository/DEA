@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj_verify*/**;bin_verify*/**</DefaultItemExcludes>
+    <!-- Disable AvaloniaStats telemetry task to avoid local permission errors in constrained environments. -->
+    <UsedAvaloniaProducts></UsedAvaloniaProducts>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\avalonia-logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**\*.cs" />
+    <Compile Remove="bin\**\*.cs" />
+    <Compile Remove="obj_verify_**\**\*.cs" />
+    <Compile Remove="bin_verify_**\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Skia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Win32" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.0" />
+  </ItemGroup>
+</Project>

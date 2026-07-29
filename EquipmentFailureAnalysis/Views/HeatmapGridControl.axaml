@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:EquipmentFailureAnalysis.Views"
+             x:Class="EquipmentFailureAnalysis.Views.HeatmapGridControl">
+    <ItemsControl ItemsSource="{Binding MonthRows, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}" Margin="0">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border Background="{DynamicResource CardBackground}"
+                        BorderBrush="{DynamicResource ControlBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        BoxShadow="0 4 20 0 #0A000000"
+                        Padding="12"
+                        Margin="8"
+                        Width="240">
+                    <StackPanel Spacing="8">
+                        <!-- Month Name Header -->
+                        <TextBlock Text="{Binding MonthName}"
+                                   HorizontalAlignment="Center"
+                                   FontWeight="Bold"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   Margin="0,0,0,4" />
+
+                        <!-- Weekday Headers -->
+                        <Grid ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,2">
+                            <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center" FontSize="10" Foreground="{DynamicResource TextMuted}" FontWeight="SemiBold" />
+                        </Grid>
+
+                        <Border Background="{DynamicResource RowDividerBrush}" Height="1" Margin="0,0,0,4" />
+
+                        <!-- Days Grid (6 weeks * 7 days = 42 cells) -->
+                        <ItemsControl ItemsSource="{Binding Days}">
+                            <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="7" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="1"
+                                                Padding="0"
+                                                BorderThickness="0"
+                                                Background="Transparent"
+                                                HorizontalAlignment="Stretch"
+                                                MinWidth="0"
+                                                MinHeight="0"
+                                                Cursor="Hand"
+                                                Command="{Binding CellCommand, RelativeSource={RelativeSource AncestorType=views:HeatmapGridControl}}"
+                                                CommandParameter="{Binding Date}"
+                                                IsEnabled="{Binding IsValid}">
+                                            <Border Height="26"
+                                                    Width="26"
+                                                    IsVisible="{Binding IsValid}"
+                                                    CornerRadius="6"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip.Tip="{Binding Index, StringFormat='Событий: {0}'}">
+                                                <Border.Background>
+                                                    <MultiBinding Converter="{StaticResource DayCellConverter}">
+                                                        <Binding Path="." />
+                                                        <Binding Path="ConverterMode" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.Background>
+                                                <Border.BorderBrush>
+                                                    <MultiBinding Converter="{StaticResource SelectedBrushConverter}">
+                                                        <Binding Path="Date" />
+                                                        <Binding Path="SelectedDate" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.BorderBrush>
+                                                <Border.BorderThickness>
+                                                    <MultiBinding Converter="{StaticResource SelectedThicknessConverter}">
+                                                        <Binding Path="Date" />
+                                                        <Binding Path="SelectedDate" RelativeSource="{RelativeSource AncestorType=views:HeatmapGridControl}" />
+                                                    </MultiBinding>
+                                                </Border.BorderThickness>
+                                                <TextBlock Text="{Binding DayNumber}"
+                                                           IsVisible="{Binding IsValid}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="10"
+                                                           Foreground="{Binding Index, Converter={StaticResource IndexToForegroundConverter}}" />
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+</UserControl>

@@ -1,0 +1,352 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:EquipmentFailureAnalysis.Views"
+             xmlns:vm="using:EquipmentFailureAnalysis.ViewModels"
+             x:Class="EquipmentFailureAnalysis.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+
+    <Grid x:Name="ReportsLayoutRoot">
+        <!-- ====================================================
+             CENTER COLUMN — Report configurator
+             ==================================================== -->
+        <ScrollViewer x:Name="ReportsCenterColumn"
+                        Margin="20,18,20,18"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <!-- ============== PAGE HEADER ============== -->
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0" Spacing="3">
+                        <TextBlock Text="Отчёты и экспорт" FontSize="22" FontWeight="Bold"
+                                    Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Конфигуратор параметров и формирование аналитических выгрузок"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextMuted}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="badge badge-info" VerticalAlignment="Center" Padding="12,5">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="11" VerticalAlignment="Center"/>
+                            <TextBlock Text="Конфигуратор" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Two-column content layout -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="16" RowDefinitions="Auto">
+                    <!-- LEFT COLUMN: Timeframe & Modules -->
+                    <StackPanel Grid.Column="0" Spacing="16">
+                        
+                        <!-- ============== TIMEFRAME & AGGREGATION PANEL ============== -->
+                        <Border Classes="panel">
+                            <StackPanel Spacing="14">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="26" Height="26" CornerRadius="8"
+                                            Background="{DynamicResource AccentSoftBackground}">
+                                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource AccentForeground}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Временной диапазон и группировка"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <Grid ColumnDefinitions="*,24,*,24,1.2*" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Дата начала периода" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <CalendarDatePicker x:Name="ReportStartDatePicker"
+                                                            HorizontalAlignment="Stretch"
+                                                            SelectedDate="{Binding ReportStartDate, Mode=TwoWay}" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1" Text="—"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Margin="0,14,0,0" />
+
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="Дата окончания периода" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <CalendarDatePicker x:Name="ReportEndDatePicker"
+                                                            HorizontalAlignment="Stretch"
+                                                            SelectedDate="{Binding ReportEndDate, Mode=TwoWay}" />
+                                    </StackPanel>
+
+                                    <Border Grid.Column="3" />
+
+                                    <StackPanel Grid.Column="4" Spacing="4">
+                                        <TextBlock Text="Группировка данных" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <ComboBox x:Name="ReportGroupByCombo"
+                                                  SelectedIndex="{Binding ReportGroupByIndex, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Tag="day" Content="По дням" />
+                                            <ComboBoxItem Tag="month" Content="По месяцам" />
+                                            <ComboBoxItem Tag="employee" Content="По сотрудникам" />
+                                            <ComboBoxItem Tag="equipment" Content="По оборудованию" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ============== MODULES & FILTERS PANEL ============== -->
+                        <Border Classes="panel">
+                            <StackPanel Spacing="16">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="26" Height="26" CornerRadius="8"
+                                            Background="{DynamicResource InfoSoftBackground}">
+                                        <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource InfoBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Разделы отчёта и фильтрация"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <StackPanel Spacing="14">
+                                    <!-- Modules Group -->
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="ВКЛЮЧИТЬ В ОТЧЁТ" Classes="eyebrow" Margin="0,0,0,2" />
+
+                                        <!-- Dashboard module -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Spacing="1">
+                                                    <TextBlock Text="Панель управления (Dashboard)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="Сводные KPI надежности и графики трендов" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="ReportIncludeDashboardCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportIncludeDashboard, Mode=TwoWay}" Margin="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Downtime module -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Spacing="1">
+                                                    <TextBlock Text="Анализ простоев оборудования" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="Сводные данные о простоях и карта тепла" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="ReportIncludeDowntimeCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportIncludeDowntime, Mode=TwoWay}" Margin="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Employee module -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Spacing="1">
+                                                    <TextBlock Text="Анализ активности сотрудников" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="SLA исполнителей, нагрузка и занятость" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="ReportIncludeEmployeeCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportIncludeEmployee, Mode=TwoWay}" Margin="0"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Separation line -->
+                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" Margin="0,4" />
+
+                                    <!-- Filters Group -->
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="ПАРАМЕТРЫ ФИЛЬТРАЦИИ" Classes="eyebrow" Margin="0,0,0,2" />
+
+                                        <!-- Open report switch -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Spacing="1">
+                                                    <TextBlock Text="Открыть после формирования" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="Автоматический запуск файла отчета в системе" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="ReportOpenAfterGenerateCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportOpenAfterGenerate, Mode=TwoWay}" Margin="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Only In Progress -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Spacing="1">
+                                                    <TextBlock Text="Только задачи в процессе" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="Выгрузить незавершенные активные инциденты" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="ReportOnlyInProgressCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportOnlyInProgress, Mode=TwoWay}" Margin="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Filter by Duration -->
+                                        <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <StackPanel Spacing="6">
+                                                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                    <StackPanel Grid.Column="0" Spacing="1">
+                                                        <TextBlock Text="Фильтр по длительности событий" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="Игнорировать кратковременные инциденты" FontSize="11" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                    <CheckBox x:Name="ReportFilterByDurationCheckBox" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ReportFilterByDuration, Mode=TwoWay}" Margin="0"/>
+                                                </Grid>
+                                                
+                                                <!-- NumericUpDown well -->
+                                                <Border Background="{DynamicResource CardBackground}" CornerRadius="8" Padding="10,8" Margin="0,4,0,0"
+                                                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                                                        IsEnabled="{Binding ReportFilterByDuration}">
+                                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                        <TextBlock Text="Минимальное время (мин):" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                        <NumericUpDown x:Name="ReportMinDurationMinutesUpDown"
+                                                                       Grid.Column="1" Width="120" Height="28" Padding="6,2"
+                                                                       Minimum="0" Maximum="10080" Increment="5" FormatString="F0"
+                                                                       Value="{Binding ReportMinDurationMinutes, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                                                    </Grid>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- RIGHT COLUMN: Columns & Export -->
+                    <StackPanel Grid.Column="1" Spacing="16">
+                        
+                        <!-- ============== DETAIL FIELDS PANEL ============== -->
+                        <Border Classes="panel">
+                            <StackPanel Spacing="14">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="26" Height="26" CornerRadius="8"
+                                            Background="{DynamicResource SuccessSoftBackground}">
+                                        <TextBlock Text="&#xE8FD;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource SuccessBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Колонки детализации отчёта"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <TextBlock Text="ВЫБЕРИТЕ ПОЛЯ ДЛЯ ТАБЛИЦЫ ИНЦИДЕНТОВ" Classes="eyebrow" Margin="0,0,0,4" />
+
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="16">
+                                    <CheckBox x:Name="ReportFieldStartCheckBox" Grid.Row="0" Grid.Column="0"
+                                              Content="Время начала события" IsChecked="{Binding ReportFieldStart, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldEndCheckBox" Grid.Row="0" Grid.Column="1"
+                                              Content="Время окончания и длительность" IsChecked="{Binding ReportFieldEnd, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldEquipmentCheckBox" Grid.Row="1" Grid.Column="0"
+                                              Content="Наименование оборудования" IsChecked="{Binding ReportFieldEquipment, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldSubdivisionCheckBox" Grid.Row="1" Grid.Column="1"
+                                              Content="Группа обслуживания" IsChecked="{Binding ReportFieldSubdivision, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldTypeCheckBox" Grid.Row="2" Grid.Column="0"
+                                              Content="Тип события (Ремонт/Наладка)" IsChecked="{Binding ReportFieldType, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldResponsibleCheckBox" Grid.Row="2" Grid.Column="1"
+                                              Content="Ответственный исполнитель" IsChecked="{Binding ReportFieldResponsible, Mode=TwoWay}" Margin="0" />
+                                    <CheckBox x:Name="ReportFieldDescriptionCheckBox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                              Content="Подробное текстовое описание инцидента из Jira" IsChecked="{Binding ReportFieldDescription, Mode=TwoWay}" Margin="0" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ============== EXPORT OPERATIONS PANEL ============== -->
+                        <Border Classes="panel">
+                            <StackPanel Spacing="14">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="26" Height="26" CornerRadius="8"
+                                            Background="{DynamicResource InfoSoftBackground}">
+                                        <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource InfoBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Формирование и экспорт файлов"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <!-- Export actions grid -->
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                                    <!-- HTML: primary accent -->
+                                    <Button Grid.Column="0" Classes="primary" Height="38"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            Click="GenerateHtmlReportButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center" />
+                                            <TextBlock Text="Экспорт HTML" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- PDF: custom danger soft -->
+                                    <Button Grid.Column="1" Height="38"
+                                            Background="{DynamicResource DangerSoftBackground}"
+                                            BorderBrush="{DynamicResource DangerSoftBorder}"
+                                            Foreground="{DynamicResource DangerBrush}"
+                                            BorderThickness="1"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            Click="ExportPdfButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center" />
+                                            <TextBlock Text="Экспорт PDF" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- CSV: custom success soft -->
+                                    <Button Grid.Column="2" Height="38"
+                                            Background="{DynamicResource SuccessSoftBackground}"
+                                            BorderBrush="{DynamicResource SuccessSoftBorder}"
+                                            Foreground="{DynamicResource SuccessBrush}"
+                                            BorderThickness="1"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            Click="ExportCsvButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center" />
+                                            <TextBlock Text="Экспорт CSV" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Sub-well for generated file path operations -->
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="РЕЗУЛЬТАТ ЭКСПОРТА" Classes="eyebrow" />
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <TextBox x:Name="ReportLastFilePathBox" Grid.Column="0"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding ReportLastFilePath, Mode=TwoWay}"
+                                                 Watermark="Файлы еще не экспортировались в этой сессии"
+                                                 Height="36" VerticalContentAlignment="Center"
+                                                 Background="{DynamicResource SurfaceAlt}"
+                                                 BorderBrush="{DynamicResource ControlBorderBrush}"
+                                                 FontSize="12"/>
+                                        <Button Grid.Column="1" Classes="soft" Height="36" Width="36" Padding="0"
+                                                Click="CopyPathButton_Click" ToolTip.Tip="Скопировать путь к файлу в буфер обмена">
+                                            <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Button>
+                                        <Button Grid.Column="2" Classes="soft" Height="36" Width="36" Padding="0"
+                                                Click="OpenFileButton_Click" ToolTip.Tip="Открыть сгенерированный файл в системе">
+                                            <TextBlock Text="&#xE8A7;" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,21 @@
+# Visual Studio / .NET
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+obj_verify*/
+bin_verify*/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.lock.json
+
+# Build and OS outputs
+logs/
+*.log
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db

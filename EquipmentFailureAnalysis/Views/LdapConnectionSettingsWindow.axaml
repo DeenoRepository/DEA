@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="EquipmentFailureAnalysis.Views.LdapConnectionSettingsWindow"
+        Width="540"
+        Height="420"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Title="Параметры LDAP"
+        Background="{DynamicResource PrimaryBackground}">
+
+
+
+    <Border Padding="24">
+        <StackPanel Spacing="16">
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Border Width="40" Height="40" CornerRadius="10"
+                        Background="{DynamicResource InfoSoftBackground}">
+                    <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                               FontSize="18"
+                               Foreground="{DynamicResource InfoBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Spacing="0" VerticalAlignment="Center">
+                    <TextBlock Text="Параметры LDAP подключения" FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="Укажите параметры сервера для проверки учётных данных"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextMuted}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+            <!-- Server, Port, SSL -->
+            <Grid ColumnDefinitions="*,120,Auto" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Text="LDAP сервер" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" />
+                    <TextBox x:Name="ServerBox" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="Порт" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" />
+                    <NumericUpDown x:Name="PortBox" Minimum="1" Maximum="65535" Increment="1" FormatString="F0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Bottom">
+                    <TextBlock Text=" " />
+                    <CheckBox x:Name="UseSslBox" Content="SSL (LDAPS)" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Domain, Base DN -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Text="Домен (опционально)" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" />
+                    <TextBox x:Name="DomainBox" Watermark="company.local" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="Base DN (опционально)" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" />
+                    <TextBox x:Name="BaseDnBox" Watermark="DC=company,DC=local" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Footer info -->
+            <Border Background="{DynamicResource AccentSoftBackground}"
+                    BorderBrush="{DynamicResource AccentSoftBorder}"
+                    BorderThickness="1" CornerRadius="8" Padding="12,8">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Width="18" Height="18" CornerRadius="9"
+                            Background="{DynamicResource AccentBrush}">
+                        <TextBlock Text="i" FontSize="11" FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Настройки применяются в этом окне входа и сохраняются после успешного входа."
+                               FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Actions -->
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                <Border Grid.Column="0" />
+                <Button Grid.Column="1" Content="Отмена" MinWidth="90" Click="CancelButton_Click" />
+                <Button Grid.Column="2" Classes="primary" Content="Применить" MinWidth="100" Click="ApplyButton_Click" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

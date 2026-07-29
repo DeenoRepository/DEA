@@ -1,0 +1,762 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:EquipmentFailureAnalysis.Views"
+             x:Class="EquipmentFailureAnalysis.Views.FailureAnalysisView">
+    <UserControl.Styles>
+        <Style Selector="ScrollViewer.heatmapScroller /template/ ScrollContentPresenter">
+            <Setter Property="ClipToBounds" Value="True" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid x:Name="FailureAnalysisLayoutRoot">
+        <!-- ====================================================
+             CENTER COLUMN — Filters / Heatmap / Timeline
+             ==================================================== -->
+        <ScrollViewer x:Name="FailureAnalysisCenterColumn"
+                      Margin="20,18,20,18"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+
+                <!-- ============== PAGE HEADER ============== -->
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="Анализ неисправностей" FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Глубокая детализация инцидентов по дням и оборудованию"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextMuted}" />
+                    </StackPanel>
+                    <!-- Layout switcher -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource AccentSoftBackground}"
+                                BorderBrush="{DynamicResource AccentSoftBorder}"
+                                BorderThickness="1" CornerRadius="8" Padding="10,5"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding MonthRows.Count}">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                           Foreground="{DynamicResource AccentForeground}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="FailureYearLabel"
+                                           Text="{Binding HeatmapYearLabel}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                            Foreground="{DynamicResource AccentForeground}"
+                                            VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ============== UNIVERSAL FILTER BAR ============== -->
+                <Border Classes="panelFlat" Padding="0">
+                    <Expander x:Name="FilterExpander" IsExpanded="False" HorizontalAlignment="Stretch">
+                        <Expander.Header>
+                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center" Margin="0,2">
+                                <Border Grid.Column="0"
+                                        Width="32" Height="32"
+                                        CornerRadius="8"
+                                        Background="{DynamicResource AccentSoftBackground}"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource AccentForeground}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Spacing="0" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <TextBlock Text="Универсальный фильтр" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                    <TextBlock Text="Тип, статус, ответственный, группа, оборудование"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}" />
+                                </StackPanel>
+
+                                <Button Grid.Column="2"
+                                        Classes="resetFilter"
+                                        Content="Сбросить"
+                                        Margin="8,0,0,0"
+                                        Command="{Binding ResetUniversalFiltersCommand}"
+                                        Click="ResetFiltersWithToast_Click" />
+                            </Grid>
+                        </Expander.Header>
+
+                        <StackPanel Spacing="10" Margin="0,8,0,0">
+                            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                            <Grid ColumnDefinitions="Auto,*,12,Auto,*,12,Auto,*,12,Auto,*"
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="8" ColumnSpacing="0">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Тип"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,4" />
+                                <ComboBox Grid.Row="0" Grid.Column="1"
+                                          ItemsSource="{Binding DowntimeIssueTypeFilters}"
+                                          SelectedItem="{Binding SelectedDowntimeIssueTypeFilter, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="3" Text="Статус"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,4" />
+                                <ComboBox Grid.Row="0" Grid.Column="4"
+                                          ItemsSource="{Binding DowntimeStatusFilters}"
+                                          SelectedItem="{Binding SelectedDowntimeStatusFilter, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="6" Text="Ответственный"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,4" />
+                                <ComboBox Grid.Row="0" Grid.Column="7"
+                                          ItemsSource="{Binding DowntimeResponsibleFilters}"
+                                          SelectedItem="{Binding SelectedDowntimeResponsibleFilter, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="9" Text="Группа"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,4" />
+                                <ComboBox Grid.Row="0" Grid.Column="10"
+                                          ItemsSource="{Binding DowntimeSubdivisionFilters}"
+                                          SelectedItem="{Binding SelectedDowntimeSubdivisionFilter, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Оборудование"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="10"
+                                         Watermark="Поиск по названию или инв. номеру"
+                                         Text="{Binding DowntimeEquipmentSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+                </Border>
+
+                <!-- ============== HEATMAP CARD ============== -->
+                <Border Classes="panel" Padding="0">
+                    <Expander IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Expander.Header>
+                            <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Stretch">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Карта тепла" Classes="sectionTitle" />
+                                    <TextBlock Text="Ежедневная интенсивность неисправностей по месяцам"
+                                               Classes="sectionSubtitle" />
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Classes="smallIcon"
+                                        ToolTip.Tip="Настройки градации"
+                                        Click="FailureHeatmapSettingsButton_Click"
+                                        Margin="0,0,16,0">
+                                    <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedRight">
+                                            <Border Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10" Padding="14">
+                                                <StackPanel Spacing="10" MinWidth="320" MaxWidth="360">
+                                                    <StackPanel Spacing="2">
+                                                        <TextBlock Text="Настройки градации карты"
+                                                                   FontSize="13" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextPrimary}" />
+                                                        <TextBlock Text="Диапазон значений для карты неисправностей"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource TextMuted}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto"
+                                                          ColumnSpacing="10" RowSpacing="8" VerticalAlignment="Center">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Минимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding HeatmapColorMin, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Максимум"
+                                                                   FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="1000"
+                                                                       Increment="1" FormatString="F0"
+                                                                       Value="{Binding HeatmapColorMax, Mode=TwoWay}"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </Grid>
+                        </Expander.Header>
+
+                        <StackPanel Spacing="12" Margin="0,8,0,0">
+                            <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                            <Border Classes="well" Padding="0">
+                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
+                                    <Button x:Name="FailureHeatmapScrollLeftButton"
+                                            Grid.Column="0"
+                                            Classes="soft"
+                                            Width="32" Height="32"
+                                            Padding="0"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollLeft_Click"
+                                            ToolTip.Tip="Предыдущие месяцы">
+                                        <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+                                    
+                                    <ScrollViewer Grid.Column="1"
+                                                  x:Name="FailureHeatmapScroller"
+                                                  Classes="heatmapScroller"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Background="Transparent"
+                                                  HorizontalAlignment="Center"
+                                                  ClipToBounds="True">
+                                        <views:HeatmapGridControl DayHeaders="{Binding DayHeaders}"
+                                                                 MonthRows="{Binding MonthRows}"
+                                                                 CellCommand="{Binding ShowDayTimelineCommand}"
+                                                                 SelectedDate="{Binding AnalysisDate, Mode=TwoWay}"
+                                                                 ConverterMode="FailureAnalysis" />
+                                    </ScrollViewer>
+
+                                    <!-- Carousel Scroll Right (Floating) -->
+                                    <Button x:Name="FailureHeatmapScrollRightButton"
+                                            Grid.Column="2"
+                                            Classes="soft"
+                                            Width="32" Height="32"
+                                            Padding="0"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0"
+                                            CornerRadius="16"
+                                            Click="HeatmapScrollRight_Click"
+                                            ToolTip.Tip="Следующие месяцы">
+                                        <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Empty state for heatmap -->
+                                    <Border Grid.ColumnSpan="3"
+                                            Classes="emptyState"
+                                            IsVisible="{Binding MonthRows.Count, Converter={StaticResource IsEmptyConverter}}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="320">
+                                            <Border Width="44" Height="44" CornerRadius="12"
+                                                    Background="{DynamicResource AccentSoftBackground}">
+                                                <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets"
+                                                           FontSize="22"
+                                                           Foreground="{DynamicResource AccentForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Classes="emptyStateTitle" Text="Нет данных для отображения"
+                                                       HorizontalAlignment="Center" />
+                                            <TextBlock Classes="emptyStateSubtitle"
+                                                       Text="Импортируйте данные из XML или Jira, чтобы увидеть карту неисправностей"
+                                                       HorizontalAlignment="Center" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Legend (reactive to HeatmapColorMin/Max) -->
+                            <StackPanel Orientation="Horizontal" Spacing="14" Margin="2,2,0,0">
+                                <TextBlock Text="Градация:" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapGreen}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding HeatmapColorMin, StringFormat='до {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapYellow}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="HeatmapColorMin" />
+                                                <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapOrange}" CornerRadius="4" />
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}–{1}">
+                                                <Binding Path="HeatmapColorMax" Converter="{StaticResource HeatmapMidValueConverter}" />
+                                                <Binding Path="HeatmapColorMax" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="22" Height="12" Background="{StaticResource HeatmapRed}" CornerRadius="4" />
+                                    <TextBlock Text="{Binding HeatmapColorMax, StringFormat='от {0}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                </Border>
+
+                <!-- ============== SELECTED EQUIPMENT & DAY SUMMARY DASHBOARD ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="12">
+                        <!-- Dashboard Header with Selected Equipment and Date -->
+                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Border Width="16" Height="16" CornerRadius="4"
+                                            Background="{DynamicResource AccentSoftBackground}">
+                                        <TextBlock Text="&#xE950;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="9"
+                                                   Foreground="{DynamicResource AccentForeground}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="{Binding SelectedEquipment.Title}" FontSize="13" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding SelectedEquipment.InventoryNumber, StringFormat='(Инв. №: {0})'}"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                    <Button Classes="smallIcon" Width="22" Height="22" Padding="0" Margin="4,0,0,0"
+                                            ToolTip.Tip="Копировать инвентарный номер"
+                                            Click="CopyInventoryNumberButton_Click"
+                                            Background="Transparent" BorderThickness="0">
+                                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Text="Сводка по инцидентам за выбранный день" Classes="sectionSubtitle" />
+                            </StackPanel>
+                            
+                            <!-- Selected Date -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Border Width="16" Height="16" CornerRadius="4"
+                                        Background="{DynamicResource InfoSoftBackground}">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="9"
+                                               Foreground="{DynamicResource InfoBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="{Binding AnalysisDate, StringFormat='{}{0:dd.MM.yyyy}'}"
+                                           FontSize="13" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- If there are faults today (HasFaultsForDay = true) -->
+                        <Border Classes="well" IsVisible="{Binding HasFaultsForDay}">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+                                    <!-- Ремонты -->
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Ремонты" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <TextBlock Text="{Binding SelectedDayRepairs, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Настройки -->
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="Настройки" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <TextBlock Text="{Binding SelectedDaySetups, StringFormat='{}{0} шт.'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Доля работы -->
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="Доля работы" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <TextBlock Text="{Binding WorkPercent, StringFormat='{}{0:0.0}%'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource SuccessStrongBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Ср. ремонт -->
+                                    <StackPanel Grid.Column="3" Spacing="4">
+                                        <TextBlock Text="Ср. время ремонта" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                        <TextBlock Text="{Binding AvgRepairTime}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <!-- Progress bar + 30 Day stats row -->
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" Margin="0,2,0,0">
+                                    <!-- ProgressBar for WorkPercent -->
+                                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                                        <ProgressBar Value="{Binding WorkPercent}" Maximum="100" Minimum="0" Height="6" CornerRadius="3" Foreground="{DynamicResource SuccessBrush}" />
+                                    </StackPanel>
+                                    
+                                    <!-- 30-Day Totals -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="8" Height="8" CornerRadius="4" Background="{DynamicResource DangerBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding RepairsLastMonth, StringFormat='Ремонтов (30 дн.): {0}'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="8" Height="8" CornerRadius="4" Background="{DynamicResource WarningBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding SetupsLastMonth, StringFormat='Настроек (30 дн.): {0}'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- If there are NO faults today (HasFaultsForDay = false) -->
+                        <Border Classes="well" IsVisible="{Binding !HasFaultsForDay}" Background="{DynamicResource SuccessSoftBackground}" BorderBrush="{DynamicResource SuccessSoftBorder}">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" Margin="0,4">
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Width="24" Height="24" CornerRadius="6"
+                                            Background="{DynamicResource SuccessBrush}" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="12"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Неисправностей не зафиксировано"
+                                               FontSize="13" FontWeight="Bold"
+                                               Foreground="{DynamicResource SuccessStrongBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="За выбранные сутки по данному оборудованию не зафиксировано простоев, ремонтов и настроек. Доля работы составляет 100%."
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== TIMELINE PANEL ============== -->
+                <Border Classes="panel">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="График простоев" Classes="sectionTitle" />
+                                <TextBlock Text="Динамика ремонтов и настроек в течение суток"
+                                           Classes="sectionSubtitle" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Classes="well" Padding="10">
+                            <Grid>
+                                 <views:TimelineControl Height="54" ShowHourLabels="True" ShowAnnotations="False" EnableTooltips="True"
+                                                       RepairsItems="{Binding RepairsTimelinePoints}"
+                                                       SetupsItems="{Binding SetupsTimelinePoints}"
+                                                       Annotations="{Binding Annotations}"
+                                                       AnnotationSelectedCommand="{Binding SelectTimelineAnnotationCommand}"
+                                                       VerticalAlignment="Top" />
+
+                                <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Margin="0,8,8,0"
+                                        Background="{DynamicResource CardBackground}"
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                        BorderThickness="1" CornerRadius="8" Padding="8,6">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="14" Height="3" Background="{DynamicResource LegendRepairBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="Ремонт" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="14" Height="3" Background="{DynamicResource LegendSetupBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="Настройка" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== DAILY EVENTS LIST CARD ============== -->
+                <Border Classes="panel" IsVisible="{Binding HasFaultsForDay}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Список событий за день" Classes="sectionTitle" />
+                            <TextBlock Text="Все зарегистрированные инциденты и настройки по оборудованию за выбранную дату" Classes="sectionSubtitle" />
+                        </StackPanel>
+
+                        <Border Classes="well" Padding="0">
+                            <Grid>
+                                <StackPanel>
+                                    <!-- Sticky header row -->
+                                    <Border Background="{DynamicResource SurfaceBrush}"
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                            BorderThickness="0,0,0,1"
+                                            CornerRadius="10,10,0,0"
+                                            Padding="14,10">
+                                        <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Тип" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="1" Text="Код Jira" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="2" Text="Интервал" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="3" Text="Описание" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Column="4" Text="Длительность" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Right" />
+                                        </Grid>
+                                    </Border>
+
+                                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                        <ItemsControl ItemsSource="{Binding Annotations}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Classes="employeeEventRow"
+                                                            BorderBrush="{DynamicResource RowDividerBrush}"
+                                                            BorderThickness="0,0,0,1"
+                                                            Padding="14,10"
+                                                            PointerPressed="FailureEventRow_PointerPressed">
+                                                        <Border.Tag>
+                                                            <MultiBinding Converter="{StaticResource EqualityToBoolConverter}">
+                                                                <Binding />
+                                                                <Binding Path="DataContext.SelectedTimelineAnnotation" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                            </MultiBinding>
+                                                        </Border.Tag>
+                                                        <Border.Styles>
+                                                            <!-- Style for event row hover state -->
+                                                            <Style Selector="Border.employeeEventRow">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Setter Property="Cursor" Value="Hand" />
+                                                            </Style>
+                                                            <Style Selector="Border.employeeEventRow:pointerover">
+                                                                <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+                                                            </Style>
+                                                            <!-- Style for selected state -->
+                                                            <Style Selector="Border.employeeEventRow[Tag=True]">
+                                                                <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                                <Setter Property="BorderThickness" Value="4,0,0,1" />
+                                                                <Setter Property="Padding" Value="10,10,14,10" />
+                                                            </Style>
+                                                            <Style Selector="Border.employeeEventRow[Tag=True]:pointerover">
+                                                                <Setter Property="Background" Value="{DynamicResource AccentSoftBackground}" />
+                                                            </Style>
+                                                        </Border.Styles>
+                                                        <Grid ColumnDefinitions="1.2*,1.2*,1.5*,2.5*,*,Auto">
+                                                            <!-- Column 0: Type Badge -->
+                                                            <Border Grid.Column="0" HorizontalAlignment="Left" Padding="6,2" CornerRadius="4" BorderThickness="1"
+                                                                    Classes.repair-badge="{Binding IsRepair}"
+                                                                    Classes.setup-badge="{Binding IsSetup}">
+                                                                <Border.Styles>
+                                                                    <Style Selector="Border.repair-badge">
+                                                                        <Setter Property="Background" Value="{DynamicResource DangerSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource DangerSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.repair-badge TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.setup-badge">
+                                                                        <Setter Property="Background" Value="{DynamicResource WarningSoftBackground}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource WarningSoftBorder}" />
+                                                                    </Style>
+                                                                    <Style Selector="Border.setup-badge TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                    </Style>
+                                                                </Border.Styles>
+                                                                <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" />
+                                                            </Border>
+
+                                                            <!-- Column 1: Jira code -->
+                                                            <TextBlock Grid.Column="1" Text="{Binding JiraIssueKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+
+                                                            <!-- Column 2: Time Interval -->
+                                                            <TextBlock Grid.Column="2" Text="{Binding TimeInterval}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+
+                                                            <!-- Column 3: Description -->
+                                                            <TextBlock Grid.Column="3" Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxLines="1" />
+
+                                                            <!-- Column 4: Duration -->
+                                                            <TextBlock Grid.Column="4" Text="{Binding Duration}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                            
+                                                            <!-- Column 5: Chevron -->
+                                                            <TextBlock Grid.Column="5" Text="&#xE76C;" Classes="rowChevron" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </StackPanel>
+
+                                <!-- Empty state overlay if no events for day -->
+                                <Border Classes="emptyState"
+                                        IsVisible="{Binding Annotations, Converter={StaticResource IsEmptyConverter}}"
+                                        Margin="0,40,0,0">
+                                    <StackPanel Spacing="6" HorizontalAlignment="Center" MaxWidth="320">
+                                        <TextBlock Classes="emptyStateTitle" Text="События не найдены" HorizontalAlignment="Center" />
+                                        <TextBlock Classes="emptyStateSubtitle" Text="На выбранную дату по оборудованию нет зарегистрированных событий." HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ============== EVENT DETAILS PANEL ============== -->
+                <Border Classes="panel" IsVisible="{Binding HasFaultsForDay}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Детализация события" Classes="sectionTitle" />
+                            <TextBlock Text="Подробная информация о выбранном интервале"
+                                       Classes="sectionSubtitle" />
+                        </StackPanel>
+
+                        <!-- Empty state placeholder inside Event Details card -->
+                        <Border Classes="well" IsVisible="{Binding !SelectedTimelineHasData}">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" Margin="0,10">
+                                <Border Width="32" Height="32" CornerRadius="8"
+                                        Background="{DynamicResource InfoSoftBackground}">
+                                    <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets"
+                                               FontSize="16"
+                                               Foreground="{DynamicResource InfoBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Детали не выбраны"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Выберите цветной интервал на графике простоев выше, чтобы просмотреть подробные сведения об инциденте."
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Event details body — shown only when a timeline event has data -->
+                        <Border Classes="well detailsPanel"
+                                Classes.repair-border="{Binding IsSelectedTimelineRepair}"
+                                Classes.setup-border="{Binding IsSelectedTimelineSetup}"
+                                IsVisible="{Binding SelectedTimelineHasData}"
+                                BorderThickness="4,0,0,0" Padding="16">
+                            <Border.Styles>
+                                <Style Selector="Border.detailsPanel">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+                                </Style>
+                                <Style Selector="Border.repair-border">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+                                </Style>
+                                <Style Selector="Border.setup-border">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+                                </Style>
+                            </Border.Styles>
+
+                            <StackPanel Spacing="14">
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <!-- Column 0: Сведения -->
+                                    <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,16,0">
+                                        <TextBlock Text="ОСНОВНЫЕ СВЕДЕНИЯ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Тип события" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <Border Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="badge badge-danger"
+                                                        Classes.badge-danger="{Binding IsSelectedTimelineRepair}"
+                                                        Classes.badge-warning="{Binding IsSelectedTimelineSetup}"
+                                                        Classes.badge-info="{Binding !SelectedTimelineHasData}">
+                                                    <TextBlock Text="{Binding SelectedTimelineType}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Статус" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <Border Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="badge badge-warning"
+                                                        Classes.badge-warning="{Binding IsSelectedTimelineInProgress}"
+                                                        Classes.badge-success="{Binding IsSelectedTimelineCompleted}">
+                                                    <TextBlock Text="{Binding SelectedTimelineStatus}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Код Jira" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding SelectedTimelineJiraKey}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                                    <Button Classes="smallIcon" Width="22" Height="22" Padding="0"
+                                                            ToolTip.Tip="Скопировать ключ задачи"
+                                                            Click="CopyJiraKeyButton_Click"
+                                                            Background="Transparent" BorderThickness="0">
+                                                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{DynamicResource TextMuted}" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Column 1: Временные показатели -->
+                                    <StackPanel Grid.Column="1" Spacing="10" Margin="0,0,16,0">
+                                        <TextBlock Text="ВРЕМЕННЫЕ ПОКАЗАТЕЛИ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Начало" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineStart}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Завершение" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineEnd}" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="90,*">
+                                                <TextBlock Grid.Column="0" Text="Длительность" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SelectedTimelineDuration}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentForeground}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Column 2: Исполнители -->
+                                    <StackPanel Grid.Column="2" Spacing="10">
+                                        <TextBlock Text="ИСПОЛНЕНИЕ" Classes="eyebrow" />
+
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="Ответственный" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                <TextBlock Text="{Binding SelectedTimelineResponsible}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="Заявитель" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                                <TextBlock Text="{Binding SelectedTimelineReporter}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Height="1" Background="{DynamicResource RowDividerBrush}" />
+
+                                <!-- Описание и комментарии -->
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="ПОДРОБНОЕ ОПИСАНИЕ И КОММЕНТАРИИ" Classes="eyebrow" />
+
+                                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Описание" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTimelineDescription}" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Комментарии" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Top" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTimelineComments}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

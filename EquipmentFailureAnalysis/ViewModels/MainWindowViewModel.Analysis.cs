@@ -1,0 +1,760 @@
+using EquipmentFailureAnalysis.Models;
+using EquipmentFailureAnalysis.Utility;
+using EquipmentFailureAnalysis.Services;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using ReactiveUI;
+using System.Reactive;
+using System.Globalization;
+
+namespace EquipmentFailureAnalysis.ViewModels
+{
+    public partial class MainWindowViewModel
+    {
+        // Refresh daily indices and month rows for UI for a given equipment without reassigning commands
+        private void RefreshEquipmentView(EquipmentInfo equipment)
+        {
+            if (equipment == null) return;
+
+            DailyDowntimeIndexCollection.Clear();
+            for (int i = 0; i < 365; i++)
+            {
+                DailyDowntimeIndexCollection.Add(new DailyDowntimeIndex { Day = DateTime.Now.AddDays(-i), Index = 0 });
+            }
+
+            // mark selection
+            foreach (var eq in EquipmentCollection)
+                eq.IsSelected = false;
+            SelectedEquipment = equipment;
+            if (SelectedEquipment != null)
+                SelectedEquipment.IsSelected = true;
+
+            var filteredIssues = GetFilteredIssues(equipment).ToList();
+
+            // compute daily indices
+            foreach (var issue in filteredIssues)
+            {
+                var startDate = issue.Start.Date;
+                var endDate = issue.End.Date;
+                if (endDate < startDate)
+                    endDate = startDate;
+
+                for (var day = startDate; day <= endDate; day = day.AddDays(1))
+                {
+                    var daysAgo = (DateTime.Now.Date - day).Days;
+                    if (daysAgo >= 0 && daysAgo < DailyDowntimeIndexCollection.Count)
+                    {
+                        DailyDowntimeIndexCollection[daysAgo].Index++;
+                    }
+                }
+            }
+
+            // build month rows
+            MonthRows.Clear();
+            DateTime minDate = DateTime.Today.AddMonths(-3);
+            DateTime maxDate = DateTime.Today;
+
+            if (filteredIssues.Count > 0)
+            {
+                var earliest = filteredIssues.Min(i => i.Start);
+                var latest = filteredIssues.Max(i => i.Start);
+                if (earliest < minDate) minDate = earliest;
+                if (latest > maxDate) maxDate = latest;
+            }
+
+            var current = new DateTime(minDate.Year, minDate.Month, 1);
+            var endLimit = new DateTime(maxDate.Year, maxDate.Month, 1);
+
+            while (current <= endLimit)
+            {
+                var monthDate = current;
+                var daysInMonth = DateTime.DaysInMonth(monthDate.Year, monthDate.Month);
+                var name = monthDate.ToString("MMMM yyyy");
+                if (!string.IsNullOrEmpty(name))
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                var monthRow = new Models.MonthRow { Month = monthDate.Month, Year = monthDate.Year, MonthName = name };
+
+                int dowOffset = ((int)monthDate.DayOfWeek + 6) % 7; // Monday-based index (0-6)
+                for (int i = 0; i < dowOffset; i++)
+                {
+                    monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
+                }
+
+                for (int d = 1; d <= daysInMonth; d++)
+                {
+                    var cell = new Models.DayCell { DayNumber = d, Index = 0, IsValid = true };
+                    cell.Date = new DateTime(monthDate.Year, monthDate.Month, d);
+                    var entry = DailyDowntimeIndexCollection.FirstOrDefault(x => x.Day.Date == cell.Date.Date);
+                    if (entry != null) cell.Index = entry.Index;
+                    monthRow.Days.Add(cell);
+                }
+
+                while (monthRow.Days.Count < 42)
+                {
+                    monthRow.Days.Add(new Models.DayCell { DayNumber = 0, Index = 0, IsValid = false });
+                }
+
+                MonthRows.Add(monthRow);
+                current = current.AddMonths(1);
+            }
+            this.RaisePropertyChanged(nameof(HeatmapYearLabel));
+        }
+
+        // Called from view when user imports a new XML file. Sorts equipment by issue count and refreshes view.
+        public void ImportEquipment(ObservableCollection<EquipmentInfo> imported)
+        {
+            if (imported == null)
+                return;
+
+            var selectedUid = SelectedEquipment?.Uid;
+            var selectedTitle = SelectedEquipment?.Title;
+
+            var all = imported.ToList();
+            _masterEquipment = all;
+            RebuildDowntimeResponsibleFilters();
+            RebuildDowntimeSubdivisionFilters();
+            RebuildDashboardFilters();
+            RebuildEmployeeMonthOptions();
+            RebuildEmployeeSubdivisionFilters();
+            // keep left column ordering by total issues
+            _allEquipment = _masterEquipment.OrderByDescending(e => e.Issues?.Count ?? 0).ToList();
+            EquipmentCollection.Clear();
+            ApplyFilter();
+
+            EquipmentInfo? targetToSelect = null;
+            if (selectedUid.HasValue && selectedUid != 0)
+            {
+                targetToSelect = EquipmentCollection.FirstOrDefault(e => e.Uid == selectedUid);
+            }
+            if (targetToSelect == null && !string.IsNullOrEmpty(selectedTitle))
+            {
+                targetToSelect = EquipmentCollection.FirstOrDefault(e => string.Equals(e.Title, selectedTitle, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (targetToSelect != null)
+            {
+                SelectedEquipment = targetToSelect;
+                SearchQuery = targetToSelect.Title ?? string.Empty;
+                LoadEquipmentCommand.Execute(targetToSelect).Subscribe(_ =>
+                {
+                    if (ShowDayTimelineCommand != null)
+                        ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                });
+            }
+            else
+            {
+                FillSearchWithFirstEquipmentIfNeeded(force: true);
+
+                // auto-select first
+                if (EquipmentCollection.Count > 0)
+                {
+                    var first = EquipmentCollection[0];
+                    LoadEquipmentCommand.Execute(first).Subscribe(_ =>
+                    {
+                        if (ShowDayTimelineCommand != null)
+                            ShowDayTimelineCommand.Execute(DateTime.Now.Date).Subscribe();
+                    });
+                }
+            }
+
+            BuildDowntimeHeatmap();
+            BuildDowntimeDayEquipmentRows(DateTime.Now.Date);
+            BuildEmployeeAnalysis();
+        }
+
+        private void BuildEmployeeAnalysis()
+        {
+            var service = new EmployeeAnalysisService();
+            var analysis = service.Analyze(
+                _masterEquipment,
+                SelectedEmployeeAnalysisMonth,
+                SelectedEmployeeSubdivisionFilter,
+                SlaTargetMinutes);
+
+            EmployeeTotalIssues = analysis.TotalIssues;
+            EmployeeUnassignedIssues = analysis.UnassignedIssues;
+            EmployeeRepairsTotal = analysis.RepairsTotal;
+            EmployeeSetupsTotal = analysis.SetupsTotal;
+            EmployeeSlaBreaches = analysis.SlaBreaches;
+            EmployeeSlaCompliancePercent = analysis.SlaCompliancePercent;
+            EmployeeCoveragePercent = analysis.CoveragePercent;
+
+            RebuildEmployeeTimelineEmployees(analysis.Rows.Select(r => r.Name));
+
+            EmployeeAnalysisRows = new ObservableCollection<Models.EmployeeAnalysisRow>(analysis.Rows);
+            EmployeeTotalCount = analysis.Rows.Count;
+            EmployeeAvgEquipmentPerEmployee = analysis.AvgEquipmentPerEmployee.ToString("0.0");
+            EmployeeAvgDuration = FormatDuration(analysis.AvgDuration);
+
+            EmployeeTopByIssues = analysis.TopByIssues;
+            EmployeeTopByIssuesValue = analysis.TopByIssuesValue;
+            EmployeeTopByDuration = analysis.TopByDuration;
+            EmployeeTopByDurationValue = analysis.TopByDurationValue;
+
+            EmployeeAnalysisPeriodDescription = string.IsNullOrWhiteSpace(SelectedEmployeeAnalysisMonth)
+                ? "Текущий месяц"
+                : SelectedEmployeeAnalysisMonth;
+
+            BuildEmployeeSelectedDayTimeline();
+
+            BuildDashboard();
+        }
+
+        private void RebuildEmployeeTimelineEmployees(System.Collections.Generic.IEnumerable<string> employeeNames)
+        {
+            var previous = SelectedEmployeeTimelineEmployee;
+            EmployeeTimelineEmployees.Clear();
+            EmployeeTimelineEmployees.Add("Все сотрудники");
+
+            foreach (var name in employeeNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(n => n, StringComparer.CurrentCultureIgnoreCase))
+            {
+                EmployeeTimelineEmployees.Add(name);
+            }
+
+            var selected = !string.IsNullOrWhiteSpace(previous) && EmployeeTimelineEmployees.Contains(previous)
+                ? previous
+                : "Все сотрудники";
+
+            if (string.Equals(_selectedEmployeeTimelineEmployee, selected, StringComparison.CurrentCulture))
+                this.RaiseAndSetIfChanged(ref _selectedEmployeeTimelineEmployee, string.Empty);
+
+            SelectedEmployeeTimelineEmployee = selected;
+        }
+
+        private void BuildEmployeeSelectedDayTimeline()
+        {
+            var date = (EmployeeTimelineDate?.Date ?? DateTime.Now.Date);
+            var dayStart = date;
+            var dayEnd = dayStart.AddDays(1);
+            var selectedEmployee = (SelectedEmployeeTimelineEmployee ?? "Все сотрудники").Trim();
+
+            var issuesForDay = _masterEquipment
+                .SelectMany(eq => eq.Issues)
+                .Where(i => i.End > dayStart && i.Start < dayEnd)
+                .Where(i => !IsUnassignedResponsible(i.Responsible))
+                .Where(i => string.Equals(selectedEmployee, "Все сотрудники", StringComparison.CurrentCultureIgnoreCase)
+                    || string.Equals(i.Responsible?.Trim(), selectedEmployee, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+
+            var intervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var repairsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var setupsIntervals = new System.Collections.Generic.List<(int sMin, int eMin)>();
+            var annotations = new System.Collections.Generic.List<Models.Annotation>();
+
+            foreach (var issue in issuesForDay)
+            {
+                var overlapStart = issue.Start < dayStart ? dayStart : issue.Start;
+                var overlapEnd = issue.End > dayEnd ? dayEnd : issue.End;
+                if (overlapEnd <= overlapStart)
+                    continue;
+
+                int sMin = Math.Clamp((int)Math.Round((overlapStart - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                int eMin = Math.Clamp((int)Math.Round((overlapEnd - dayStart).TotalMinutes, MidpointRounding.AwayFromZero), 0, 24 * 60);
+                if (eMin <= sMin)
+                    eMin = Math.Min(24 * 60, sMin + 1);
+
+                intervals.Add((sMin, eMin));
+                if (issue.Type == IssueType.Ремонт)
+                    repairsIntervals.Add((sMin, eMin));
+                else if (issue.Type == IssueType.Настройка)
+                    setupsIntervals.Add((sMin, eMin));
+
+                var actualDuration = issue.End - issue.Start;
+                if (actualDuration < TimeSpan.Zero)
+                    actualDuration = TimeSpan.Zero;
+                var actHours = (int)actualDuration.TotalHours;
+                var formattedDuration = $"{actHours:00}:{actualDuration.Minutes:00}";
+
+                annotations.Add(new Models.Annotation
+                {
+                    Hour = sMin / 60.0,
+                    StartHour = sMin / 60.0,
+                    EndHour = eMin / 60.0,
+                    Description = issue.Description ?? string.Empty,
+                    Responsible = string.IsNullOrWhiteSpace(issue.Responsible) ? "-" : issue.Responsible,
+                    StartDate = issue.Start,
+                    EndDate = issue.End,
+                    Duration = formattedDuration,
+                    Type = issue.Type,
+                    JiraIssueKey = issue.JiraIssueKey ?? string.Empty,
+                    Reporter = issue.Reporter ?? string.Empty,
+                    Comments = issue.Comments ?? string.Empty,
+                    IsInProgress = issue.IsInProgress
+                });
+            }
+
+            EmployeeTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(intervals)));
+            EmployeeRepairsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(repairsIntervals)));
+            EmployeeSetupsTimelinePoints = new ObservableCollection<Models.TimelinePoint>(BuildTimelinePoints(MergeIntervals(setupsIntervals)));
+            EmployeeTimelineAnnotations = new ObservableCollection<Models.Annotation>(annotations.OrderBy(a => a.StartHour).ThenBy(a => a.EndHour));
+        }
+
+        private void BuildDashboard()
+        {
+            var now = DateTime.Now;
+            var currentPeriodStart = Dashboard.DashboardStartDate.Date;
+            var currentPeriodEnd = Dashboard.DashboardEndDate.Date.AddDays(1);
+            var periodDuration = currentPeriodEnd - currentPeriodStart;
+            var previousPeriodEnd = currentPeriodStart;
+            var previousPeriodStart = previousPeriodEnd - periodDuration;
+
+            var currentIssues = GetDashboardFilteredIssuesOverlappingPeriod(currentPeriodStart, currentPeriodEnd).ToList();
+            var previousIssues = GetDashboardFilteredIssuesOverlappingPeriod(previousPeriodStart, previousPeriodEnd).ToList();
+            var currentRepairIssues = currentIssues
+                .Where(i => i.Issue.Type == IssueType.Ремонт)
+                .ToList();
+
+            DashboardCurrentPeriodIssues = currentIssues.Count;
+            DashboardPreviousPeriodIssues = previousIssues.Count;
+
+            var previousBaseline = Math.Max(1, DashboardPreviousPeriodIssues);
+            DashboardIssuesTrendPercent = (DashboardCurrentPeriodIssues - DashboardPreviousPeriodIssues) * 100.0 / previousBaseline;
+            if (DashboardCurrentPeriodIssues > DashboardPreviousPeriodIssues)
+                DashboardIssuesTrendText = "Рост нагрузки";
+            else if (DashboardCurrentPeriodIssues < DashboardPreviousPeriodIssues)
+                DashboardIssuesTrendText = "Снижение нагрузки";
+            else
+                DashboardIssuesTrendText = "Стабильно";
+
+            DashboardCurrentPeriodRepairs = currentIssues.Count(i => i.Issue.Type == IssueType.Ремонт);
+            DashboardCurrentPeriodSetups = currentIssues.Count(i => i.Issue.Type == IssueType.Настройка);
+
+            var avgDurationMinutes = currentIssues.Count == 0
+                ? 0.0
+                : currentIssues.Average(i => Math.Max(0, ((i.Issue.IsInProgress ? now : i.Issue.End) - i.Issue.Start).TotalMinutes));
+            DashboardCurrentPeriodAvgDuration = FormatDuration(TimeSpan.FromMinutes(avgDurationMinutes));
+            var mttrMinutes = currentRepairIssues.Count == 0
+                ? 0.0
+                : currentRepairIssues.Average(i => Math.Max(0, ((i.Issue.IsInProgress ? now : i.Issue.End) - i.Issue.Start).TotalMinutes));
+            Dashboard.DashboardCurrentPeriodMttr = FormatDuration(TimeSpan.FromMinutes(mttrMinutes));
+
+            var filteredEquipment = _masterEquipment.AsEnumerable();
+            if (!string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                    filteredEquipment = filteredEquipment.Where(eq => string.IsNullOrWhiteSpace(eq.Subdivision));
+                else
+                    filteredEquipment = filteredEquipment.Where(eq => string.Equals(eq.Subdivision?.Trim(), Dashboard.SelectedDashboardSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+            var totalEquipmentCount = Math.Max(1, filteredEquipment.Count());
+            var daysInPeriod = Math.Max(1.0, periodDuration.TotalDays);
+            var totalAvailableMinutes = totalEquipmentCount * daysInPeriod * 8.0 * 60.0;
+
+            var totalDowntimeMinutes = currentIssues.Sum(i =>
+            {
+                var issueEnd = i.Issue.IsInProgress ? now : i.Issue.End;
+                var overlapStart = i.Issue.Start < currentPeriodStart ? currentPeriodStart : i.Issue.Start;
+                var overlapEnd = issueEnd > currentPeriodEnd ? currentPeriodEnd : issueEnd;
+                return Math.Max(0, (overlapEnd - overlapStart).TotalMinutes);
+            });
+
+            var totalFailures = currentIssues.Count(i => i.Issue.Type == IssueType.Ремонт);
+            var mtbfMinutes = totalFailures == 0 
+                ? Math.Max(0, totalAvailableMinutes - totalDowntimeMinutes) 
+                : Math.Max(0, (totalAvailableMinutes - totalDowntimeMinutes) / totalFailures);
+            Dashboard.DashboardCurrentPeriodMtbf = FormatDuration(TimeSpan.FromMinutes(mtbfMinutes));
+
+            var availabilityPercent = totalAvailableMinutes == 0
+                ? 100.0
+                : Math.Clamp((totalAvailableMinutes - totalDowntimeMinutes) * 100.0 / totalAvailableMinutes, 0.0, 100.0);
+            Dashboard.DashboardAvailabilityPercentText = availabilityPercent.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+            DashboardCurrentPeriodAffectedEquipment = currentIssues
+                .Select(i => i.Equipment.Title)
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .Count();
+            DashboardEquipmentInSystemCount = _masterEquipment.Count;
+
+            var assignedCurrentRepairIssues = currentRepairIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
+            var unassignedCurrentRepairIssues = Math.Max(0, currentRepairIssues.Count - assignedCurrentRepairIssues.Count);
+            Dashboard.DashboardCurrentPeriodUnassignedSharePercent = currentRepairIssues.Count == 0
+                ? 0.0
+                : unassignedCurrentRepairIssues * 100.0 / currentRepairIssues.Count;
+            DashboardCurrentPeriodActiveEmployees = assignedCurrentRepairIssues
+                .Select(i => i.Issue.Responsible!.Trim())
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .Count();
+
+            var assignedCurrentIssues = currentIssues.Where(i => !IsUnassignedResponsible(i.Issue.Responsible)).ToList();
+            var slaMetCount = assignedCurrentIssues.Count(i => Math.Max(0, (i.Issue.End - i.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+            DashboardCurrentPeriodSlaBreaches = Math.Max(0, assignedCurrentIssues.Count - slaMetCount);
+            DashboardCurrentPeriodSlaCompliancePercent = assignedCurrentIssues.Count == 0
+                ? 0.0
+                : slaMetCount * 100.0 / assignedCurrentIssues.Count;
+
+            var topPerformer = currentIssues
+                .Where(i => !IsUnassignedResponsible(i.Issue.Responsible))
+                .GroupBy(i => i.Issue.Responsible!.Trim(), StringComparer.CurrentCultureIgnoreCase)
+                .Select(g =>
+                {
+                    var all = g.ToList();
+                    var slaMet = all.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var sla = all.Count == 0 ? 0.0 : slaMet * 100.0 / all.Count;
+                    var score = all.Count * 0.6 + sla * 0.4;
+                    return new { Name = g.Key, Count = all.Count, Sla = sla, Score = score };
+                })
+                .OrderByDescending(x => x.Score)
+                .ThenByDescending(x => x.Count)
+                .ThenBy(x => x.Name)
+                .FirstOrDefault();
+            DashboardTopPerformer = topPerformer?.Name ?? "-";
+            DashboardTopPerformerValue = topPerformer == null
+                ? "Нет данных"
+                : $"{topPerformer.Count} событий, SLA {topPerformer.Sla:0.#}%";
+
+            var topRiskEquipment = currentRepairIssues
+                .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ThenBy(x => x.Name)
+                .FirstOrDefault();
+            DashboardRiskEquipment = AddSoftWrapOpportunities(topRiskEquipment?.Name ?? "-");
+            DashboardRiskEquipmentValue = topRiskEquipment == null ? "0 ремонтов" : $"{topRiskEquipment.Count} ремонтов за выбранный период";
+
+            var recurringByEquipment = currentRepairIssues
+                .GroupBy(i => i.Equipment.Title, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .Where(x => x.Count >= 2)
+                .ToList();
+            var recurringEquipmentCount = recurringByEquipment.Count;
+            var recurringEventsCount = recurringByEquipment.Sum(x => x.Count);
+            Dashboard.DashboardRecurringFailuresValue = $"{recurringEquipmentCount} ед. / {recurringEventsCount} ремонтов";
+            var subdivisionRatings = currentIssues
+                .GroupBy(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision) ? "Без группы" : i.Equipment.Subdivision!.Trim(), StringComparer.CurrentCultureIgnoreCase)
+                .Select(g =>
+                {
+                    var groupIssues = g.ToList();
+                    var groupRepairs = groupIssues.Where(x => x.Issue.Type == IssueType.Ремонт).ToList();
+                    var groupAssigned = groupRepairs.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
+                    var groupAssignedAll = groupIssues.Where(x => !IsUnassignedResponsible(x.Issue.Responsible)).ToList();
+                    var groupSlaMet = groupAssignedAll.Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var groupSlaPercent = groupAssignedAll.Count == 0
+                        ? 0.0
+                        : groupSlaMet * 100.0 / groupAssignedAll.Count;
+                    var groupAvgMinutes = groupRepairs.Count == 0
+                        ? 0.0
+                        : groupRepairs.Average(x => Math.Max(0, ((x.Issue.IsInProgress ? now : x.Issue.End) - x.Issue.Start).TotalMinutes));
+
+                    return new Models.SubdivisionRatingRow
+                    {
+                        Subdivision = g.Key,
+                        IssuesCount = groupRepairs.Count,
+                        ActiveEmployees = groupAssigned
+                            .Select(x => x.Issue.Responsible!.Trim())
+                            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                            .Count(),
+                        SlaCompliancePercent = groupSlaPercent,
+                        MttrMinutes = groupAvgMinutes,
+                        MttrText = FormatDuration(TimeSpan.FromMinutes(groupAvgMinutes))
+                    };
+                })
+                .ToList();
+
+            if (subdivisionRatings.Count > 0)
+            {
+                var minIssuesInSubdivision = subdivisionRatings.Min(r => r.IssuesCount);
+                var maxIssuesInSubdivision = subdivisionRatings.Max(r => r.IssuesCount);
+                var minMttrInSubdivision = subdivisionRatings.Min(r => r.MttrMinutes);
+                var maxMttrInSubdivision = subdivisionRatings.Max(r => r.MttrMinutes);
+                var issuesSpan = Math.Max(1.0, maxIssuesInSubdivision - minIssuesInSubdivision);
+                var mttrSpan = Math.Max(1.0, maxMttrInSubdivision - minMttrInSubdivision);
+
+                foreach (var row in subdivisionRatings)
+                {
+                    var incidentScore = Math.Clamp(100.0 - ((row.IssuesCount - minIssuesInSubdivision) / issuesSpan) * 100.0, 0.0, 100.0);
+                    var mttrScore = Math.Clamp(100.0 - ((row.MttrMinutes - minMttrInSubdivision) / mttrSpan) * 100.0, 0.0, 100.0);
+                    row.PerformanceScore = Math.Round(
+                        row.SlaCompliancePercent * 0.50
+                        + incidentScore * 0.30
+                        + mttrScore * 0.20,
+                        1);
+                }
+            }
+
+            Dashboard.DashboardSubdivisionRatings = new ObservableCollection<Models.SubdivisionRatingRow>(
+                subdivisionRatings
+                    .OrderByDescending(r => r.PerformanceScore)
+                    .ThenBy(r => r.IssuesCount)
+                    .ThenBy(r => r.Subdivision)
+                    .Take(5));
+
+            var pPoints = currentIssues
+                .Where(i => i.Issue.Type == IssueType.Ремонт)
+                .GroupBy(i => i.Equipment.Title)
+                .Select(g => new ParetoPoint
+                {
+                    Label = g.Key,
+                    Value = g.Count()
+                })
+                .OrderByDescending(p => p.Value)
+                .ToList();
+
+            var totalFailuresCount = (double)pPoints.Sum(p => p.Value);
+            var runningSum = 0.0;
+            foreach (var pt in pPoints)
+            {
+                runningSum += pt.Value;
+                pt.CumulativePercent = totalFailuresCount == 0 ? 0.0 : (runningSum * 100.0 / totalFailuresCount);
+            }
+
+            Dashboard.DashboardParetoPoints = new ObservableCollection<ParetoPoint>(pPoints.Take(10));
+
+            var warningsList = new System.Collections.Generic.List<DataWarning>();
+            foreach (var eq in _masterEquipment)
+            {
+                foreach (var issue in eq.Issues)
+                {
+                    if (string.IsNullOrWhiteSpace(issue.Description) || issue.Description.Length < 5)
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Неполное описание",
+                            Severity = "Warning",
+                            Description = "Описание проблемы пустое или слишком короткое.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+
+                    if (IsUnassignedResponsible(issue.Responsible))
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Нет ответственного",
+                            Severity = "Warning",
+                            Description = "Ответственный сотрудник не назначен для задачи.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+
+                    if (!issue.IsInProgress && issue.End < issue.Start)
+                    {
+                        warningsList.Add(new DataWarning
+                        {
+                            Title = "Ошибка хронологии",
+                            Severity = "Error",
+                            Description = "Время закрытия задачи предшествует времени открытия.",
+                            EquipmentTitle = eq.Title ?? "Оборудование",
+                            JiraIssueKey = issue.JiraIssueKey ?? "-",
+                            Start = issue.Start
+                        });
+                    }
+                }
+            }
+
+            Dashboard.DashboardDataWarnings = new ObservableCollection<DataWarning>(
+                warningsList.OrderByDescending(w => w.Severity == "Error" ? 1 : 0).ThenByDescending(w => w.Start).Take(15));
+
+            BuildDashboardMonthlyTrends(Dashboard.DashboardEndDate);
+        }
+
+        private void BuildDashboardMonthlyTrends(DateTime referenceDate)
+        {
+            var months = new System.Collections.Generic.List<(DateTime start, DateTime end, string label)>();
+            var culture = new CultureInfo("ru-RU");
+
+            for (int i = 5; i >= 0; i--)
+            {
+                var start = new DateTime(referenceDate.Year, referenceDate.Month, 1).AddMonths(-i);
+                var end = start.AddMonths(1);
+                months.Add((start, end, start.ToString("MMM yyyy", culture)));
+            }
+
+            var trendItems = months
+                .Select(m =>
+                {
+                    var monthIssues = GetDashboardFilteredIssuesOverlappingPeriod(m.start, m.end).ToList();
+                    var monthRepairs = monthIssues
+                        .Where(x => x.Issue.Type == IssueType.Ремонт)
+                        .ToList();
+                    var avgMinutes = monthRepairs.Count == 0
+                        ? 0.0
+                        : monthRepairs.Average(x => Math.Max(0, ((x.Issue.IsInProgress ? referenceDate : x.Issue.End) - x.Issue.Start).TotalMinutes));
+
+                    var monthAssignedIssues = monthIssues
+                        .Where(x => !IsUnassignedResponsible(x.Issue.Responsible))
+                        .ToList();
+                    var monthSlaMetCount = monthAssignedIssues
+                        .Count(x => Math.Max(0, (x.Issue.End - x.Issue.Start).TotalMinutes) <= SlaTargetMinutes);
+                    var monthSlaPercent = monthAssignedIssues.Count == 0
+                        ? 0.0
+                        : monthSlaMetCount * 100.0 / monthAssignedIssues.Count;
+
+                    return new Models.DashboardTrendPoint
+                    {
+                        PeriodLabel = m.label,
+                        IssuesCount = monthIssues.Count,
+                        RepairsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Ремонт),
+                        SetupsCount = monthIssues.Count(x => x.Issue.Type == IssueType.Настройка),
+                        AvgDurationMinutes = avgMinutes,
+                        AvgDurationText = FormatDuration(TimeSpan.FromMinutes(avgMinutes)),
+                        SlaCompliancePercent = monthSlaPercent
+                    };
+                })
+                .ToList();
+
+            var maxIssues = Math.Max(1, trendItems.Max(t => t.IssuesCount));
+            DashboardMaxIssuesInMonth = maxIssues;
+            foreach (var item in trendItems)
+                item.IntensityPercent = item.IssuesCount * 100.0 / maxIssues;
+
+            DashboardMonthlyTrends = new ObservableCollection<Models.DashboardTrendPoint>(trendItems);
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> GetDashboardFilteredIssuesOverlappingPeriod(DateTime start, DateTime end)
+        {
+            var source = GetIssuesOverlappingPeriod(start, end);
+
+            // 1. Subdivision filter
+            if (!string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Все группы", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardSubdivisionFilter, "Без группы", StringComparison.CurrentCultureIgnoreCase))
+                    source = source.Where(i => string.IsNullOrWhiteSpace(i.Equipment.Subdivision));
+                else
+                    source = source.Where(i => string.Equals(i.Equipment.Subdivision?.Trim(), Dashboard.SelectedDashboardSubdivisionFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            // 2. Issue Type filter
+            source = Dashboard.SelectedDashboardIssueTypeFilter switch
+            {
+                "Ремонты" => source.Where(i => i.Issue.Type == IssueType.Ремонт),
+                "Настройки" => source.Where(i => i.Issue.Type == IssueType.Настройка),
+                _ => source
+            };
+
+            // 3. Status filter
+            source = Dashboard.SelectedDashboardStatusFilter switch
+            {
+                "В процессе" => source.Where(i => i.Issue.IsInProgress),
+                "Завершена" => source.Where(i => !i.Issue.IsInProgress),
+                _ => source
+            };
+
+            // 4. Responsible filter
+            if (!string.Equals(Dashboard.SelectedDashboardResponsibleFilter, "Все ответственные", StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (string.Equals(Dashboard.SelectedDashboardResponsibleFilter, "Без ответственного", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    source = source.Where(i => IsUnassignedResponsible(i.Issue.Responsible));
+                }
+                else
+                {
+                    source = source.Where(i => string.Equals(i.Issue.Responsible?.Trim(), Dashboard.SelectedDashboardResponsibleFilter, StringComparison.CurrentCultureIgnoreCase));
+                }
+            }
+
+            // 5. Equipment Search Query
+            var query = (Dashboard.DashboardEquipmentSearchQuery ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                source = source.Where(i =>
+                    (i.Equipment.Title?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
+                    || (i.Equipment.InventoryNumber?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false));
+            }
+
+            return source;
+        }
+
+        internal void HandleDashboardFilterChanged()
+        {
+            BuildDashboard();
+        }
+
+        private void RebuildDashboardFilters()
+        {
+            Dashboard.RebuildResponsibleFilters();
+            Dashboard.RebuildSubdivisionFilters();
+        }
+
+        private System.Collections.Generic.IEnumerable<EmployeeIssueProjection> GetIssuesOverlappingPeriod(DateTime start, DateTime end)
+        {
+            return _masterEquipment
+                .SelectMany(eq => eq.Issues
+                    .Where(issue => issue.End > start && issue.Start < end)
+                    .Select(issue => new EmployeeIssueProjection { Equipment = eq, Issue = issue }));
+        }
+
+        private void RebuildEmployeeMonthOptions()
+        {
+            var previous = SelectedEmployeeAnalysisMonth;
+            var allMonthsOption = "Все месяцы";
+
+            EmployeeAnalysisMonthOptions.Clear();
+            EmployeeAnalysisMonthOptions.Add(allMonthsOption);
+
+            var ru = new CultureInfo("ru-RU");
+            var months = _masterEquipment
+                .SelectMany(eq => eq.Issues)
+                .Select(i => new DateTime(i.Start.Year, i.Start.Month, 1))
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            foreach (var month in months)
+                EmployeeAnalysisMonthOptions.Add(month.ToString("MMMM yyyy", ru));
+
+            var currentMonth = DateTime.Now.ToString("MMMM yyyy", ru);
+            if (!string.IsNullOrWhiteSpace(previous) && EmployeeAnalysisMonthOptions.Contains(previous))
+                SelectedEmployeeAnalysisMonth = previous;
+            else if (EmployeeAnalysisMonthOptions.Contains(currentMonth))
+                SelectedEmployeeAnalysisMonth = currentMonth;
+            else
+                SelectedEmployeeAnalysisMonth = allMonthsOption;
+        }
+
+        private void RebuildEmployeeSubdivisionFilters()
+        {
+            var previous = SelectedEmployeeSubdivisionFilter;
+            EmployeeSubdivisionFilters.Clear();
+            EmployeeSubdivisionFilters.Add("Все группы");
+            EmployeeSubdivisionFilters.Add("Без группы");
+
+            foreach (var subdivision in _masterEquipment
+                .Select(eq => eq.Subdivision?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
+            {
+                EmployeeSubdivisionFilters.Add(subdivision!);
+            }
+
+            if (!string.IsNullOrWhiteSpace(previous) && EmployeeSubdivisionFilters.Contains(previous))
+                SelectedEmployeeSubdivisionFilter = previous;
+            else
+                SelectedEmployeeSubdivisionFilter = "Все группы";
+        }
+
+
+
+        private static bool IsUnassignedResponsible(string? responsible)
+        {
+            if (string.IsNullOrWhiteSpace(responsible))
+                return true;
+
+            var value = responsible.Trim();
+            return value == "-"
+                   || value == "-1"
+                   || value.Equals("Не назначен", StringComparison.CurrentCultureIgnoreCase)
+                   || value.Equals("unassigned", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("null", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string FormatDuration(TimeSpan duration)
+        {
+            if (duration < TimeSpan.Zero)
+                duration = TimeSpan.Zero;
+
+            var hours = (int)duration.TotalHours;
+            return $"{hours:00}:{duration.Minutes:00}";
+        }
+
+        // Return issues for equipment filtered by ShowRepairs/ShowSetups
+    }
+}
